@@ -82,7 +82,7 @@ public class Menu_Main {
 		}
 		if (!MenuCancel())
 		{
-			menu_done = 1; // Close the menu
+			menu_done = true; // Close the menu
 			MenuHappyBeep();
 		}
 	}

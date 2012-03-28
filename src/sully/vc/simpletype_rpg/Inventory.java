@@ -191,7 +191,7 @@ public class Inventory {
 	// Takes a String name of an item.  
 	// Returns true if that item is in inventory.  returns false if not.
 	// Errors if the item isn't an item at all.
-	boolean HasItem( String name ) {
+	public static boolean HasItem( String name ) {
 		int idx;
 		
 		idx = IsItem(name);
@@ -344,7 +344,7 @@ public class Inventory {
 	// Destroys all of this item in inventory.  Simple wrapper around TakeItem.
 	//
 	// name must be a valid item name and must have at least one in inventory.
-	static void DestroyItem( String name )
+	public static void DestroyItem( String name )
 	{
 		TakeItem( name, MAX_INV_SLOT );
 	}

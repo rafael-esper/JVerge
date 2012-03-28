@@ -71,7 +71,7 @@ public class Menu_Save {
 			}
 			else if (menu_sub!=0) // If loading, and there is 1 or more saved games
 			{
-				menu_done = 1; // Close the menu when the game is loaded
+				menu_done = true; // Close the menu when the game is loaded
 				MenuHappyBeep();
 				MenuMinibox("Loading game from slot "+str(menu_item + 1), "MenuDrawSave");
 				MenuLoadGame(menu_item + 1);

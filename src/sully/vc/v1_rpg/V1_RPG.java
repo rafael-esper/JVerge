@@ -171,12 +171,12 @@ public class V1_RPG {
 	
 	// returns true if there's a color filter on of any type.
 	//
-	boolean VCScreenFilterOn()
+	public static boolean VCScreenFilterOn()
 	{
 		return vc_filter_on;
 	}
 	
-	void VCScreenFilterOff() {
+	public static void VCScreenFilterOff() {
 		vc_filter_on = false;
 		vc_custom_filter_on = false;
 		_VCCustomFilter_color_1 = null;
@@ -188,7 +188,7 @@ public class V1_RPG {
 	// Remember: 100% lucent is nothing, 
 	// 0% lucent is solid, 25% lucent is lightly see-though, 
 	// 75% lucent is very see-through, etc etc.
-	void VCScreenFilterLucent( int perc ) {
+	public static void VCScreenFilterLucent( int perc ) {
 		vc_filter_lucent = perc;
 	}
 	
@@ -201,7 +201,7 @@ public class V1_RPG {
 	// Example:
 	//	VCCustomFilter( RGB(0,0,0), RGB(255,255,0) ); //this will make the screen 
 	//		//all shades of Yellow... as long as V1RPG_RenderFunc is in the hookretrace.
-	void VCCustomFilter( Color color_1, Color color_2 )
+	public static void VCCustomFilter( Color color_1, Color color_2 )
 	{
 		vc_custom_filter_on = true;
 	

@@ -23,27 +23,27 @@ public class Menu_Shop {
 	String _shop_purchase_msg = "Thank you!";
 	String _shop_too_many_msg = "Sorry, you own too many of that already.";
 	
-	void SetShopTooPoorMag( String s )
+	public static void SetShopTooPoorMag( String s )
 	{
 		_shop_too_poor_msg = s;
 	}
 	
-	void SetShopPurchaseMag( String s )
+	public static void SetShopPurchaseMag( String s )
 	{
 		_shop_purchase_msg = s;
 	}
 	
-	void SetShopTooManyMag( String s )
+	public static void SetShopTooManyMag( String s )
 	{
 		_shop_too_many_msg = s;
 	}
 	
-	boolean _shop_can_sell_supplies;
-	boolean _shop_can_sell_equipment;
+	static boolean _shop_can_sell_supplies;
+	static boolean _shop_can_sell_equipment;
 	
 	// Set to true if you want the next shop to allow supplies to be sold, false if not.
 	//
-	void SetSellSupplyShop( boolean mode )
+	public static void SetSellSupplyShop( boolean mode )
 	{
 		_shop_can_sell_supplies = mode;
 	}
@@ -51,13 +51,13 @@ public class Menu_Shop {
 	
 	// Set to true if you want the next shop to allow supplies to be sold, false if not.
 	//
-	void SetSellEquipmentShop( boolean mode )
+	public static void SetSellEquipmentShop( boolean mode )
 	{
 		_shop_can_sell_equipment = mode;
 	}
 	
 	
-	void MenuShop(String items)
+	public static void MenuShop(String items)
 	{
 		int shop_i = 0;
 		int shop_count = 0;
@@ -83,9 +83,9 @@ public class Menu_Shop {
 		MenuShopI(item_list);
 	}
 	
-	void MenuShopI(String items)
+	public static void MenuShopI(String items)
 	{
-		menu_done = 0;
+		boolean menu_done = false;
 		menu_option = 0;
 		menu_item = 0;
 		menu_cast = 0;
@@ -114,14 +114,14 @@ public class Menu_Shop {
 			else if (MenuCancel())
 			{
 				MenuHappyBeep();
-				menu_done = 1;
+				menu_done = true;
 				menu_start = 0;
 			}
 		}
 	}
 	
 	
-	void MenuControlShopMain()
+	public static void MenuControlShopMain()
 	{
 		int i;
 		
@@ -155,7 +155,7 @@ public class Menu_Shop {
 						}
 						else MenuAngryBuzz();
 					break;
-				case 3:	menu_done = 1;
+				case 3:	menu_done = true;
 					break;
 	
 			}
@@ -164,13 +164,13 @@ public class Menu_Shop {
 		{
 			Menu1ArrowSetSounds( "" );
 			MenuHappyBeep();
-			menu_done = 1;
+			menu_done = true;
 			menu_start = 0;
 		}
 	}
 	
-	int _shop_pretend_equip;
-	void UpdateShopPretend()
+	static int _shop_pretend_equip;
+	public static void UpdateShopPretend()
 	{
 		int item_idx = val(gettoken(save_display[0].text, "&", menu_item));
 			
@@ -192,14 +192,14 @@ public class Menu_Shop {
 	}
 	
 	
-	void MenuControlShopBuy()
+	public static void MenuControlShopBuy()
 	{
 		Menu2ArrowSetSounds( "MenuHappyBeep","MenuPageTurn" );
 		int movey = MenuControlTwoArrows("menu_item", menu_sub, "menu_number", MAX_INV_SLOT);
 		int q, item_idx;
 		int _slot, choice;
 		
-		if( !menu_number )
+		if( menu_number == 0 )
 		{
 			menu_number = MAX_INV_SLOT;
 		}
@@ -245,7 +245,7 @@ public class Menu_Shop {
 					menu_number = MAX_INV_SLOT-q;
 				}
 	
-				if( !menu_number )
+				if( menu_number==0 )
 				{
 					menu_number = 1;
 				}			
@@ -365,7 +365,7 @@ public class Menu_Shop {
 		
 	}
 	
-	void MenuControlShopSellSupply()
+	public static void MenuControlShopSellSupply()
 	{
 		int answer, item_idx, cleanup, choice;
 		
@@ -436,7 +436,7 @@ public class Menu_Shop {
 		}
 	}
 	
-	void MenuControlShopSellEquip()
+	public static void MenuControlShopSellEquip()
 	{
 		int item_idx,answer,cleanup, choice;
 		
@@ -509,7 +509,7 @@ public class Menu_Shop {
 		}
 	}
 	
-	void MenuDrawShopMain()
+	public static void MenuDrawShopMain()
 	{
 		int summat = 0;
 		if (menu_idx == 0) summat = 1;
@@ -517,22 +517,22 @@ public class Menu_Shop {
 		
 		if (menu_option == 0)
 		{
-			MenuDrawBackground(90, 10, 310, 130, 0);
+			MenuDrawBackground(90, 10, 310, 130, false);
 			MenuBlitShopBuy();
 		}
 		if (menu_option == 1)
 		{
-			MenuDrawBackground(90, 10, 310, 230, 0);
+			MenuDrawBackground(90, 10, 310, 230, false);
 			MenuBlitShopSellSupply();
 		}
 		if (menu_option == 2)
 		{
-			MenuDrawBackground(90, 10, 310, 230, 0);
+			MenuDrawBackground(90, 10, 310, 230, false);
 			MenuBlitShopSellEquip();
 		}
 	}
 	
-	void MenuDrawShopBuy()
+	public static void MenuDrawShopBuy()
 	{
 		boolean summat = false;
 		if (menu_idx == 1) summat = true;
@@ -542,7 +542,7 @@ public class Menu_Shop {
 		
 	}
 	
-	void MenuDrawShopSellSupply()
+	public static void MenuDrawShopSellSupply()
 	{
 		boolean summat = false;
 		if (menu_idx == 2) summat = true;
@@ -552,7 +552,7 @@ public class Menu_Shop {
 		
 	}
 	
-	void MenuDrawShopSellEquip()
+	public static void MenuDrawShopSellEquip()
 	{
 		boolean summat = false;
 		if (menu_idx == 3) summat = true;
@@ -563,15 +563,15 @@ public class Menu_Shop {
 	}
 	
 	
-	void MenuBlitShopSellSupply()
+	public static void MenuBlitShopSellSupply()
 	{
 		int i, use, longest_x;
 		MenuDrawSubWindow(100, 20, 300, 170, menu_item, menu_fonth + 2, _supply_count, menu_start, 3);
 	
 		for (i = 0; i < SupplyCount(); i++)
 		{
-			if( longest_x < TextWidth(menu_font[0], master_items[supply_inventory[i].item_ref].name) )
-				longest_x = TextWidth(menu_font[0], master_items[supply_inventory[i].item_ref].name);
+			if( longest_x < textwidth(menu_font[0], master_items[supply_inventory[i].item_ref].name) )
+				longest_x = textwidth(menu_font[0], master_items[supply_inventory[i].item_ref].name);
 		}
 	
 		if (_supply_count == 0)
@@ -596,15 +596,15 @@ public class Menu_Shop {
 	
 	}
 	
-	void MenuBlitShopSellEquip()
+	public static void MenuBlitShopSellEquip()
 	{
 		int i, use, longest_x;
 		MenuDrawSubWindow(100, 20, 300, 170, menu_item, menu_fonth + 2, _equip_count, menu_start, 3);
 	
 		for (i = 0; i < EquipmentCount(); i++)
 		{		
-			if( longest_x < TextWidth(menu_font[0], master_items[equipment_inventory[i].item_ref].name) )
-				longest_x = TextWidth(menu_font[0], master_items[equipment_inventory[i].item_ref].name);
+			if( longest_x < textwidth(menu_font[0], master_items[equipment_inventory[i].item_ref].name) )
+				longest_x = textwidth(menu_font[0], master_items[equipment_inventory[i].item_ref].name);
 		}
 	
 		if (_equip_count == 0)
@@ -629,7 +629,7 @@ public class Menu_Shop {
 	
 	}
 	
-	void MenuBlitShopBuy()
+	public static void MenuBlitShopBuy()
 	{
 		int i, equip, item_idx, longest_x;
 		VImage equipImage;
@@ -639,8 +639,8 @@ public class Menu_Shop {
 		{
 			item_idx = val(gettoken(save_display[0].text, "&", i));
 			
-			if( longest_x < TextWidth(menu_font[equip],master_items[item_idx].name) )
-				longest_x = TextWidth(menu_font[equip],master_items[item_idx].name);
+			if( longest_x < textwidth(menu_font[equip],master_items[item_idx].name) )
+				longest_x = textwidth(menu_font[equip],master_items[item_idx].name);
 		}
 		
 	
@@ -701,7 +701,7 @@ public class Menu_Shop {
 	}
 	
 	
-	void MenuBlitParty(int x, int y, int member, int item_idx)
+	public static void MenuBlitParty(int x, int y, int member, int item_idx)
 	{
 		int i;
 		
@@ -714,7 +714,7 @@ public class Menu_Shop {
 				{
 					if( i==member )
 					{
-						RectFill( x+(i*24)-1, y-1, x+(i*24)+17, y+33, menu_colour[MENU_COLOR_ACTIVE], screen );
+						rectfill( x+(i*24)-1, y-1, x+(i*24)+17, y+33, menu_colour[MENU_COLOR_ACTIVE], screen );
 					}
 	
 					if( CanEquipI(party[i],item_idx) )
@@ -733,7 +733,7 @@ public class Menu_Shop {
 				{
 					if( i==member )
 					{
-						RectFill( x+(i*24)-1, y-1, x+(i*24)+17, y+33, menu_colour[MENU_COLOR_ACTIVE], screen );
+						rectfill( x+(i*24)-1, y-1, x+(i*24)+17, y+33, menu_colour[MENU_COLOR_ACTIVE], screen );
 					}
 	
 					BlitEntityFrame(x + (i * 24), y + 16, master_cast[party[i]].entity, GetFrameSad(), screen);
@@ -746,7 +746,7 @@ public class Menu_Shop {
 			{
 				if( i==member )
 				{
-					RectFill( x+(i*24)-1, y-1, x+(i*24)+17, y+33, menu_colour[MENU_COLOR_ACTIVE], screen );
+					rectfill( x+(i*24)-1, y-1, x+(i*24)+17, y+33, menu_colour[MENU_COLOR_ACTIVE], screen );
 				}
 	
 				BlitEntityFrame(x + (i * 24), y + 16, master_cast[party[i]].entity, GetFrameSad(), screen);
@@ -779,7 +779,7 @@ public class Menu_Shop {
 	}
 	
 	int _omg_shop_left_prev;
-	void MenuBlitShopLeft(int active, int selected)
+	public static void MenuBlitShopLeft(int active, int selected)
 	{
 			
 		_omg_shop_left_prev = selected;
@@ -825,9 +825,9 @@ public class Menu_Shop {
 		MenuBlitShopTop();
 	}
 	
-	void MenuBlitShopTop()
+	public static void MenuBlitShopTop()
 	{
-		MenuDrawBackground(10, 10, 80, 60, 0);
+		MenuDrawBackground(10, 10, 80, 60, false);
 		printright(70, 20, screen, menu_font[0], "A Shop");
 		printstring(20, 35, screen, menu_font[0], moneyname + ":");
 		printright(70, 45, screen, menu_font[0], str(money));
@@ -837,36 +837,36 @@ public class Menu_Shop {
 	// A small notification box
 	int MenuSellingbox(int item_idx, int max_quant, String draw_func)
 	{
-		int wid = TextWidth( menu_font[0], "selling: " + master_items[item_idx].name );
+		int wid = textwidth( menu_font[0], "selling: " + master_items[item_idx].name );
 	
-		if( wid < TextWidth(menu_font[0], "How many would you like to sell?") )
-			wid = TextWidth( menu_font[0], "How many would you like to sell?" );
+		if( wid < textwidth(menu_font[0], "How many would you like to sell?") )
+			wid = textwidth( menu_font[0], "How many would you like to sell?" );
 		
-		if( wid < TextWidth(menu_font[0], "Quantity: " + str( MAX_INV_SLOT )) )
-			wid = TextWidth( menu_font[0], "Quantity: " + str(MAX_INV_SLOT) );
+		if( wid < textwidth(menu_font[0], "Quantity: " + str( MAX_INV_SLOT )) )
+			wid = textwidth( menu_font[0], "Quantity: " + str(MAX_INV_SLOT) );
 	
-		if( wid < TextWidth(menu_font[0], "Total "+moneyname+": "+str(9999999)) )
-			wid = TextWidth( menu_font[0], "Total "+moneyname+": "+str(9999999) );
+		if( wid < textwidth(menu_font[0], "Total "+moneyname+": "+str(9999999)) )
+			wid = textwidth( menu_font[0], "Total "+moneyname+": "+str(9999999) );
 		
-		int high = (FontHeight( menu_font[0] ) + 1)*6;
+		int high = (fontheight( menu_font[0] ) + 1)*6;
 		
 		int border = 5;
 		
-		int x1 = ((ImageWidth(screen)-wid)/2);
-		int y1 = (ImageHeight(screen)/2)-(high/2);
-		int x2 = ((ImageWidth(screen)-wid)/2)+wid+(high/2);
-		int y2 = (ImageHeight(screen)/2)+(high/2);
+		int x1 = ((imagewidth(screen)-wid)/2);
+		int y1 = (imageheight(screen)/2)-(high/2);
+		int x2 = ((imagewidth(screen)-wid)/2)+wid+(high/2);
+		int y2 = (imageheight(screen)/2)+(high/2);
 		
 		int quant = 1;
-		int done;
+		boolean done = false;
 		int mini_hold = menu_idx;
 		//menu_idx = 1000000;
 		while(!done)
 		{				
 			MenuBackGroundDraw(); //draw universal things
-			CallFunction(draw_func);
+			callfunction(draw_func);
 			
-			MenuDrawBackground(	x1,y1, x2,y2, 1);
+			MenuDrawBackground(	x1,y1, x2,y2, true);
 			
 			quant = MenuControlArrows(quant, max_quant);
 			
@@ -875,9 +875,9 @@ public class Menu_Shop {
 			}
 			
 			printstring(x1+border, y1+border, screen, menu_font[0], "selling: " + master_items[item_idx].name);
-			printstring(x1+border, y1+border+(FontHeight(menu_font[0])+1), screen, menu_font[0], "How many would you like to sell?");
-			printstring(x1+border, y1+((FontHeight(menu_font[0])+1)*3), screen, menu_font[0], "Quantity: " + str(quant));
-			printstring(x1+border, y1-border+((FontHeight(menu_font[0])+1)*5), screen, menu_font[0],  "Total "+moneyname+": "+str((master_items[item_idx].price/2)*quant));
+			printstring(x1+border, y1+border+(fontheight(menu_font[0])+1), screen, menu_font[0], "How many would you like to sell?");
+			printstring(x1+border, y1+((fontheight(menu_font[0])+1)*3), screen, menu_font[0], "Quantity: " + str(quant));
+			printstring(x1+border, y1-border+((fontheight(menu_font[0])+1)*5), screen, menu_font[0],  "Total "+moneyname+": "+str((master_items[item_idx].price/2)*quant));
 			
 			showpage();
 			
@@ -887,10 +887,10 @@ public class Menu_Shop {
 				done = MenuCancel();
 		}
 		
-		if( done > 0 )
+		if( done )
 			return quant;
 		else
-			return done;
+			return 0;
 	}
 	
 }	

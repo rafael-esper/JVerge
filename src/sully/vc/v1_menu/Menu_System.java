@@ -80,7 +80,7 @@ public class Menu_System {
 	
 	static int menu_number;
 	
-	static int menu_done; // menu sentinel.  Whenever it's time for the entire menu to go back to the real world, we set this to 1.
+	static boolean menu_done; // menu sentinel.  Whenever it's time for the entire menu to go back to the real world, we set this to 1.
 	public static int menu_idx; // the index of the current menu.  Pass this around like a cheap whore!
 	public static int menu_option = 0;
 	public static int menu_sub = 0;
@@ -263,14 +263,14 @@ public class Menu_System {
 	{
 		unpress(3);
 		_menu_is_on = true;
-		menu_done = 0;
+		menu_done = false;
 		menu_option = 0;
 		MenuRoot();
 		hookbutton( 3, "" );
 		
 		MenuHappyBeep(); //hey, you've entered a menu!  Chirp happily about it!
 		
-		while( menu_done==0 )
+		while( !menu_done )
 		{
 			MenuBackGroundDraw(); //draw universal things
 			callmenufunction( master_menus[menu_idx].draw_func );

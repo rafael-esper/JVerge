@@ -9,7 +9,6 @@ import static sully.vc.v1_rpg.V1_Weather.*;
 import static sully.vc.v1_rpg.V1_Music.*;
 
 
-
 public class Overworld {
 	
 	public static void start()

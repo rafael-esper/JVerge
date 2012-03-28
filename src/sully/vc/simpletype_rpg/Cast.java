@@ -150,7 +150,7 @@ public class Cast {
 	//
 	// errors if the XP amount was less than or equal to zero, or if 
 	// the master_cast[] index was bad.
-	void GiveXP( String name, int xp ) {
+	public static void GiveXP( String name, int xp ) {
 		if (!CharInParty(name)) {
 			error( "GiveXP('"+name+"'): '"+name+"' is not in the party." );
 			return;
@@ -170,7 +170,7 @@ public class Cast {
 	//
 	// errors if the XP amount was less than or equal to zero, or if 
 	// the master_cast[] index was bad.
-	void GiveXPI( int cast_idx, int xp ) {
+	public static void GiveXPI( int cast_idx, int xp ) {
 		if ( !CharInPartyI(cast_idx) ) {
 			error( "GiveXPI(): cast idx '"+str(cast_idx)+"' is not in the party." );
 			return;
@@ -381,7 +381,7 @@ public class Cast {
 	
 	// Helper fuction.  Levels up a master_cast entry once.
 	//
-	void _doLevelup( int cast_idx ) {
+	static void _doLevelup( int cast_idx ) {
 		int i;
 	
 		for (i = 0; i < MAX_GROWABLE_STATS; i++) { 
@@ -393,7 +393,7 @@ public class Cast {
 	
 	// Helper function.  Calculates what level a master_cast entry should be 
 	//
-	int _calcMyLevelFromMyXP( int cast_idx ) {
+	static int _calcMyLevelFromMyXP( int cast_idx ) {
 	
 		int i=0, xp_total_thusfar=0;
 		

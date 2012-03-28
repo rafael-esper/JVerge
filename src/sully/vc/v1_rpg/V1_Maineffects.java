@@ -48,7 +48,7 @@ public class V1_Maineffects {
 	// finally resting at 100.
 	//
 	// This renders over everything.
-	void FadeInWSound()
+	public static void FadeInWSound()
 	{
 		timer = 0;
 		while (timer<100)
@@ -86,7 +86,7 @@ public class V1_Maineffects {
 	// finally resting at 0.
 	//
 	// This renders over everything.
-	void FadeOutWSound(int _dur)
+	public static void FadeOutWSound(int _dur)
 	{
 		timer = 0;	
 		while (timer<_dur)
