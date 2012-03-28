@@ -1,0 +1,190 @@
+Before dez: Map, CHR, Vsp loading/saving
+Início dez: Music (vgm, mod)
+06/dez: Music (mp3)
+09/dez: Verge Engine code
+11/dez: JGame integration, Controls
+12/dez: Sprite code, etc
+16/dez: Startup code
+22/dez: Zone, Layer, Map, etc
+===== 13 HOURS ====
+09/jan:(+1) Vsp data, Map load/render (in screen)
+10/jan:(+1) Map scaling (slow)
+11/jan:(+1) Entity, Chr load/render
+12/jan:(+2) Entity rendering (ok), Player (render, movement, camera tracking ok) 
+13/jan:(+3) Refactoring (reading pixels as byte), 
+	    Scale screen with better performance, script (math/string/entity functions)
+15/jan(.5): Blit with Black background, music playing
+16/jan(.5): Script (mais funções, hook/string)
+17/jan(+1): PS maps, VSP animation working (tileidx), CHR4 loading (partial)
+18/jan(+3): CHR4 almost ok, CHR2 working (DefaultPalette)
+19/jan(+3): Verge.cfg loading, created a isolated PS folder to run VergeEngine (as example) 
+			Fixed bugs with hex editor (saving maps, writing unsigned short, ' ' char)
+20/jan(+2): Fixed bugs with AllocateEntity, removed CleanUpChars, Map processing functions
+21/jan(+2): Wraparound maps (horizontally, vertically, fixed Entity)
+23/jan(+1): Function Calling (autoexec, mapinit, hooks, etc) 
+24/jan(+2): ///----
+25/jan(+4): Refactoring JGame / GUI / Screen 
+26/jan(+2): ///----
+26/jan(+1): Drawing functions (now they allow a Color parameter, instead of a int)
+27/jan(+3): Font, GrabRegion, Blit, GetPixel, SetPixel
+28/jan(+1): Music working (playmusic, stopmusic).
+30/jan(+1): Ak (adapting code). Loading functions from current_map.
+31/jan(+2): Entity public functions (setx,sety,incx,incy). Ak semi-working. Config file from URL.
+==== 37 HOURS ====
+01/fev(+2): Alex Kidd working. VImage transparent. CHR, Vsp, Map and Music working via URL. 
+02/fev(+2): Window Resizing working. Mod Music looping. 
+03/fev(+1): PS Item lib / Item class
+05/fev(+2): TvIn, TvOut, ScaleSprite. SText function (split words, rows).
+06/fev(+1): Fadein, Fadeout (alpha).
+14/fev(+1): PS internationalization (ps talk)
+15/fev(+2): Wav/Mid player, internationalization, (ps talk)
+16/fev(+1): BufferStrategy. Pseudo-Back/Movescript working. Correct fadein/out.
+17/fev(+2): Volatile Image. (Ps talk, items, menus, monsters, etc)
+18/fev(+1): Create MenuStack (GUI) and ported Stext function. Removed VolatileImage again.
+19/fev(+1): MenuStack (Prompt, prompt circle, waitopt)
+20/fev(+3): Map.java working (reflection). WaitOpt return option selected. 
+		    Playsound method (playing .wav (menu)), Camineet/Palma.java
+21/fev(+1): Misc changes, MapUtil (rotate matrix, two in one, one in two) 
+==== 57 HOURS ====
+01/mar(+1): Volatile Image: studying and experimenting
+02/mar(+1): Volatile Image again: this way working fast (GUICanvas only, scaling done there also)
+05/mar(+1): Basic Sully conversion
+06/mar(+2): Sully conversion (effects, music, weather, etc), Script adjustements, ColorFilter function
+07/mar(+1): Colorfilter adjustements
+08/mar(+1): Silhouette function (ok, tested with clouds)
+09/mar(+3): SetLucent working for rect,circle,etc. Instead of dest.g.draw, using Blit, TBlit, SetPixel, etc
+			Implement SetLucent() for Images (Blit, TBlit, etc)
+			Investigate flickering. Ddraw argument. Image Processing Filters (Smooth, Scale, Reshade site)
+10/mar(+1): Script clean-up. Functions in lowercase. Akidd minor changes. Copy Image to Clipboard.
+11/mar(+2): Hookretrace working ok. Window insets OK, GUI performance, FPS, Volatile, LWJGL etc;
+12/mar(+3): Sully Conversion (cont.) Verge Engine variables moved to Script. 
+13/mar(+1): Sully Conversion (cont.) "functionexist" and execute function refactoring. Script clean-up.
+14/mar(+2): Sully Conversion (cont.) menu classes and general conversion. Script clean-up and TODOs functions.
+15/mar(+3): Sully Conversion (cont.) menu classes and general conversion. Script clean-up and TODOs functions.
+16/mar(+3): Sully Conversion (compiling ok). Execute up to Intro - handling errors (PCX, null, file loading, etc)
+17/mar(+2): Sully Conversion (intro ok, except menu). Script clean-up (transparent pixels, hookpath ok) 
+19/mar(+3): PCX loading. Script function call (passing class as argument). Graphics optimization studying.
+			Great GUI reformulation: no more flickering!!! (Java 2D optimization, changed thread model, etc)
+20/mar(+2): Sully Conversion (Java files in data_load). Island conversion (but menus and effects with bugs) 
+21/mar(+1): Sully Conversion (solved running intro into background via deprecated thread.stop)
+23/mar(+2): Adjusted game loop in VergeEngine (die, done, etc). VFont (implemented print center/right/string)
+24/mar(+2): Sully Conversion (pink fadein/out, solved banner and textbox, player wandering)
+25/mar(+3): Sully Conversion (undersea map OK, break on the switches, party bug, overworld map, choice menu). 
+			Fixed Silhouette. Fixed Triangle. Solved numobs+sliding bug. Fixed setx/sety (reset waypoint). 
+26/mar(+2): Sully Conversion (cottage, chasm, inettalk, camscroll). Fixed circle with (x,y) in the center.    
+
+IMMEDIATE TODO
+- Fix Menu from Sully (Hook key needs to receive the path also)
+- Change callfunction to the following interface: "a.b.function" instead of ("a.b", "function")
+- Fix fadein/out of Phantasy Star
+
+
+TODO
+- Verify ColorFilter, Implement Rotate, Flip, etc (See Graphics2d Rotate, Scale, etc)
+- Implement AlphaBlit (http://verge-rpg.com/docs/the-verge-3-manual/graphics-functions/alphablit/)
+- Implement wrapblit, twrapblit, and other TODO functions in Script
+- Implement nosound option (and check when there is no sound support)
+- Check if Script unused functions work properly
+- Change files into resources (check: music, sound)
+- Check bug when saving obs in a map
+- Add logging capabilities (instead of system.out/err)
+- Check TODOs, remove temporary code (like MapUtil)
+- VGMs doesn't play, just VGZ.
+- Make it a .jar
+- Document code and include LICENSE and CREDITS
+
+CONSIDER TODOs
+- Socket implementation
+- Movie playback implementation
+- File functions implementation
+- Window functions implementation
+- Music/Map/CHR/Vsp caching
+- Joysticks
+- Check VGM loops
+- Investigate why wander entities change facing (OK, it occurs also in V3/Sully)
+
+
+LONG-TERM TODOs
+- Make it more OO (less static methods, no public properties, no static imports)
+- OO Idea: Image functions in VImage (ex: rectfill, etc), Font functions in VFont, etc
+- Create VC parser (parser or JIT Compiler?)
+- Create LUA parser (parser or JIT Compiler?)
+
+
+Test:
+- Invalid config.cfg file. Non existent config.cfg file.
+- Invalid image file. Non existent image file.
+- Invalid sound file. Non existent sound file.
+- Invalid music file. Non existent music file.
+- Invalid font file. Non existent font file.
+- Check invalid characters for font file (like á, when the font doesn't support it)
+- Invalid map file. Non existent map file.
+- Invalid vsp file. Non existent vsp file.
+- Invalid chr file. Non existent chr file.
+
+Very good tutorial about blurring, sharpening, etc (Java)
+http://www.jhlabs.com/ip/blurring.html
+
+PCX: See
+http://www.java2s.com/Open-Source/Java/ERP-CRM-Financial/JFire-1.0.1/org/nightlabs/io/pcx/Catalogpcx.htm
+
+RLE: See
+http://kenai.com/projects/tilem/sources/tilem-jsr-296/content/src/tilem/imageformats/PCXReader.java?rev=1
+
+Keycodes
+http://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html#getKeyCode()
+
+See page flipping in Java for better perfomance:
+http://www.javafaq.nu/java-example-code-782.html
+http://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
+http://www.java-gaming.org/index.php/topic,23978.0
+
+Image and Drawing functions
+http://www.exampledepot.com/egs/java.awt.image/DrawOnImage.html
+http://java.sun.com/products/jfc/tsc/articles/swing2d/index.html (Translucent)
+http://docstore.mik.ua/orelly/java-ent/jfc/ch04_10.htm (ColorFilter)
+
+LWJGL - A lot of platform specific code...
+http://lwjgl.org/wiki/index.php?title=Main_Page#Getting_started
+
+Transparent pixels
+http://stackoverflow.com/questions/5672697/java-filling-a-bufferedimage-with-transparent-pixels
+
+Helpful tips to avoid flicker:
+http://mindprod.com/jgloss/flicker.html 
+
+Reflexão em Java
+http://battisti.wordpress.com/2008/06/14/reflexao-em-java/
+ 
+Java Window application and Game loop without freezing UI 
+http://www.codeguru.com/java/tij/tij0147.shtml
+http://stackoverflow.com/questions/2861933/best-way-to-implement-game-loop-without-freezing-ui-thread
+
+Volatile
+http://stackoverflow.com/questions/4793054/create-volatileimage-always-return-null
+
+Internationalization Links:
+http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/
+http://www.roseindia.net/java/example/java/swing/internationalization.shtml
+(PDF) http://carfield.com.hk/document/java/tutorial/i18n.pdf
+
+
+
+log
+Converting Sully was very useful to stop a lot of errors, misconceptions and buggy code in my JVerge engine conversion. Now it's way more stable. 
+But I've performed a direct conversion - that was faster than rewriting the Sully code to the Java paradigm.
+I kind of regret converting Sully to JVerge this way, because my initial goal was to show that the main tech demo would work properly with the Java engine, but now it is an example of a mindless bad programming practice: lots of static and public methods and properties, lots of static imports, and a general disoriented object programming. 
+For a better example of a OO approach, I've implemented some classes and methods in my PS demo.
+
+Notes on Sully Conversion
+- Some variables were converted to boolean. In Java you can't do: "while(count)", if count is an int. Need to change to "while(count !=0)"
+- Add "break" clause after each "case" in the "switch" clause (unlike VC).
+- A lot of methods and properties were changed to static. This is so anti-OO. :-(
+- There is no script code being interpreted, it's just Java code. So the map() function can't just stop the remaining code to run. In order to implement the Sully introduction (that can be escaped anytime with Esc), I've opted to create a Java thread and use the ugly and deprecated method stop. I could have done this in a more elegant way, but the code would be changed a lot more.  
+- Java imports are different from C includes. So in order to call a function of an outer file, that would be normally included in C, I had to add a "path" parameter to the callfunction method.
+- As SetClip is not yet implemented, I've changed a little the textbox behavior to produce the same effects.
+- The "|" text delimiter was changed to "&", because "|" has another meaning to regex String function.
+- I've performed some changes in the simpletype_rpg package, creating the structs (in Java, classes) in the corresponding classes. Not enough to be really OO, though.
+- Reimplemented the data_load with Java File API. Not very hard to convert (just text files). 
+- There were some bugs in the original code, like accessing a -1 index in an array in the AddPlayerI() function. Those bugs become evident in the Java code, as it's now allowed.
+ 
