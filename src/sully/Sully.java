@@ -115,7 +115,7 @@ public class Sully extends VergeEngine {
 		
 		//we load all the data first so we can do the introduction without pause.
 	
-		hookretrace("sully.vc.v1_rpg.V1_RPG", "V1RPG_RenderFunc");// this is the v1_rpg library's default
+		hookretrace("sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc");// this is the v1_rpg library's default
 						// Hookretrace function, defined in "vc/v1_rpg/v1_rpg.vc"
 						//
 						// It allows for the handly-dandy vclayer variable
@@ -129,8 +129,11 @@ public class Sully extends VergeEngine {
 		//This allows alt-f4 to exit verge.
 		//HookKey( SCAN_F4, "alt_f4" );
 		
-		initIntro();
-		DoIntro();
+		//LECICIA
+		current_map = new domain.Map();
+		Intro.newgame();
+		//LECICIAinitIntro();
+		//LECICIADoIntro();
 	}
 	
 	void help()
@@ -346,7 +349,7 @@ public class Sully extends VergeEngine {
 	//
 	// I placed it here because it's the only thing relying upon that
 	// horribleness above. -Grue
-	int SpcByPos( int party_pos )
+	public static int SpcByPos( int party_pos )
 	{
 		if( party_pos < 0 || party_pos >= PartySize() )
 		{

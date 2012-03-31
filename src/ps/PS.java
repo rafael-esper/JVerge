@@ -127,7 +127,7 @@ public class PS extends VergeEngine {
 	public static void startmap()   {
 		
 		System.out.println("startmap");
-		
+		playerstep = 16;
 		cameratracking=1;
 
 		//SetPlayer(AllocateEntity(current_map.startX*16, current_map.startY*16, "res\\chrs\\walker02.chr"));

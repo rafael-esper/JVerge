@@ -6,6 +6,9 @@ import static sully.Sully.*;
 
 import java.awt.Color;
 
+import sully.vc.v1_rpg.V1_RPG;
+import sully.vc.v1_rpg.V1_Simpletype;
+
 import static sully.vc.simpletype_rpg.Party.*;
 import static sully.vc.v1_rpg.V1_RPG.*;
 import static sully.vc.v1_rpg.V1_Maineffects.*;
@@ -127,7 +130,7 @@ public class Cottage {
 	
 	public static void rabbit()
 	{
-		MenuOff(); //menu off before dialog
+		EntStart(); //menu off before dialog
 	
 		TextBox(T_BUNNY,	"Oh man... I'm in heaven!",
 	              			"Look at all these carrots!","");
@@ -150,7 +153,7 @@ public class Cottage {
 		          
 	 	TextBox(T_DARIN,	"Oh... great. Bye now!","","");
 	 	
-	 	MenuOn(); //menu on before exiting a function you turned it off in!
+	 	EntFinish(); //menu on before exiting a function you turned it off in!
 	}
 	
 	// Enter... the Stan.
@@ -162,7 +165,7 @@ public class Cottage {
 		if (flags[F_COT_STAN] != 0)	//if we've already done this scene, 
 			return;		//quit this function  without doing anything
 		
-		MenuOff(); //hey, this is a DRAMATIC scene.  No calling menus during it!
+		EntStart(); //hey, this is a DRAMATIC scene.  No calling menus during it!
 		
 		// We're going to use these temp-variables later on when we deal with
 		// Stan and Galfrey's on-map entities.  When you deal with a map's entities
@@ -462,9 +465,9 @@ public class Cottage {
 	
 		flags[F_COT_STAN]=1; //trip this flag so it cannot happen again.
 		
-		MenuOn();	// After DRAMA, enable menus just so you can be sure 
+		EntFinish();	// After DRAMA, enable menus just so you can be sure 
 					// Crystal actually is gone.
-					
+			
 		entity.get(darin).specframe = 0;	//finally, set the specframe back to 0,
 									 	//or else darin will be stuck in the last 
 									 	//specframe that he was set to.
@@ -794,4 +797,11 @@ public class Cottage {
 		
 		EntFinish();
 	}
+	
+	// Rbp (These zone functions aren't in Sully class, so it is necessary to be defined here
+	public static void Heal_Well() {
+		V1_Simpletype.Heal_Well();
+	}
+		
+	
 }

@@ -21,7 +21,7 @@ public class Menu_Item {
 	//        ---------------
 	
 	// Gets the number of items of the currently selected type
-	static int MenuGetItemCount()
+	public static int MenuGetItemCount()
 	{
 		if (menu_sub == 0) return _supply_count;
 		else if (menu_sub == 1) return _equip_count;
@@ -29,7 +29,7 @@ public class Menu_Item {
 		return _key_count;
 	}
 	
-	void MenuControlItem()
+	public static void MenuControlItem()
 	{
 		int number = MenuGetItemCount();
 		
@@ -109,7 +109,7 @@ public class Menu_Item {
 		}
 	}
 	
-	void MenuDrawItem()
+	public static void MenuDrawItem()
 	{
 		int i, use;
 		VImage useImage; // RBP

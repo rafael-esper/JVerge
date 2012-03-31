@@ -123,7 +123,11 @@ public class GUI extends JFrame implements ComponentListener {
 			g2d.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);
 		}
 		else {
-			g.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);
+			/* Do this to rotate 180 
+			Graphics2D g2d = (Graphics2D) g;
+			g2d.rotate(Math.PI, curwidth/2, curheight/2);
+			g2d.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);*/
+			g.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);			
 		}
 		g.dispose();
 		strategy.show();

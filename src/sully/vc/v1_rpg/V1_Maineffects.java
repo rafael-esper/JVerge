@@ -105,7 +105,7 @@ public class V1_Maineffects {
 	
 	// Fades the screen from white to normal over the specified duration.
 	// This renders over everything.
-	static void WhiteIn(int _dur)
+	public static void WhiteIn(int _dur)
 	{
 		timer = 0;
 		while (timer<_dur)
@@ -120,7 +120,7 @@ public class V1_Maineffects {
 	
 	// Fades the screen from normal to white over the specified duration.
 	// This renders over everything.
-	static void WhiteOut(int _dur)
+	public static void WhiteOut(int _dur)
 	{
 		timer = 0;	
 		while (timer<_dur)

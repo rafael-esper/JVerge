@@ -24,7 +24,7 @@ public class Menu_Save {
 		String time; // Time saved, from computer clock
 	}
 	// Make
-	Save_display_struct save_display[] = new Save_display_struct[5];
+	public static Save_display_struct save_display[] = new Save_display_struct[5];
 	
 	// Control function for the Save and Load screens of the menu
 	// Called from MenuEntry() based on global menu_idx variable

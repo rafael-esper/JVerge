@@ -21,7 +21,7 @@ import static sully.vc.v1_rpg.V1_Simpletype.*;
 public class Bumville {
 	
 
-	public static void Start()
+	public static void start()
 	{
 		int a, b;
 		
@@ -141,7 +141,7 @@ public class Bumville {
 		Banner("Bumsville: City of Bums.",300);
 	}
 	
-	public static void overworld()
+	public static void Overworld()
 	{
 		//clear the fashion-flags as we leave!
 		flags[F_FASHION_PURCHASE]	= 0;
@@ -322,7 +322,7 @@ public class Bumville {
 		
 		answer = Prompt(0,	"I'm a wandering storyteller!",
 							"Do you want to hear a great",
-							"and epic tale?","Sure|Nope");
+							"and epic tale?","Sure&Nope");
 		if( answer !=0 )
 		{
 			TextBox(0,	"Well I didn't want to tell it",
@@ -461,7 +461,7 @@ public class Bumville {
 	// Special function to call at the start of any Zealot's event.
 	public static void ZealotStart() {
 		
-	
+		EntStart(); // rbp
 		MenuOff(); //turn off the menu...
 		
 	//	entity.speed[2]  = 0;	//STOP ALL ZEALOTS!
@@ -474,6 +474,7 @@ public class Bumville {
 	// Special function to call at the end of any Zealot's event.
 	public static void ZealotFinish() {
 	
+		EntFinish(); // rbp
 		MenuOn(); //turn off the menu...
 		
 	//	entity.speed[2]  = 75;	//START ALL ZEALOTS AGAIN!
@@ -606,7 +607,7 @@ public class Bumville {
 					
 		flags[F_BUM_INN] =	Prompt(0,	"Want a good night's sleep?",
 										"It will only set you back a mere 20 "+moneyname+".","",
-										"Yes|No");
+										"Yes&No");
 		if( flags[F_BUM_INN]!=0 )
 		{
 			TextBox(0,	"Sorry to hear that.",
@@ -793,7 +794,7 @@ public class Bumville {
 		EntStart();
 		
 		answer = Prompt( 0, "Would you like to turn to music","up or down?","",
-							"PUMP IT UP!|Ow, my ears.");
+							"PUMP IT UP!&Ow, my ears.");
 		
 		if( answer != 0) { //this is down
 			
@@ -845,7 +846,7 @@ public class Bumville {
 					
 		answer = Prompt(0,	"Do you want to train here and",
 							"become manly and hulking like",
-							"us? 150 "+moneyname+" per course.", "Yes|No");
+							"us? 150 "+moneyname+" per course.", "Yes&No");
 		if( answer != 0)
 		{
 			TextBox(0,	"Fine! Run away from a good challenge",
@@ -869,7 +870,7 @@ public class Bumville {
 		{
 			answer = Prompt(0,	"Who would like to train and",
 								"increase their power?","",
-								"Darin|Galfrey");	
+								"Darin&Galfrey");	
 		}
 		
 		SoundChaChing();
@@ -909,7 +910,7 @@ public class Bumville {
 		{
 			answer	= Prompt(0,	"Would Sara like to sit in on",
 								"a class to sharpen her skills",
-								"and expertise? 150 "+moneyname+".","Yes!|No.");
+								"and expertise? 150 "+moneyname+".","Yes!&No.");
 			if( answer != 0)
 			{
 				TextBox(0,	"Do not fear the future! You",
@@ -967,10 +968,10 @@ public class Bumville {
 	
 		if( CharInParty("Dexter") || CharInParty("Crystal") ) {
 			
-			choices = "nobody kthx!|";
+			choices = "nobody kthx!&";
 			
 			if( CharInParty("Dexter") ) {
-				choices = choices + "Dexter|";
+				choices = choices + "Dexter&";
 			}
 			
 			if( CharInParty("Crystal") ) {
@@ -1242,7 +1243,7 @@ public class Bumville {
 						"make you look your best.");
 			answer = Prompt(0,	"Would you like a complete",
 								"hair and wardrobe makeover?",
-								"It's only 30 "+moneyname+"!", "Yes|No");
+								"It's only 30 "+moneyname+"!", "Yes&No");
 	
 	
 			if( answer != 0)
@@ -1308,7 +1309,7 @@ public class Bumville {
 		
 		answer = Prompt(0,	"I have those ratty old clothes",
 							"of yours right here. Do you",
-							"really want them back?", "Yes|No");
+							"really want them back?", "Yes&No");
 		if( answer != 0)
 		{
 			TextBox(0,	"Smart move! You look better",
@@ -1386,7 +1387,7 @@ public class Bumville {
 	
 		answer = Prompt(0,	"So what will it be? The white",
 							"toga or the purple tunic?","",
-							"Toga|Tunic");
+							"Toga&Tunic");
 		flags[F_FASHION_CLOTHES] = answer+1;
 		
 		TextBox(0,	"Fabulous! I'll get that sized",
@@ -1447,7 +1448,7 @@ public class Bumville {
 	
 		answer = Prompt(0,	"So what will it be? The rad",
 							"red punk or the cool slicked",
-							"black image?","Punk Red|Slick Black");
+							"black image?","Punk Red&Slick Black");
 							
 		flags[F_FASHION_HAIR] = answer+1;
 		
@@ -1503,7 +1504,7 @@ public class Bumville {
 		
 	
 		answer = Prompt(0,	"So what will it be? Orange",
-							"dye or black dye?","","Orange|Black");
+							"dye or black dye?","","Orange&Black");
 		
 	
 		flags[F_FASHION_CAPE]=answer+1;

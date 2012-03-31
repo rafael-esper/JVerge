@@ -74,7 +74,7 @@ public class Party {
 	
 	// Takes a string name of a Cast member.  
 	// returns master_cast idx if it's a valid cast name.  -1 if not.
-	static int IsCharacter( String name ) {
+	public static int IsCharacter( String name ) {
 		int i;
 		
 		for( i=0; i<MAX_CAST; i++ ) {

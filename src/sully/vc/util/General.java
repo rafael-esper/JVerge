@@ -36,11 +36,12 @@ public class General {
 	
 	// Takes an integer
 	// Returns the absolute value of that integer.
-	int abs(int i)
+	/* Not needed
+	 * int abs(int i)
 	{
 		 if (i>=0) return i;
 		 return 0-i; // Zip: Less foolish
-	}
+	}*/
 	
 	
 	// Takes a string, returns the string with leading and trailing whitespace
@@ -62,26 +63,26 @@ public class General {
 	// returns the screen-relative x-position for the specified entity.
 	// note: this is the x-coordinate of the top-left corner of the entity's image,
 	//       *NOT* the x-coordinate of the top-left corner of the hotspot.
-	int GetEntScrX( int ent_idx ) {
+	public static int GetEntScrX( int ent_idx ) {
 		return entity.get(ent_idx).getx() - xwin - entity.get(ent_idx).getHotX();
 	}
 	
 	// returns the screen-relative y-position for the specified entity.
 	// note: this is the y-coordinate of the top-left corner of the entity's image,
 	//       *NOT* the y-coordinate of the top-left corner of the hotspot.
-	int GetEntScrY( int ent_idx ) {
+	public static int GetEntScrY( int ent_idx ) {
 		return entity.get(ent_idx).gety() - ywin - entity.get(ent_idx).getHotY();
 	}
 	
 	// Takes a tile's x-coordinate
 	// returns the screen-relative x-position of that tile.
-	int GetTileScrX( int tile_x ) {
+	public static int GetTileScrX( int tile_x ) {
 		return (tile_x*16) - xwin;
 	}
 	
 	// Takes a tile's x-coordinate
 	// returns the screen-relative x-position of that tile.
-	int GetTileScrY( int tile_y ) {
+	public static int GetTileScrY( int tile_y ) {
 		return (tile_y*16) - ywin;
 	}
 	

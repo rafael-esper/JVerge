@@ -357,7 +357,7 @@ public class V1_RPG {
 		//clear vclayer2 before we start!
 		rectfill(0, 0, imagewidth(v1_vclayer2), imageheight(v1_vclayer2), transcolor, v1_vclayer2); //clear vclayer2
 		
-		hookretrace("sully.vc.v1_rpg.V1_RPG", "V1RPG_RenderFunc_DUALMODE");
+		hookretrace("sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc_DUALMODE");
 	}
 	
 	// If Dual-rendering mode is on when this is called, it turns the mode off and 
@@ -372,7 +372,7 @@ public class V1_RPG {
 	
 			current_map.renderstring = _old_rstring;
 	
-			hookretrace("sully.vc.v1_rpg.V1_RPG", "V1RPG_RenderFunc");
+			hookretrace("sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc");
 		}
 	}
 	

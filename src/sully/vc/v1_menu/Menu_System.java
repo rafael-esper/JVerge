@@ -1,6 +1,7 @@
 package sully.vc.v1_menu;
 
 import static core.Script.*;
+import static sully.Sully.*;
 import static sully.vc.v1_rpg.V1_RPG.*;
 import static sully.vc.v1_rpg.V1_Textbox.*;
 import static sully.vc.simpletype_rpg.Data.*;
@@ -116,9 +117,9 @@ public class Menu_System {
 	// Load the menus into the struct and set defaults
 	public static void SMENU_InitMenus()
 	{
-		AddMenu( "main", "MenuDrawMain", "MenuControlMain" );
-		AddMenu( "item", "MenuDrawItem", "MenuControlItem" );
-		AddMenu( "skill", "MenuDrawSkill", "MenuControlSkill" );
+		AddMenu( "main", "sully.vc.v1_menu.Menu_Main.MenuDrawMain", "sully.vc.v1_menu.Menu_Main.MenuControlMain" );
+		AddMenu( "item", "sully.vc.v1_menu.Menu_Item.MenuDrawItem", "sully.vc.v1_menu.Menu_Item.MenuControlItem" );
+		AddMenu( "skill", "sully.vc.v1_menu.Menu_Skill.MenuDrawSkill", "sully.vc.v1_menu.Menu_Skill.MenuControlSkill" );
 		AddMenu( "equip", "MenuDrawEquip", "MenuControlEquip" );
 		AddMenu( "status", "MenuDrawStatus", "MenuControlStatus" );
 		AddMenu( "option", "MenuDrawOption", "MenuControlOption" );
@@ -134,7 +135,7 @@ public class Menu_System {
 		MenuInitFonts();
 		icon_init("res/system/ITEMS.PCX");
 	
-		hookbutton( 3, "MenuEntry" );
+		hookbutton( 3, "sully.vc.v1_menu.Menu_System.MenuEntry" );
 	}
 	
 	// Add a menu to the game
@@ -221,7 +222,7 @@ public class Menu_System {
 	public static void MenuOn()
 	{
 		_menu_on = true;
-		hookbutton( 3, "MenuEntry" );
+		hookbutton( 3, "sully.vc.v1_menu.Menu_System.MenuEntry" );
 	}
 	
 	public static boolean MenuCanBeOn()
@@ -235,9 +236,12 @@ public class Menu_System {
 		int i;
 		for (i = 0; i < _menuCount; i++)
 		{
-			if (master_menus[i].name.equals(name)) return i;
+			if (master_menus[i].name.equals(name)
+				|| capitalize(master_menus[i].name).equals(name) // rbp	
+					) return i;
 		}
 		error("POOOOOOOO!");
+		System.exit(-1); 
 		return -1;
 	}
 	
@@ -270,17 +274,18 @@ public class Menu_System {
 		
 		MenuHappyBeep(); //hey, you've entered a menu!  Chirp happily about it!
 		
+		EntStart(); // rbp
 		while( !menu_done )
 		{
 			MenuBackGroundDraw(); //draw universal things
-			callmenufunction( master_menus[menu_idx].draw_func );
+			callfunction( master_menus[menu_idx].draw_func );
 	
 			showpage();
-			callmenufunction( master_menus[menu_idx].control_func );
+			callfunction( master_menus[menu_idx].control_func );
 		}
-		
+		EntFinish(); // rbp
 		_menu_is_on = false;
-		hookbutton( 3, "MenuEntry" );
+		hookbutton( 3, "sully.vc.v1_menu.Menu_System.MenuEntry" );
 	}
 	
 	
@@ -329,7 +334,7 @@ public class Menu_System {
 		while(done==0)
 		{		
 			MenuBackGroundDraw(); //draw universal things
-			callmenufunction(draw_func);
+			callfunction(draw_func);
 			
 			MenuDrawBackground(((imagewidth(screen)-wid)/2)-border, 110, ((imagewidth(screen)-wid)/2)+wid+border, 130, true); // CatchMe
 			printcenter(160, 120 - (menu_fonth / 2) + 1, screen, menu_font[0], " "+text+" ");
@@ -420,7 +425,7 @@ public class Menu_System {
 		Menu1ArrowSetSounds( "" );
 	}
 	
-	int GetMenuChoiceAnswer() {
+	public static int GetMenuChoiceAnswer() {
 		return _menu_simple_choice;
 	}
 	
@@ -721,7 +726,7 @@ public class Menu_System {
 	}
 	
 	// Makey little people walk
-	int GetFrameSad()
+	static int GetFrameSad()
 	{
 		return CHR_SAD_FRAME;
 	}
@@ -739,7 +744,7 @@ public class Menu_System {
 	{
 		blitentityframe(x, y + 10, master_cast[party[member]].entity, frame, screen);
 		printstring(x + 25, y, screen, menu_font[0], master_cast[party[member]].name);
-		printstring(x + 35, y + 10, screen, menu_font[0], master_classes[master_cast[party[member]].class_ref].name);
+	//	printstring(x + 35, y + 10, screen, menu_font[0], master_classes[master_cast[party[member]].class_ref].name);
 		printstring(x + 115, y, screen, menu_font[0], "Level: ");
 		printright(x + 185, y, screen, menu_font[0], str(master_cast[party[member]].level));
 		printstring(x + 115, y + 10, screen, menu_font[0], "HP:");
@@ -749,8 +754,8 @@ public class Menu_System {
 	}
 	
 	
-	static // Draw the max point separately, as equip needs to do them apart
-	void MenuBlitCastPoints(int x, int y, int member, int location)
+	// Draw the max point separately, as equip needs to do them apart
+	static void MenuBlitCastPoints(int x, int y, int member, int location)
 	{
 		printright(x + 185, y + 10, screen, menu_font[0], str(master_cast[party[member]].stats[STAT_MAX_HP]));
 		printright(x + 185, y + 20, screen, menu_font[0], str(master_cast[party[member]].stats[STAT_MAX_MP]));
@@ -902,7 +907,7 @@ public class Menu_System {
 	
 	// RBP Wrapper for menu calling functions
 	private static void callmenufunction(String function) {
-		callfunction("sully.vc.v1_menu.Menu_System", function);
+		callfunction("sully.vc.v1_menu.Menu_System" + "." + function);
 	}
 	
 }

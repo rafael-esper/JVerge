@@ -161,7 +161,7 @@ public class Animation {
 	//
 	// Fatally errors if you attempt to render from an inactive animation.
 	// quietly does nothing if the frame index was invalid for this animation
-	void BlitFrameAt(int x, int y, int anim, int frame, VImage dest)
+	public static void BlitFrameAt(int x, int y, int anim, int frame, VImage dest)
 	{
 		int frametop;
 	

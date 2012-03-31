@@ -244,37 +244,37 @@ public class VergeEngine extends Thread {
 
 	static void onStep() {
 		if (!_trigger_onStep.isEmpty()) {
-			Script.executefunctionstring(_trigger_onStep);
+			Script.callfunction(_trigger_onStep);
 		}
 	}
 
 	static void afterStep() {
 		if (!_trigger_afterStep.isEmpty()) {
-			Script.executefunctionstring(_trigger_afterStep);
+			Script.callfunction(_trigger_afterStep);
 		}
 	}
 
 	void afterPlayerMove() {
 		if (!_trigger_afterPlayerMove.isEmpty()) {
-			Script.executefunctionstring(_trigger_afterPlayerMove);
+			Script.callfunction(_trigger_afterPlayerMove);
 		}
 	}
 
 	static void beforeEntityActivation() {
 		if (!_trigger_beforeEntityScript.isEmpty()) {
-			Script.executefunctionstring(_trigger_beforeEntityScript);
+			Script.callfunction(_trigger_beforeEntityScript);
 		}
 	}
 
 	static void afterEntityActivation() {
 		if (!_trigger_afterEntityScript.isEmpty()) {
-			Script.executefunctionstring(_trigger_afterEntityScript);
+			Script.callfunction(_trigger_afterEntityScript);
 		}
 	}
 
 	static void onEntityCollision() {
 		if (isEntityCollisionCapturing()) {
-			Script.executefunctionstring(_trigger_onEntityCollide);
+			Script.callfunction(_trigger_onEntityCollide);
 		}
 	}
 
@@ -485,11 +485,7 @@ public class VergeEngine extends Thread {
 			}
 
 			int i = EntityAt(ex, ey);
-			//System.out.println(i + " " + entity.get(i).movecode);
-			//System.exit(0);
-			System.out.println("Chegou aqui 1");
 			if (i != -1) { // FIXME && entity.get(i).movescript.length() > 0) {
-				System.out.println("Chegou aqui 2 " + entity.get(i).ready());
 				if (entity.get(i).autoface) { // FIXME && entity.get(i).ready()) {
 					switch (myself.face) // face
 					{
@@ -510,13 +506,13 @@ public class VergeEngine extends Thread {
 								.println("ProcessControls() - uwahh? invalid myself.face parameter");
 					}
 				}
-				System.out.println("Chegou aqui 3");
+
 				event_tx = entity.get(i).getx() / 16;
 				event_ty = entity.get(i).gety() / 16;
 				event_entity = i;
 				int cur_timer = timer;
 				beforeEntityActivation();
-				Script.executefunctionstring(entity.get(i).script);
+				Script.callfunction(entity.get(i).script);
 				entity.get(i).clear_waypoints(); // rbp
 				afterEntityActivation();
 				timer = cur_timer;
@@ -533,7 +529,7 @@ public class VergeEngine extends Thread {
 				event_ty = ey / 16;
 				event_entity = i;
 
-				Script.executefunctionstring(current_map.zones[cz].script);
+				Script.callfunction(current_map.zones[cz].script);
 				timer = cur_timer;
 			}
 		}
@@ -656,7 +652,7 @@ public class VergeEngine extends Thread {
 		int rnd = (int) (255 * Math.random());
 		if (rnd < current_map.zones[cz].percent) {
 			event_zone = cz;
-			Script.executefunctionstring(current_map.zones[cz].script);
+			Script.callfunction(current_map.zones[cz].script);
 		}
 		timer = cur_timer;
 	}
@@ -707,7 +703,7 @@ public class VergeEngine extends Thread {
 				if (sprites.get(i).thinkctr > sprites.get(i).thinkrate) {
 					sprites.get(i).thinkctr = 0;
 					event_sprite = i;
-					Script.executefunctionstring(sprites.get(i).thinkproc);
+					Script.callfunction(sprites.get(i).thinkproc);
 				}
 			}
 			lastspritethink++;
@@ -748,7 +744,7 @@ public class VergeEngine extends Thread {
 	
 	public void run() {
 
-		executefunctionstring("autoexec");
+		callfunction("autoexec");
 		
 		while(mapname!=null && !mapname.isEmpty()) {
 			System.out.println("Entering: " + mapname);

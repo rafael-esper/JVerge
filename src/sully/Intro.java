@@ -19,6 +19,9 @@ import static sully.vc.v1_rpg.V1_Textbox.*;
 import static sully.vc.util.General.*;
 import static sully.vc.util.Credits.*;
 
+import static sully.Flags.F_COT_STAN;
+import static sully.Flags.F_CRYS_JOIN;
+import static sully.Flags.flags;
 import static sully.Sully.*;
 import static sully.vc.v1_menu.Menu_System.*;
 import static sully.vc.v1_menu.Menu_Save.*;
@@ -37,6 +40,8 @@ public class Intro {
 	
 	public static void startIntro()
 	{
+		//LECICIA
+		if(true==true)return;
 		MenuOff();
 		cameratracking = 0;
 		xwin = 10*16;
@@ -59,7 +64,13 @@ public class Intro {
 
 		Thread thread = new Thread() {
 			public void run() {
-					doIntroAnimation(); // RBP
+					try {
+						doIntroAnimation();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						Thread.currentThread().interrupt();
+						System.out.println("Gostei!");
+					} // RBP
 					runningIntro = false;
 			}
 		};
@@ -69,6 +80,7 @@ public class Intro {
 
 		}
 		System.out.println("Interrupted!");
+		//thread.interrupt();
 		thread.stop();
 		//thread.interrupt();
 		//try { thread.join(); } catch(Exception e) {}
@@ -80,7 +92,7 @@ public class Intro {
 		DoMenu();
 	}
 	
-	public static void doIntroAnimation() {
+	public static void doIntroAnimation() throws InterruptedException {
 	
 			int acc = 99;
 			int vel = 98;
@@ -282,7 +294,7 @@ public class Intro {
 		V1_StopDualMode();
 		
 		current_map.renderstring = "2,R,1,E";	
-		hookretrace("sully.vc.v1_rpg.V1_RPG", "V1RPG_RenderFunc" );
+		hookretrace("sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc" );
 		
 		VCLayerTintOff();	//the tint could've been on during the intro, so turn it off.
 		//SetEntitiesPaused(1);
@@ -459,7 +471,23 @@ public class Intro {
 		FadeIn(30);
 		
 		//LECICIA doSimpleCredits( menu_font[0] );
-	
+		//LECICIA START
+		ClearVCLayer();
+		MenuOn();
+		cameratracking = 1;
+		SpawnParty( mapswitchx, mapswitchy );
+		
+		JoinParty("Crystal",1); // Island
+		flags[F_CRYS_JOIN] = 1;
+		
+		RemovePlayer( "Crystal" ); // Cottage
+		flags[F_COT_STAN]=1;
+		
+		V1_MapSwitch("overworld.map", 35,7,TBLACK); // cottage
+		//V1_MapSwitch("overworld.map", 4, 8, TBLACK); // island
+		if(true==true)return;
+		//LECICIA END
+		
 		FadeOut(30);
 		ClearVCLayer();
 	

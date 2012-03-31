@@ -18,13 +18,13 @@ public class Menu_Main {
 	// Control function for the Main screen of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Takes player selection, and redirects to the other menus
-	void MenuControlMain()
+	public static void MenuControlMain()
 	{
 		// Checks arrow keys and loops through 7 options
 		Menu1ArrowSetSounds( "MenuPageTurn" );
 		menu_option = MenuControlArrows(menu_option, 7);
 	
-		if (!MenuConfirm()) // If the confirmation button has been pressed
+		if (MenuConfirm()) // If the confirmation button has been pressed
 		{
 			switch( menu_option )
 			{
@@ -80,7 +80,7 @@ public class Menu_Main {
 						break;
 			}
 		}
-		if (!MenuCancel())
+		if (MenuCancel())
 		{
 			menu_done = true; // Close the menu
 			MenuHappyBeep();
@@ -90,7 +90,7 @@ public class Menu_Main {
 	// Draw function for the Main screen of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Very simple, displays current party in central window
-	void MenuDrawMain()
+	public static void MenuDrawMain()
 	{
 		MenuBlitRight(MenuIsActive("Main"), menu_option);
 		MenuBlitCenter(false);

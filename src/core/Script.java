@@ -12,6 +12,8 @@ import java.awt.Image;
 import java.awt.Polygon;
 import java.util.List;
 import java.awt.color.ColorSpace;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
@@ -43,6 +45,20 @@ import static core.SinCos.*;
 
 public class Script {
 
+	//public static final int VCFILES		=		51;
+	public static final int  VC_READ	=			1;
+	public static final int  VC_WRITE		=	2;
+	public static final int  VC_WRITE_APPEND	=	3; // Overkill (2006-07-05): Append mode added.	
+	
+
+	public static final int CF_GRAY = 1;
+	public static final int CF_INV_GRAY = 2;
+	public static final int CF_INV = 3;
+	public static final int CF_RED = 4;
+	public static final int CF_GREEN = 5;
+	public static final int CF_BLUE = 6;
+	public static final int CF_CUSTOM = 7;	
+	
 	// VERGE ENGINE VARIABLES: Moved to Script for easy of use
 	/*
 	 * This is a hardcoded image handle for the screen. It is a pointer to a
@@ -106,7 +122,6 @@ public class Script {
 	
 	private static MTest musicplayer; // rbp 
 	private static STest soundplayer; // rbp
-	private static String hookpath; // rbp
 	
 	public static int invc;
 
@@ -114,12 +129,6 @@ public class Script {
 	public static String _trigger_beforeEntityScript = "", _trigger_afterEntityScript = "";
 	public static String _trigger_onEntityCollide = "";
 	public static String _trigger_afterPlayerMove = "";
-
-	//public static final int VCFILES		=		51;
-	public static final int  VC_READ	=			1;
-	public static final int  VC_WRITE		=	2;
-	public static final int  VC_WRITE_APPEND	=	3; // Overkill (2006-07-05): Append mode added.	
-	
 
 	public static int vc_GetYear()
 	{
@@ -176,7 +185,7 @@ public class Script {
 
 		while (hooktimer != 0)
 		{
-			executefunctionstring(timerfunc);
+			callfunction(timerfunc);
 			hooktimer--;
 		}
 	}
@@ -190,19 +199,12 @@ public class Script {
 	{
 		if(renderfunc != null) {
 			//System.out.println("Executing " + renderfunc);
-			executefunctionstring(renderfunc);
+			callfunction(renderfunc);
 		}
 	}
 
 	public static void hookretrace(String cb) {
 		renderfunc = cb;
-		hookpath = "";
-	}
-
-	// Created by RBP to execute functions outside main class
-	public static void hookretrace(String hpath, String cb) {
-		renderfunc = cb;
-		hookpath = hpath;
 	}
 
 	
@@ -255,30 +257,7 @@ public class Script {
 	public static void setappname(String s) { 
 		getGUI().setTitle(s);
 	}
-/*
-	static void SetButtonKey(int b, int k) {
-		switch (b)
-		{
-			case 1: k_b1 = k; break;
-			case 2: k_b2 = k; break;
-			case 3: k_b3 = k; break;
-			case 4: k_b4 = k; break;
-			// Overkill (2006-06-25): Can set the directionals as well, now.
-			case 5: k_up = k; break;
-			case 6: k_down = k; break;
-			case 7: k_left = k; break;
-			case 8: k_right = k; break;
-		}
-	}
 
-	static void SetRandSeed(int seed) { arandseed(seed); }
-	static void SetResolution(int v3_xres, int v3_yres) { vid_SetMode(v3_xres, v3_yres, vid_bpp, vid_window, MODE_SOFTWARE); }
-*/
-	public static final int UP = 5;
-	public static final int DOWN = 6;
-	public static final int LEFT = 7;
-	public static final int RIGHT = 8;
-	
 	public static void unpress(int n) {
 		switch (n)
 		{
@@ -355,7 +334,12 @@ public class Script {
 		return s1.equals(s2); // ? 1 : 0;
 	}
 	
-	public String strdup(String s, int times) {
+	public static String capitalize(String s) { // rbp
+		if (s.length() == 0) return s;
+		return s.substring(0, 1).toUpperCase() + s.substring(1);		
+	}
+	
+	public static String strdup(String s, int times) {
 		String ret = "";
 		for (int i=0; i<times; i++)
 			ret = ret.concat(s);
@@ -654,14 +638,6 @@ public class Script {
 	}
 	
 	
-	public static final int CF_GRAY = 1;
-	public static final int CF_INV_GRAY = 2;
-	public static final int CF_INV = 3;
-	public static final int CF_RED = 4;
-	public static final int CF_GREEN = 5;
-	public static final int CF_BLUE = 6;
-	public static final int CF_CUSTOM = 7;
-	
 	public static void colorfilter(int filter, VImage img) { 
 		if(filter>6) return;
 		if(filter==1) {
@@ -721,11 +697,22 @@ public class Script {
 		return img;
 	}
 	
-	/*static void FlipBlit(int x, int y, bool fx, bool fy, int src, int dst) {
-		image *s = ImageForHandle(src);
-		image *d = ImageForHandle(dst);
-		FlipBlit(x, y, fx, fy, s, d);
-	}*/
+	// FIXME
+	public enum FlipType{FLIP_HORIZONTALLY, FLIP_VERTICALLY, FLIP_BOTH};
+	//public static void flipblit(int x, int y, boolean fx, boolean fy, VImage src, VImage dest) {
+	public static void flipblit(int x, int y, FlipType type, VImage src, VImage dest) {
+		AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+        tx.translate(-src.width, 0);
+        AffineTransformOp op = new AffineTransformOp(tx, 
+                                AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        VImage flippedImage = duplicateimage(src);
+        //BufferedImage flippedImage =  new BufferedImage(src.width, 
+          //      src.height, BufferedImage.TYPE_INT_RGB);
+        //flippedImage = op.filter(src.image, null);		
+        flippedImage.image = op.filter(flippedImage.image, null);
+        //blit(x, y, flippedImage, dest.image);
+       	blit(x,y,flippedImage,dest);
+	}
 
 	public static int getB(int c) {
 		return palette.getColor(c, currentLucent).getBlue();
@@ -893,7 +880,7 @@ public class Script {
 	public static void setclip(int x1, int y1, int x2, int y2, VImage img) {
 		//img.SetClip(x1, y1, x2, y2);
 		// TODO RBP Implement this mechanism in VImage
-		error("Non implemented function: setclip");
+		//error("Non implemented function: setclip");
 	}
 	
 	public static void setcustomcolorfilter(Color c1, Color c2) {
@@ -915,6 +902,7 @@ public class Script {
 	}
 
 	public static void showpage() {
+		//flipblit(0,0,true, true,screen,screen);
 		//System.out.println("showpage");
 		Controls.UpdateControls();
 		//VEngine.updateGUI();
@@ -2095,8 +2083,7 @@ public class Script {
 	public static final int SCAN_6 = java.awt.event.KeyEvent.VK_6;
 	public static final int SCAN_7 = java.awt.event.KeyEvent.VK_7;
 	public static final int SCAN_8 = java.awt.event.KeyEvent.VK_8;
-	public static final int SCAN_9 = java.awt.event.KeyEvent.VK_9;
-	
+	public static final int SCAN_9 = java.awt.event.KeyEvent.VK_9;	
 	
 	public static boolean getkey(int key) {
 		return Controls.getKey(key);
@@ -2241,142 +2228,117 @@ public class Script {
 	}	
 	
 	
-	
-	
-	// rbp
-	public static void incrementtimers() {
-		VergeEngine.DefaultTimer();		
-	}
-
 	// Function (method) calling
 	
 	public static boolean functionexists(String function) {
-		Class c = findClassForFunction(function);
-		if(c!=null)
-			return true;
-		return false;
+		return executefunction(function, true);
 	}
 	
 	public static void callfunction(String function) {
-		executefunctionstring(function);
+		executefunction(function, false);
 	}
 	
-	//rbp Check methods in the following order:
-	// 1. System Lib (executed class)
-	// 2. Loaded Map Class
-	// If the function is not found, do nothing
-	public static void executefunctionstring(String function) {
+	/** Check methods in the following order:
+	 * 
+	 * 1. Direct Class-method (ex: sully.vc.v1_menu.Menu_System.DrawMenu)
+	 * 2. System Lib (executed class, ex: Sully.class + method)
+	 * 3. Loaded Map Class (ex: Bumsville.class + method)
+	 *
+	 * The called function must be public and without parameters.
+	 * The capitalized version is also checked (ex: "entStart" checks also for "EntStart") 
+	 * If the function is not found, nothing happens
+	 * 	 
+	 @author Rafael
+	 */
+	private static boolean executefunction(String function, boolean justCheck) {
 		
-		Class c = findClassForFunction(function);
-		if(c!=null) {
-			try {
-				invokeMethod(c, function);
-			} catch (NoSuchMethodException e) {		}
-		}
-	}
-	
-	public static void callfunction(String classpath, String function) {
-		Class c = null;
-		if(classpath != null && !classpath.isEmpty()) { // (3) Look for alternative hookpath
-			//System.out.println("Looking at hookpath " + hookpath);
-			try {
-				c = systemclass.forName(classpath);
-				if(c!= null && c.getMethod(function) != null) {
-					invokeMethod(c, function);
-				} 
+		if(function==null || function.isEmpty()) 
+			return false;
+
+		Class path = null;
+		// This means that it is a direct class-method
+		if (function.lastIndexOf(".") != -1) {
+			String s = function.substring(function.lastIndexOf(".") + 1);
+			String t = function.substring(0, function.lastIndexOf("."));
+			try { 
+				path = systemclass.forName(t);
 			}
-			catch (NoSuchMethodException e) {	error("Method not found: " + function + " in class: " + classpath);	} 
-			catch (ClassNotFoundException e) { error("Class not found: " + classpath);		}
+			catch(ClassNotFoundException cnfe) {
+				error("Class " + path + " not found for direct execution (" + function + ")");
+				return false;
+			}
+			invokeMethod(path, s, justCheck);
+			return true;
 		}
-	}	
-
-	private static Class findClassForFunction(String function) {
-		if(function == null || function.isEmpty() || systemclass==null)
-			return null;
-		
-		 Class c = null;
-		 
-		 // (1) Try to execute first the functin from the <Map>.java class
-		 // Important Note: Convention used here: 
-		 // 	The class first letter is always uppercase (ex: World.map)
-		 StringBuilder cName = new StringBuilder();
-		 if(current_map != null) {
-				
-			 	cName.append(systemclass.getPackage().getName() + ".");
-			 	
-			 	int pos = current_map.filename.lastIndexOf('\\');
-			 	if(pos==-1)
-			 		pos = 0;
-			 	
-		 		StringBuilder b = new StringBuilder(current_map.filename);
-		 		b.replace(pos, pos+1, String.valueOf(Character.toUpperCase(b.charAt(pos))));
-		 		String s = b.toString().substring(0, b.indexOf(".map")).replace('\\', '.');
-		 		cName.append(s);
-			 	
-				try {
-
-					c = systemclass.forName(cName.toString());
-					
-					if(c.getMethod(function) != null) {
-						//System.out.println("Map Method("+cName+"): " + function + " found.");
-						return c;
+		else { // Try to find the class in the current_map
+			 boolean notFoundInMap = false;
+			 StringBuilder cName = new StringBuilder();
+			 if(current_map != null && current_map.filename != null) {
+				 	cName.append(systemclass.getPackage().getName() + ".");
+				 	
+				 	int pos = current_map.filename.lastIndexOf('\\');
+				 	if(pos==-1)
+				 		pos = 0;
+				 	
+			 		StringBuilder b = new StringBuilder(current_map.filename);
+			 		b.replace(pos, pos+1, String.valueOf(Character.toUpperCase(b.charAt(pos))));
+			 		String s = b.toString().substring(0, b.indexOf(".map")).replace('\\', '.');
+			 		cName.append(s);
+			 		
+			 		try {
+			 			path = systemclass.forName(cName.toString());
+			 		}
+					catch(ClassNotFoundException cnfe) {
+						error("Class " + path + " not found for map execution.");
+						notFoundInMap = true; //return;
 					}
-				} catch (ClassNotFoundException e) {
-					System.err.println("Class " + cName + " doesn't exist.");
-				} catch (NoSuchMethodException e) {
-					//System.err.println("Map Method " + function + " not found on map class " + cName);
-					//That's ok
-				}
-		 }
-
-		// (2) Try to find method from system class
-		try {
-			c = systemclass;
+					if(path!=null) {
+				 		if (!invokeMethod(path, function, justCheck))
+							notFoundInMap = true;
+						else
+							return true; // Success
+					}
+			 }
 			
-			if(c.getMethod(function) != null) {
-				//System.out.println("System Method("+cName+"): " + function + " found.");
-				return c;				
-			}
-
-		} catch (NoSuchMethodException e) {
-			try {
-				if(hookpath != null && !hookpath.isEmpty()) { // (3) Look for alternative hookpath
-					//System.out.println("Looking at hookpath " + hookpath);
-					c = systemclass.forName(hookpath);
-					if(c.getMethod(function) != null) 
-						return c;				
-				}
-			} catch (ClassNotFoundException ce) {
-				// TODO Auto-generated catch block
-				ce.printStackTrace();
-			} catch (NoSuchMethodException ne) {
-				// TODO Auto-generated catch block
-				ne.printStackTrace();
-			}			
+			 // Try to find the method directly in the System class
+			 if(current_map == null || current_map.filename == null || notFoundInMap) {
+			 
+				 path = systemclass;
+				 if (invokeMethod(path, function, justCheck)) {
+					 return true; // Sucess
+				 }
+				 else {
+					 error("Method " + function + " not found in path " + path);
+				 }
+			 }
 		}
-		System.err.println("Method " + function + " not found on " + c + " neither in map class " + cName);
-		return null; // fail
-
+		return false;
 	}
+	
+	private static boolean invokeMethod(Class c, String function, boolean justCheck) { 
 
-	private static void invokeMethod(Class c, String function) throws NoSuchMethodException {
-		Method m = c.getMethod(function);
-		//executando = true;
-		try {
-			m.invoke(null);
-		} catch (NullPointerException e) {
-			error("Function " + function + " in class " + c + " not found.");
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Method[] allMethods = c.getDeclaredMethods();
+		for (Method m : allMethods) {
+			String mname = m.getName();
+			if(mname.equals(function) || mname.equals(capitalize(function))) {
+
+				if(justCheck)
+					return true;
+				
+				try {
+					//System.out.println("Found method " + mname + " in path " + c); // just for debug
+					m.invoke(null);
+					return true;
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-		//executando = false;
+		return false;
 	}
 	
 	/**

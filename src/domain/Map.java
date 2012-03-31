@@ -360,7 +360,7 @@ public class Map {
 			//this.tileset.numobs = 1;
 		
 		if(startupscript != null && !startupscript.trim().equals(""))
-			executefunctionstring(startupscript);
+			callfunction(startupscript);
 		
 
 	}

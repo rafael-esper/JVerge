@@ -121,9 +121,9 @@ public class Targetting {
 	}
 	
 	
-	static // Cleans up all targetting-related variables.
+	// Cleans up all targetting-related variables.
 	// Automatically called at the top of DoTargetting();
-	void ClearTargetting()
+	public static void ClearTargetting()
 	{
 		targetting_success = TARG_UNSET;
 		
@@ -154,7 +154,7 @@ public class Targetting {
 	// use this function for all fatal errors in your personal targetting callfuncs.
 	// It takes care of all error overhead for this system.
 	//
-	void TargettingError( String error_msg )
+	public static void TargettingError( String error_msg )
 	{
 		error( "Error in custom targetting function "+cur_targ_sess_callfunc+"(): " + error_msg );
 		targetting_success = TARG_ERROR;
@@ -165,7 +165,7 @@ public class Targetting {
 	// If you alter the target_data struct, please alter the arguments accordingly.
 	//
 	// Errors if you've filled the master_targetting array to it's capacity.
-	void AddTarget( int _id, int _mode, String _text )
+	public static void AddTarget( int _id, int _mode, String _text )
 	{
 		if( master_targetting_count >= MAX_TARGETS )
 		{
@@ -193,7 +193,7 @@ public class Targetting {
 	// this function.
 	//
 	// Errors if you've filled the master_targetting array to it's capacity.
-	void AddUniqueTarget( int _id, int _mode, String _text )
+	public static void AddUniqueTarget( int _id, int _mode, String _text )
 	{
 		int i;
 		for( i=0; i<master_targetting_count; i++ )
@@ -216,7 +216,7 @@ public class Targetting {
 	//   ending the targetting function.  If you do not, various error messages will flow.
 	//
 	// This basically tells the rest of the system to not do anything peacefully.
-	void CancelTargetting()
+	public static void CancelTargetting()
 	{
 		targetting_success = TARG_CANCEL;
 	}
@@ -227,7 +227,7 @@ public class Targetting {
 	// It sets the targetting state to TARG_SUCCESS (a very good thing) if there are 
 	// valid targets in the array, and sets it to TARG_CANCEL if there are no targets 
 	// selected through accident or injury.
-	void TargettingDone()
+	public static void TargettingDone()
 	{
 		if( master_targetting_count > 0 )
 		{
@@ -248,12 +248,12 @@ public class Targetting {
 	
 	//TargettingError() in the above function can be used gladly in the effect functions too.
 	
-	int GetTargettingCount()
+	public static int GetTargettingCount()
 	{
 		return master_targetting_count;
 	}
 	
-	int GetTargID( int t_idx )
+	public static int GetTargID( int t_idx )
 	{
 		if( !ValidTargetting() )
 		{
@@ -270,7 +270,7 @@ public class Targetting {
 	}
 	
 	
-	int GetTargMode( int t_idx )
+	public static int GetTargMode( int t_idx )
 	{
 		if( !ValidTargetting() )
 		{
@@ -287,7 +287,7 @@ public class Targetting {
 	}
 	
 	
-	String GetTargText( int t_idx )
+	public static String GetTargText( int t_idx )
 	{
 		if( !ValidTargetting() )
 		{

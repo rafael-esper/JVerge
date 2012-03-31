@@ -73,7 +73,7 @@ public class Inventory {
 	
 	// returns the quantity of a specific item you have.
 	// errors and returns 0 if the name is not a valid item name.
-	int ItemCount( String name )
+	public static int ItemCount( String name )
 	{
 		int i = IsItem(name);
 		int j;
@@ -250,11 +250,11 @@ public class Inventory {
 	}
 	
 	
-	//
+	
 	// Takes a master_items idx
 	// Returns the appropriate inventory index, if it's in inventory.   -1 if not.
 	// Errors if idx is invalid.
-	int InvIdxI( int idx ) {
+	static int InvIdxI( int idx ) {
 		int i;
 		
 		if( idx < 0 || idx >= MAX_ITEMS ) {

@@ -293,7 +293,8 @@ public class Entity {
 	// but they won't sync visuall, which is OK
 	int get_leader_framect()
 	{
-	    if(follow!=null) return follow.get_leader_framect();
+	    if(follow!=null) 
+	    	return follow.get_leader_framect();
 	    return framect;
 	}
 
@@ -602,12 +603,12 @@ public class Entity {
 	    if(moveofs == 0) {
 	        movemult = 16;
 	    } else if (moveofs >= movestr.length()) {
-	    	movemult = 0; moveofs = 0; movecode = 0; framect = 0; // rbp
+	    	movecode = 0; framect = 0; // rbp
 	    }
 	    
 	    
 	    
-	    if(movestr==null || movestr.length() == 0)
+	    if(movestr==null || movestr.trim().isEmpty() || moveofs >= movestr.length()) // last if by rbp
 	    	return;
 	    
 		while (moveofs < movestr.length() && ( // rbp
@@ -758,7 +759,7 @@ public class Entity {
 		if (hookrender != null && !hookrender.isEmpty())
 		{
 			event_entity = index;
-			executefunctionstring(hookrender);
+			callfunction(hookrender);
 			return;
 		}
 

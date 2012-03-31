@@ -226,7 +226,7 @@ public class V1_Textbox {
 	
 	// 1 sets Textscrolling on, 
 	// 0 turns it off.
-	void SetTextBoxScroll( boolean on )
+	public static void SetTextBoxScroll( boolean on )
 	{
 		if( on ) {
 			global_noscroll = false;
@@ -236,7 +236,7 @@ public class V1_Textbox {
 	}
 	
 	//returns 1 if text scroll mode is on, 0 if it's off.
-	int GetTextBoxScrollMode()
+	public static int GetTextBoxScrollMode()
 	{
 		if( global_noscroll ) return 0;
 		return 1;

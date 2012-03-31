@@ -79,7 +79,7 @@ public class Item {
 	// takes a master_items[] index
 	// returns true if it's a piece of equipment, false if not.
 	//
-	static boolean IsEquipmentItem( int idx ) {
+	public static boolean IsEquipmentItem( int idx ) {
 		//bounds checking.
 		if( idx < 0 || idx > MAX_ITEMS ) {
 			error( "IsEquipmentItem(): "+str(idx)+" is not a valid index." );
@@ -99,7 +99,7 @@ public class Item {
 	// takes a master_items[] index
 	// returns true if it's a supply, false if not.
 	//
-	static boolean IsSupplyItem( int idx ) {
+	public static boolean IsSupplyItem( int idx ) {
 		//bounds checking.
 		if( idx < 0 || idx > MAX_ITEMS ) {
 			error( "IsSupplyItem(): "+str(idx)+" is not a valid index." );

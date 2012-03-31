@@ -114,10 +114,10 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 
 		//mbg 9/5/05 todo removed for psp
 		// TODO LUA
-		if (b1 && !oldb1) executefunctionstring(bindbutton[0]);
-		if (b2 && !oldb2) executefunctionstring(bindbutton[1]);
-		if (b3 && !oldb3) executefunctionstring(bindbutton[2]);
-		if (b4 && !oldb4) executefunctionstring(bindbutton[3]);
+		if (b1 && !oldb1) callfunction(bindbutton[0]);
+		if (b2 && !oldb2) callfunction(bindbutton[1]);
+		if (b3 && !oldb3) callfunction(bindbutton[2]);
+		if (b4 && !oldb4) callfunction(bindbutton[3]);
 	}
 
 	// JGAME STUFF **** /////////////////////////////////////////////

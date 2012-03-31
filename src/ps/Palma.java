@@ -13,7 +13,7 @@ public class Palma {
 		cameratracking = 1;
 		
 		setplayer(AllocateEntity(gotox*16, gotoy*16, "alis.chr"));
-		render();fadein(30, false);
+		fadein(30, true);
 
 		System.out.println("Palma::mapinit");
 	}

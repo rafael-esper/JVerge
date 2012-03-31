@@ -6,7 +6,7 @@ Início dez: Music (vgm, mod)
 12/dez: Sprite code, etc
 16/dez: Startup code
 22/dez: Zone, Layer, Map, etc
-===== 13 HOURS ====
+===== 15 HOURS ====
 09/jan:(+1) Vsp data, Map load/render (in screen)
 10/jan:(+1) Map scaling (slow)
 11/jan:(+1) Entity, Chr load/render
@@ -30,7 +30,7 @@ Início dez: Music (vgm, mod)
 28/jan(+1): Music working (playmusic, stopmusic).
 30/jan(+1): Ak (adapting code). Loading functions from current_map.
 31/jan(+2): Entity public functions (setx,sety,incx,incy). Ak semi-working. Config file from URL.
-==== 37 HOURS ====
+==== 39 HOURS ====
 01/fev(+2): Alex Kidd working. VImage transparent. CHR, Vsp, Map and Music working via URL. 
 02/fev(+2): Window Resizing working. Mod Music looping. 
 03/fev(+1): PS Item lib / Item class
@@ -45,7 +45,7 @@ Início dez: Music (vgm, mod)
 20/fev(+3): Map.java working (reflection). WaitOpt return option selected. 
 		    Playsound method (playing .wav (menu)), Camineet/Palma.java
 21/fev(+1): Misc changes, MapUtil (rotate matrix, two in one, one in two) 
-==== 57 HOURS ====
+==== 59 HOURS ====
 01/mar(+1): Volatile Image: studying and experimenting
 02/mar(+1): Volatile Image again: this way working fast (GUICanvas only, scaling done there also)
 05/mar(+1): Basic Sully conversion
@@ -72,11 +72,13 @@ Início dez: Music (vgm, mod)
 25/mar(+3): Sully Conversion (undersea map OK, break on the switches, party bug, overworld map, choice menu). 
 			Fixed Silhouette. Fixed Triangle. Solved numobs+sliding bug. Fixed setx/sety (reset waypoint). 
 26/mar(+2): Sully Conversion (cottage, chasm, inettalk, camscroll). Fixed circle with (x,y) in the center.    
-
-IMMEDIATE TODO
-- Fix Menu from Sully (Hook key needs to receive the path also)
-- Change callfunction to the following interface: "a.b.function" instead of ("a.b", "function")
-- Fix fadein/out of Phantasy Star
+27/mar(+1): Sully Conversion (bumville). Fixed showpage when changing maps (don't call anymore).
+28/mar(+1): Sully Conversion (fixed movescript processing and player moving during scenes). Threads (exp...)
+29/mar(+1): Sully Conversion (mountain, lab, general fixes).
+30/mar(+1): Sully Conversion (effects, oldville). Merged path+method. Tested mountain map.
+31/mar(+3): Sully Conversion (menus, shack, village, dungeon, castle, menu_shop). 
+			Refactor callfunction ("a.b.function" instead of "a.b", "function"). 
+==== 108 HOURS ====
 
 
 TODO
@@ -91,7 +93,8 @@ TODO
 - Check TODOs, remove temporary code (like MapUtil)
 - VGMs doesn't play, just VGZ.
 - Make it a .jar
-- Document code and include LICENSE and CREDITS
+- Document code with Javadoc (get from V3 Manual) 
+- Include LICENSE and CREDITS
 
 CONSIDER TODOs
 - Socket implementation
@@ -180,11 +183,16 @@ Notes on Sully Conversion
 - Some variables were converted to boolean. In Java you can't do: "while(count)", if count is an int. Need to change to "while(count !=0)"
 - Add "break" clause after each "case" in the "switch" clause (unlike VC).
 - A lot of methods and properties were changed to static. This is so anti-OO. :-(
-- There is no script code being interpreted, it's just Java code. So the map() function can't just stop the remaining code to run. In order to implement the Sully introduction (that can be escaped anytime with Esc), I've opted to create a Java thread and use the ugly and deprecated method stop. I could have done this in a more elegant way, but the code would be changed a lot more.  
+- There is no script code being interpreted, it's just Java code. So the map() function can't just stop the remaining code to run. 
+- In order to implement the Sully introduction (that can be escaped anytime with Esc), I've opted to create a Java thread and use the ugly and deprecated method stop. I could have done this in a more elegant way, but the code would be changed a lot more.  
 - Java imports are different from C includes. So in order to call a function of an outer file, that would be normally included in C, I had to add a "path" parameter to the callfunction method.
+- Unlike VC, Java is case-sensitive. A lot of calls were changed because of this.
 - As SetClip is not yet implemented, I've changed a little the textbox behavior to produce the same effects.
 - The "|" text delimiter was changed to "&", because "|" has another meaning to regex String function.
 - I've performed some changes in the simpletype_rpg package, creating the structs (in Java, classes) in the corresponding classes. Not enough to be really OO, though.
 - Reimplemented the data_load with Java File API. Not very hard to convert (just text files). 
+- I've changed some MenuOff() and MenuOn() calls to EntStart() and EntFinish(), because somehow, the player wasn't stopped in the dramatic scenes.
 - There were some bugs in the original code, like accessing a -1 index in an array in the AddPlayerI() function. Those bugs become evident in the Java code, as it's now allowed.
+- There were some strange TextBox without the comma (like TextBox(PORTRAIT, "a" "b", "c"); How these were working?!
+- There were some unused variables.
  

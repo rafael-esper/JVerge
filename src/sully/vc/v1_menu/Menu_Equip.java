@@ -194,7 +194,7 @@ public class Menu_Equip {
 	}
 	
 	// Decides what colour font to use based on comparision of current and new values
-	int MenuEquipFont(int newv, int current)
+	public static int MenuEquipFont(int newv, int current)
 	{
 		//if both values are less than or equal to 0, there is no effective change.  Keep them white.
 		if( newv <= 0 && current <= 0  )	return 0;

@@ -78,7 +78,7 @@ public class Cast {
 	// accepts negative values, will not set below 0.
 	//
 	// errors if the cast_idx was invalid.
-	static void HealHP( int cast_idx, int amount ) {
+	public static void HealHP( int cast_idx, int amount ) {
 		if( cast_idx <0 || cast_idx >= MAX_CAST ) {
 			error( "HealHP(): "+str(cast_idx)+" is not a valid cast index." );
 			return;
@@ -115,7 +115,7 @@ public class Cast {
 	// accepts negative values, will not set below 0.
 	//
 	// errors if the cast_idx was invalid.
-	static void HealMP( int cast_idx, int amount ) {
+	public static void HealMP( int cast_idx, int amount ) {
 		if( cast_idx <0 || cast_idx >= MAX_CAST ) {
 			error( "HealMP(): "+str(cast_idx)+" is not a valid cast index." );
 			return;
@@ -190,7 +190,7 @@ public class Cast {
 	}
 	
 	// Full HP/MP recovery for a single person.
-	void FullHeal( int cast_idx )
+	public static void FullHeal( int cast_idx )
 	{
 		HealHP( cast_idx, MAXIMUM_HP_VALUE );
 		HealMP( cast_idx, MAXIMUM_MP_VALUE );
