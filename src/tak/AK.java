@@ -4,68 +4,56 @@ import static core.Script.*;
 import static core.Controls.*;
 
 import java.awt.Color;
+import java.awt.Font;
 
 import core.VergeEngine;
-import domain.VFont;
+import domain.CHR;
 import domain.VImage;
 
 public class AK extends VergeEngine {
 
-	static VFont small_font = null;
-
+	protected static Font sys_font = new Font("Monospaced", Font.BOLD, 12);
+	
 	public static void main(String args[]) {
 		
 		setSystemPath(new AK().getClass());
-		
-		rock_t=new VImage(load("res/rock_t.gif"));
-		rock_g=new VImage(load("res/rock_g.gif"));
-		rock_c=new VImage(load("res/rock_c.gif"));	
-		leaf=new VImage(load("res/leaf.gif"));
-		brac0=new VImage(load("res/brac0.gif"));
-		brac1=new VImage(load("res/brac1.gif"));
-		firing=new VImage(load("res/firing.gif"));
-		mapa=new VImage(load("res/Mapa2.gif"));
-		
-		small_font = new VFont(load("res/smallfont.gif"));
-		
 		initVergeEngine(args);
 	}
 	
 
-	// SYSTEM.JAVA
 	/*	STATE		COND		ACTION		FACE		DIRECTION
 	0	Stopped		None		Normal		Left		Left
 	1	Walking		Walking		Punching	Right		Right
-	2       Jumping		Swimming	Trembling			Up
-	3	Falling		Moto						Down
-	4			Surf						Diagonal-DownLeft
-	5			Heli						Diagonal-DownRight
-	6			Fly
-	7			Star
-	8			Shinobi Walk
-	9			Shinobi Swim
+	2   Jumping		Swimming	Trembling				Up
+	3	Falling		Moto								Down
+	4				Surf								Diagonal-DownLeft
+	5				Heli								Diagonal-DownRight
+	6				Fly
+	7				Star
+	8				Shinobi Walk
+	9				Shinobi Swim
 	*/
 
 	static final int SPEED = 3;
-	static final int QUEDA = 6;		// resistência do ar, quanto maior, mais lento a queda
-	static final int GRAV = 5;		// velocidade da gravidade, quanto maior, mais rápida a queda
-	static final int GRAV_EF = 50;	// quando efeito da gravidade passa a valer
-	static final int MAXVEL = 15;	// velocidade máxima andando
-	static final int ALTMAX = 48;	// altura máxima de pulo
-	static final int FRIC_NOR = 5;	// fricção normal
-	static final int FRIC_ICE = 10;	// fricção no gelo
-	static final int MAXSWIM = 8;
-	static final int MAXRSWIM = 12;	// fast swim
+	static final int FALL = 6;		// air resistance. The higher, slower the falling
+	static final int GRAV = 5;		// gravity velocity. The higher, faster the falling
+	static final int GRAV_EF = 50;	// gravity threshold
+	static final int MAXVEL = 15;	// maximum walking velocity
+	static final int MAXJUMP = 48;	// maximum jump height
+	static final int FRIC_NOR = 5;	// normal friction
+	static final int FRIC_ICE = 10;	// ice friction
+	static final int MAXSWIM = 8;	// normal swim velocity
+	static final int MAXRSWIM = 12;	// fast swim velocity
 	static final int MAXHELI = 12;
 	static final int MAXFLY = 8;
 	static final int MAXSTAR = 24;
 
 	static final int MINMOTO = 12;
 	static final int MAXMOTO = 26;
-	static final int ALTMOTO = 60;	// altura máxima de pulo com moto
+	static final int ALTMOTO = 56;	// altura máxima de pulo com moto
 
 	static final int MINSURF = 10;
-	static final int MAXSURF = 30;
+	static final int MAXSURF = 25;
 	static final int ALTSURF = 50;	// altura máxima de pulo com lancha
 
 	static final int COND_WALK = 1;
@@ -107,8 +95,7 @@ public class AK extends VergeEngine {
 	static int spe[] = new int [25];
 	static int spt[] = new int [25];
 	
-	static int entityface[] = new int[300];
-	static String Name, musicaAtual;
+	static String Name, currentMusic, currentLevel;
 	
 	private static boolean changemap = false;
 
@@ -126,15 +113,48 @@ public class AK extends VergeEngine {
 	public static void autoexec() 
 	{
 		setappname("Alex Kidd: Remake");
+		
+		VImage title = new VImage(load("res/image/title.png"));
+		
+		Color background = new Color(-86);
+
+		timer = 0;
+		while(!b1) {
+			blit(0, 0, title, screen);
+			
+			if(timer < 75) {
+				rectfill(210, 4, 295, 50, background, screen);
+			}
+			if(timer < 150) {
+				rectfill(134, 134, 233, 169, background, screen);
+			}
+			if(timer < 225) {
+				rectfill(32, 7, 76, 60, background, screen);
+			}
+			if(timer < 300) {
+				rectfill(265, 72, 301, 156, background, screen);
+			}
+			if(timer < 375) {
+				rectfill(25, 78, 108, 194, background, screen);
+			}
+			
+			if(timer < 400 || timer%50 < 25)
+				rectfill(88, 207, 228, 218, background, screen);
+			
+			showpage();
+		}
+		unpress(1);
+		
 		//Map("Level01.map");
 		StartUp();
 	}
 
-	static void Mapswitch(String mapname, int x, int y, int ix, int iy, String musica, int cnd)
+	static void Mapswitch(String mapname, int x, int y, int ix, int iy, String music, int cnd, String level)
 	{ 
 		gotox=x;gotoy=y; // player coordinates
 		inx=ix;iny=iy;	// map coordinates
-		musicaAtual=musica;
+		currentMusic=music;
+		currentLevel = level;
 		Cond=cnd;
 		if(Prog > 0)
 			changemap = true;
@@ -143,36 +163,36 @@ public class AK extends VergeEngine {
 
 
 	static void DoLevel() { // Hills, Lake, Field/Grass, Cave, Forest, Castle
-		//if(Prog==1)  Mapswitch("Level30.map",1,34,277,190,"res/field.vgz", COND_WALK);	// Castle
-		if(Prog<=1)  Mapswitch("Level01.map",2,4,277,190,"res/field.vgz", COND_WALK);	// Hills
-		if(Prog==2)  Mapswitch("Level02.map",2,5,290,176,"res/field.vgz", COND_WALK);	// Lake
-		if(Prog==3)  Mapswitch("Level03.map",2,10,279,166,"res/field.vgz", COND_WALK);	// Field (C)
-		if(Prog==4)  Mapswitch("Level04.map",8,15,291,143,"res/field.vgz", COND_WALK);	// Cave
-		if(Prog==5)  Mapswitch("Level05.map",3,14,291,143,"res/field.vgz", COND_WALK);	// Wood (starting grass)
-		if(Prog==6)  Mapswitch("Level06.map",2,14,270,121,"res/field.vgz", COND_WALK);	// Grass (City)
+		//if(Prog==1)  Mapswitch("Level30.map",1,34,277,190,"res/music/field.vgz", COND_WALK, "");	// Castle
+		if(Prog<=1)  Mapswitch("Level01.map",2,4,277,190,"res/music/field.vgz", COND_WALK, "Mount Nibana");	// Hills
+		if(Prog==2)  Mapswitch("Level02.map",2,5,290,176,"res/music/field.vgz", COND_WALK, "Lake Bimurai");	// Lake
+		if(Prog==3)  Mapswitch("Level03.map",2,10,279,166,"res/music/field.vgz", COND_WALK, "");	// Field (C)
+		if(Prog==4)  Mapswitch("Level04.map",8,15,291,143,"res/music/field.vgz", COND_WALK, "");	// Cave
+		if(Prog==5)  Mapswitch("Level05.map",3,14,291,143,"res/music/field.vgz", COND_WALK, "");	// Wood (starting grass)
+		if(Prog==6)  Mapswitch("Level06.map",2,14,270,121,"res/music/field.vgz", COND_WALK, "");	// Grass (City)
 	
-		if(Prog==7)  Mapswitch("Level07.map",2,3,290,186,"res/field.vgz", COND_WALK); 	// Hills
-		if(Prog==8)  Mapswitch("Level08.map",8,0,288,151,"res/swim.vgz", COND_SWIM);	// Lake
-		if(Prog==9)  Mapswitch("Level09.map",2,14,283,132,"res/field.vgz", COND_WALK);	// Grass
-		if(Prog==10) Mapswitch("Level10.map",8,73,234,105,"res/field.vgz", COND_WALK);	// Cave	(Mountain)
-		if(Prog==11) Mapswitch("Level11.map",2,14,258,107,"res/field.vgz", COND_WALK);	// Wood
-		if(Prog==12) Mapswitch("Level12.map",9,2,228,86,"res/field.vgz", COND_WALK);	// Fall
+		if(Prog==7)  Mapswitch("Level07.map",2,3,290,186,"res/music/field.vgz", COND_WALK, ""); 	// Hills
+		if(Prog==8)  Mapswitch("Level08.map",8,0,288,151,"res/music/swim.vgz", COND_SWIM, "");	// Lake
+		if(Prog==9)  Mapswitch("Level09.map",2,14,283,132,"res/music/field.vgz", COND_WALK, "");	// Grass
+		if(Prog==10) Mapswitch("Level10.map",8,73,234,105,"res/music/field.vgz", COND_WALK, "");	// Cave	(Mountain)
+		if(Prog==11) Mapswitch("Level11.map",2,14,258,107,"res/music/field.vgz", COND_WALK, "");	// Wood
+		if(Prog==12) Mapswitch("Level12.map",9,2,228,86,"res/music/field.vgz", COND_WALK, "");	// Fall
 	
-		if(Prog==13) Mapswitch("Level13.map",26,7,290,186,"res/field.vgz", COND_WALK); 	// Hills
-		if(Prog==14) Mapswitch("Level14.map",2,13,288,151,"res/swim.vgz", COND_SURF);	// Lake
-		if(Prog==15) Mapswitch("Level15.map",2,15,228,86,"res/field.vgz", COND_WALK);	// Grass
-		if(Prog==16) Mapswitch("Level16.map",2,10,228,86,"res/field.vgz", COND_WALK);	// Cave (starting field)
-		if(Prog==17) Mapswitch("Level17.map",2,174,228,86,"res/field.vgz", COND_WALK);	// Wood (vertical)
+		if(Prog==13) Mapswitch("Level13.map",26,7,290,186,"res/music/field.vgz", COND_WALK, ""); 	// Hills
+		if(Prog==14) Mapswitch("Level14.map",2,13,288,151,"res/music/swim.vgz", COND_SURF, "River Patarai");	// Lake
+		if(Prog==15) Mapswitch("Level15.map",2,15,228,86,"res/music/field.vgz", COND_WALK, "");	// Grass
+		if(Prog==16) Mapswitch("Level16.map",2,10,228,86,"res/music/field.vgz", COND_WALK, "");	// Cave (starting field)
+		if(Prog==17) Mapswitch("Level17.map",2,174,228,86,"res/music/field.vgz", COND_WALK, "");	// Wood (vertical)
 		if(Prog==18) Prog++;
 	
-		if(Prog==19) Mapswitch("Level19.map",1,12,228,86,"res/field.vgz", COND_WALK);	// Secret1 (eagle)
-		if(Prog==20) Mapswitch("Level20.map",1,12,228,86,"res/swim.vgz", COND_SWIM);	// Secret2 (fish)
-		if(Prog==21) Mapswitch("Level21.map",1,12,228,86,"res/field.vgz", COND_WALK);	// Secret3 (bull)
-		if(Prog==22) Mapswitch("Level22.map",1,12,228,86,"res/field.vgz", COND_WALK);	// Secret3 (bat/owl)
+		if(Prog==19) Mapswitch("Level19.map",1,12,228,86,"res/music/field.vgz", COND_WALK, "");	// Secret1 (eagle)
+		if(Prog==20) Mapswitch("Level20.map",1,12,228,86,"res/music/swim.vgz", COND_SWIM, "");	// Secret2 (fish)
+		if(Prog==21) Mapswitch("Level21.map",1,12,228,86,"res/music/field.vgz", COND_WALK, "");	// Secret3 (bull)
+		if(Prog==22) Mapswitch("Level22.map",1,12,228,86,"res/music/field.vgz", COND_WALK, "");	// Secret3 (bat/owl)
 	
-		if(Prog==23) Mapswitch("MFase1.map",3,5,228,86,"res/field.vgz", COND_WALK); 	// Hills Miracle World
-		if(Prog==24) Mapswitch("MFase3.map",4,5,228,86,"res/swim.vgz", COND_SWIM); 		// Lake Miracle World
-		if(Prog==25) Mapswitch("MFase2.map",4,12,228,86,"res/field.vgz", COND_WALK); 	// Field Miracle World
+		if(Prog==23) Mapswitch("MFase1.map",3,5,228,86,"res/music/field.vgz", COND_WALK, ""); 	// Hills Miracle World
+		if(Prog==24) Mapswitch("MFase3.map",4,5,228,86,"res/music/swim.vgz", COND_SWIM, ""); 		// Lake Miracle World
+		if(Prog==25) Mapswitch("MFase2.map",4,12,228,86,"res/music/field.vgz", COND_WALK, ""); 	// Field Miracle World
 	
 		if(Prog==26) exit("Thanks for playing...");              // Palace (C)
 		
@@ -183,16 +203,26 @@ public class AK extends VergeEngine {
 	static void StartUp() 
 	{
 		
-		snd[1]="res/Mapa.mp3";  
-		snd[2]="res/Gold.wav";
-		snd[3]="res/Punch.wav"; 
-		snd[4]="res/Rock.wav";
-		snd[5]="res/Star.wav";
-		snd[6]="res/Death.wav";
-		snd[7]="res/Hit.wav";
-		snd[8]="res/Brac.wav";
-		snd[9]="res/Item.wav";
-		snd[10]="res/Water.wav";		
+		rock_t=new VImage(load("res/image/rock_t.gif"));
+		rock_g=new VImage(load("res/image/rock_g.gif"));
+		rock_c=new VImage(load("res/image/rock_c.gif"));	
+		leaf=new VImage(load("res/image/leaf.gif"));
+		brac0=new VImage(load("res/image/brac0.gif"));
+		brac1=new VImage(load("res/image/brac1.gif"));
+		firing=new VImage(load("res/image/firing.gif"));
+		mapa=new VImage(load("res/image/Mapa.gif"));
+		
+		
+		snd[1]="res/sound/Mapa.mp3";  
+		snd[2]="res/sound/Gold.wav";
+		snd[3]="res/sound/Punch.wav"; 
+		snd[4]="res/sound/Rock.wav";
+		snd[5]="res/sound/Star.wav";
+		snd[6]="res/sound/Death.wav";
+		snd[7]="res/sound/Hit.wav";
+		snd[8]="res/sound/Brac.wav";
+		snd[9]="res/sound/Item.wav";
+		snd[10]="res/sound/Water.wav";		
 
 		Name="akidd.chr";
 		
@@ -207,12 +237,15 @@ public class AK extends VergeEngine {
 	  
 	  while(!b1) 
 	  {
-		if(b==10) b=0;
+		if(b>12) b=0;
 		b++;
+		rectfill(0,0,320,240,Color.BLACK, screen);
 		blit(0,0,mapa,screen);
-		if(b<5) circlefill(inx,iny,b,b,new Color(255, 95, 95),screen);
-		if(b>=5) circlefill(inx,iny,10-b,10-b,new Color(255, 105, 105),screen);
-		Wait(3);showpage();
+		drawText(10, 225, "Level " + (Prog-1) + ": " + currentLevel);
+		
+		if(b<6) circlefill(inx,iny,b,b, Color.RED,screen);
+		if(b>=6) circlefill(inx,iny,10-b,10-b,Color.RED,screen);
+		Wait(1);showpage();
 	  }
 	}
 
@@ -231,14 +264,15 @@ public class AK extends VergeEngine {
 			if(by<0) by=sy-1;
 			if(by>=sy) by=0;
 		
-			rectfill(100,100,100+(20*sx),100+(20*sy),new Color(10, 10, 10, 200),screen);
-			rect(101,101,99+(20*sx),99+(20*sy),new Color(20, 20, 20),screen);
+			rectfill(100,100,100+(20*sx),105+(20*sy), Color.BLACK,screen);
+			rect(99,99,100+(20*sx),105+(20*sy), Color.WHITE,screen);
+			rect(98,98,101+(20*sx),106+(20*sy), Color.WHITE,screen);
 			for(int i=0;i<sx;i++)
 			{
 				for(int j=0;j<sy;j++)
-					printstring(105+(i*20),105+(j*20),screen,small_font,str((j*sx)+i+1));
+					drawText(105+(i*20),110+(j*20),str((j*sx)+i+1));
 			}
-			printstring(105+(bx*20),110+(by*20),screen,small_font,"=");
+			drawText(105+(bx*20),115+(by*20),"=");
 			showpage();
 		}
 	}
@@ -288,17 +322,17 @@ public class AK extends VergeEngine {
 				State=S_STOPPED;
 	 			stopmusic();
 	 			playsound(snd[10]);
-				brac=0;
-				for(int j=0;j<16;j++)
+	 			vertical=0; alt=0; brac=0;
+				for(int j=0;j<12;j++)
 				{
-					entity.get(player).incy();
+					entity.get(player).incy(2);
 					entity.get(player).specframe=Showplayer(); 
 					ProcessEnemies();ProcessSprites();ProcessMisc();
 					render();showpage();
 					Wait(1);
 				}
-				musicaAtual="res/swim.vgz";
-				playmusic(musicaAtual);
+				currentMusic="res/music/swim.vgz";
+				playmusic(currentMusic);
 			}
 			break;
 
@@ -348,6 +382,13 @@ public class AK extends VergeEngine {
 	showmapscreen();
 	if(Prog==0) StartUp();
 
+	// This changes all entities to load the CHR info from an image file
+	CHR c = CHR.createCHRFromImage(32, 32, 8, 56, true, new VImage(load("monster_newt.png")));
+	for(int i=0; i<numentities; i++) {
+		entity.get(i).chr = c;
+	}
+	
+	
 	 player = entityspawn(gotox, gotoy, Name);
 	 setplayer(player);
 	 //cameratracking = 1;
@@ -394,8 +435,8 @@ public class AK extends VergeEngine {
 	 	entity.get(player).speed=0;
 	 	velocity=0;pdelay=0;tdelay=0;timer=0;
 		friction = FRIC_NOR;
-	 	entityface[player]=1;Energy=3;
-	 	playmusic(musicaAtual);
+	 	entity.get(player).face=1;Energy=3;
+	 	playmusic(currentMusic);
 	}
 
 	static void ControlKeys() 
@@ -409,11 +450,11 @@ public class AK extends VergeEngine {
 	 if(getkey(SCAN_A)) {debug=true; while(!b1) UpdateControls();}
 	 if(getkey(SCAN_B)) brac=1;
 	 if(getkey(SCAN_F)) {Cond=COND_FLY;State=S_STOPPED;}
-	 if(getkey(SCAN_H)) {Cond=COND_HELI;playmusic("res/swim.vgz");} // Heli.mp3
+	 if(getkey(SCAN_H)) {Cond=COND_HELI;playmusic("res/music/swim.vgz");} // Heli.mp3
 	 if(getkey(SCAN_I)) inv=100000;
 	 if(getkey(SCAN_K)) GetKilled(2);
 	 if(getkey(SCAN_L)) { Prog=SelectLevel(6, 4);DoLevel();}
-	 if(getkey(SCAN_M)) {Cond=COND_MOTO;playmusic("res/Moto.vgz");}
+	 if(getkey(SCAN_M)) {Cond=COND_MOTO;playmusic("res/music/Moto.vgz");}
 	 if(getkey(SCAN_N)) { NormalCondition(COND_WALK);}
 	 if(getkey(SCAN_P)) {
 	  //copyimagetoclipboard(screen);
@@ -422,9 +463,9 @@ public class AK extends VergeEngine {
 	  copyimagetoclipboard(img);
 	 }
 	 //if(getkey(SCAN_R]) setRandomAlex(1);
-	 if(getkey(SCAN_S)) {Cond=COND_SURF;playmusic("res/swim.vgz");}
+	 if(getkey(SCAN_S)) {Cond=COND_SURF;playmusic("res/music/swim.vgz");}
 	 if(getkey(SCAN_X)) Cond=COND_STAR;
-	 if(getkey(SCAN_Z)) {Cond=COND_SHIW;changeCHR(player, "shinobi.chr");}
+	 //if(getkey(SCAN_Z)) {Cond=COND_SHIW;changeCHR(player, "shinobi.chr");}
 	 
 	 if(right && left && State==S_WALKING) { State=S_STOPPED;velocity=0;}
 
@@ -440,7 +481,7 @@ public class AK extends VergeEngine {
 	 	
 	 	case COND_MOTO:
 	 	ControlVehicle(MINMOTO, MAXMOTO, ALTMOTO);
-	 	vehicleDestroy();
+	 	vehicleAttack();
 	 	break;
 
 	 	case COND_SURF:
@@ -457,7 +498,7 @@ public class AK extends VergeEngine {
 	 	
 	 	case COND_STAR:
 	 	ControlSwim();
-	 	vehicleDestroy();
+	 	vehicleAttack();
 	 	break;
 	 	
 	 	case COND_ROPE:
@@ -476,8 +517,8 @@ public class AK extends VergeEngine {
 	 		if(tdelay==0) punch();
 	 		if(pdelay==2)
 	 		{
-	 			if(brac==1 && Cond==COND_WALK) AddSprite(entity.get(player).getx()+(entityface[player]*30), entity.get(player).gety()+14, 12+entityface[player]); // bracelete
-	 			if(Cond==COND_HELI || Cond==COND_SURF) AddSprite(entity.get(player).getx()+(entityface[player]*30), entity.get(player).gety()+14, 14+entityface[player]); // tiro
+	 			if(brac==1 && Cond==COND_WALK) AddSprite(entity.get(player).getx()+(entity.get(player).face*30), entity.get(player).gety()+14, 12+entity.get(player).face); // bracelete
+	 			if(Cond==COND_HELI || Cond==COND_SURF) AddSprite(entity.get(player).getx()+(entity.get(player).face*30), entity.get(player).gety()+14, 14+entity.get(player).face); // tiro
 	 		}
 	 	}
 	 	if(!left && !right && State==S_WALKING && Cond!=COND_SURF) { State=S_STOPPED; velocity=friction*velocity/10; }
@@ -497,9 +538,9 @@ public class AK extends VergeEngine {
 	 	    	velocity+=10*SPEED/friction;
 	 	    	if(State==S_STOPPED) 
 	 	    		State=S_WALKING; 
-	 	    	if(entityface[player]!=1) 
+	 	    	if(entity.get(player).face!=1) 
 	 	    	{ 
-	 	    		entityface[player]=1;
+	 	    		entity.get(player).face=1;
 	 	    		velocity=friction*velocity/10;
 	 	    	}
 	 	    }
@@ -508,9 +549,9 @@ public class AK extends VergeEngine {
 	 	    	velocity-=10*SPEED/friction;
 	 	    	if(State==S_STOPPED) 
 	 	    		State=S_WALKING; 
-	 	    	if(entityface[player]!=0) 
+	 	    	if(entity.get(player).face!=0) 
 	 	    	{ 
-	 	    		entityface[player]=0;
+	 	    		entity.get(player).face=0;
 	 	    		velocity=friction*velocity/10; 
 	 	    	}
 	 	    }
@@ -524,7 +565,7 @@ public class AK extends VergeEngine {
 	 		State=S_STOPPED;
 	  }
 
-	 CheckJumpFalling(ALTMAX);
+	 CheckJumpFalling(MAXJUMP);
 	 VelocityCheck(MAXVEL);
 	} 
 
@@ -575,8 +616,8 @@ public class AK extends VergeEngine {
 	{
 	   	if(Action==2) return;
 
-		if (right) {   velocity+=SPEED; if(entityface[player]!=1) { entityface[player]=1;velocity=velocity>>2; }}
-		if (left)  {   velocity-=SPEED; if(entityface[player]!=0) { entityface[player]=0;velocity=velocity>>2; }}
+		if (right) {   velocity+=SPEED; if(entity.get(player).face!=1) { entity.get(player).face=1;velocity=velocity>>2; }}
+		if (left)  {   velocity-=SPEED; if(entity.get(player).face!=0) { entity.get(player).face=0;velocity=velocity>>2; }}
 		
 		if (up) vertical-=(Cond/2);
 		if (down)
@@ -589,6 +630,16 @@ public class AK extends VergeEngine {
 		if (!left && velocity<0) velocity++;
 		if(!up && vertical<0) vertical=0;
 	    
+	 	// Destroy vehicle
+	 	if(Cond==COND_HELI && getObsd(NORTH)!=0)
+		{
+				AddSprite(entity.get(player).getx()-24+entity.get(player).face*32, entity.get(player).gety(),4);
+				NormalCondition(COND_WALK);
+				State=S_JUMPING;
+				entity.get(player).incy(16);
+				return;
+		}
+		
 		if(Cond==COND_SWIM)
 		{
 			if(vertical<=-3) vertical=-2;
@@ -599,35 +650,59 @@ public class AK extends VergeEngine {
 		else if(Cond==COND_HELI) VelocityCheck(MAXHELI);
 		else if(Cond==COND_FLY ) {VelocityCheck(MAXFLY);vertical=sgn(vertical);}
 		else if(Cond==COND_STAR) VelocityCheck(MAXSTAR);
-		if(vertical>3) vertical=3;if(vertical<-3) vertical=-3;
+		if(vertical>3) vertical=3;
+		if(vertical<-3) vertical=-3;
 	}
 
 	static void ControlVehicle(int minVehicle, int maxVehicle, int altVehicle) // %%%%%%%%%%% VEHICLE: MOTO/SURF %%%%%%%%%%%%%%%%
 	{
-		if(State==S_STOPPED) State=S_WALKING;
+		if(State==S_STOPPED) 
+			State=S_WALKING;
 		if(velocity==0)
 		{
-			if(entityface[player]==0)
+			if(entity.get(player).face==0)
 				velocity=-minVehicle;
-			if(entityface[player]==1)
+			if(entity.get(player).face==1)
 				velocity=minVehicle;	
 		}		
 
-	 	if (right) velocity+=SPEED;
-	 	if (left) velocity-=SPEED;
+	 	if (right && velocity > 0) velocity+=SPEED;
+	 	if (down && velocity > 0) velocity-=SPEED;
+	 	
+	 	if (down && velocity < 0) velocity+=SPEED;
+	 	if (left && velocity < 0) velocity-=SPEED;
 
-		if(getObsd(entityface[player])!=0)
+	 	// Invert direction
+	 	if (left && velocity > 0 && State==S_WALKING) {
+	 		velocity = -velocity;
+	 		entity.get(player).face = 0;
+	 	} else if (right && velocity < 0 && State==S_WALKING) {
+	 		velocity = -velocity;
+	 		entity.get(player).face = 1;
+	 	}
+	 
+	 	// Destroy vehicle
+	 	if(getObsd(entity.get(player).face)!=0)
 		{
-			if(getObsd(1-entityface[player])==0) // && crazy Vehicle
-			{
-				velocity=0;
-				entityface[player]=1-entityface[player];
+			if(Getpunch(entity.get(player).face*32)==0) {
+				
+				AddSprite(entity.get(player).getx()-24+entity.get(player).face*32, entity.get(player).gety(),4);
+
+				if(Cond==COND_MOTO) {
+					NormalCondition(COND_WALK);
+					State=S_JUMPING;
+					return;
+				}
+				else {
+					CallEvent(6);
+					entity.get(player).incy(54);
+					return;
+				}
+				
 			}
-			else
-				NormalCondition(COND_WALK);
 		}
 
-		CheckJumpFalling(altVehicle);
+		CheckJumpFalling(altVehicle +abs(velocity) - maxVehicle);
 
 		if(abs(velocity)>(maxVehicle)) velocity=sgn(velocity)*maxVehicle;
 		if(abs(velocity)<(minVehicle)) velocity=sgn(velocity)*minVehicle;
@@ -649,10 +724,10 @@ public class AK extends VergeEngine {
 	 		if(State!=S_JUMPING && State!=S_FALLING && getObsd(SOUTH)!=0) { State=S_JUMPING; vertical=0; alt=MaxAlt;}
 	 		if(State==S_JUMPING && alt>-20) 
 	 		{   
-	 			vertical-=alt/QUEDA;
+	 			vertical-=alt/FALL;
 	 			if(vertical<-MaxAlt) vertical=-MaxAlt;
 	 		}
-	 		if(alt>0) {  alt-=QUEDA; } else  {  State=S_FALLING; alt=0; unpress(5);}    
+	 		if(alt>0) {  alt-=FALL; } else  {  State=S_FALLING; alt=0; unpress(5);}    
 		}
 
 	 	if(getObsd(SOUTH)==0 && State!=S_JUMPING) 
@@ -670,20 +745,20 @@ public class AK extends VergeEngine {
 
 	 for(int i=0; i<abs(velocity>>2); i++)
 	 {
-	  if(getObsd(entityface[player])==0) entity.get(player).incx(sgn(velocity));
+	  if(getObsd(entity.get(player).face)==0) entity.get(player).incx(sgn(velocity));
 	 }
 
 	 if(getObsd(NORTH)!=0 && State==S_JUMPING) { State=S_FALLING; vertical=0; }
 	 if(getObsd(SOUTH)!=0 && State==S_FALLING) { State=S_STOPPED; vertical=0; if(Cond!=COND_MOTO && Cond!=COND_SURF) velocity=0;  }
 	 
 	 if(State==S_JUMPING) 
-	 {  for(int i=0; i<abs(vertical); i+=QUEDA)  
+	 {  for(int i=0; i<abs(vertical); i+=FALL)  
 	  	{    if(getObsd(NORTH)==0) entity.get(player).incy(sgn(vertical)); }
 	 }
 
 	 if(State==S_FALLING)
 	 {
-	  	for(int i=0; i<abs(vertical); i+=QUEDA)   
+	  	for(int i=0; i<abs(vertical); i+=FALL)   
 	  	{
 	    		if(sgn(vertical)==1 && getObsd(SOUTH)==0) entity.get(player).incy();
 	    		if(sgn(vertical)==-1 && getObsd(NORTH)==0) entity.get(player).incy(-1);
@@ -698,7 +773,7 @@ public class AK extends VergeEngine {
 	 if(Cond==COND_HELI && getObsd(SOUTH)==0) entity.get(player).incy();
 
 	 for(int i=0; i<abs(velocity>>2); i++) {
-	 if(getObsd(entityface[player])==0) entity.get(player).incx(sgn(velocity)); }
+	 if(getObsd(entity.get(player).face)==0) entity.get(player).incx(sgn(velocity)); }
 
 	 if(vertical>0) aa=SOUTH;
 	 if(vertical<0) aa=NORTH;
@@ -724,22 +799,22 @@ public class AK extends VergeEngine {
 		if(Cond==COND_HELI) 
 		{
 			setDimensions(entity.get(player).getx()+6, entity.get(player).gety()+4, 20, 26);
-			return 31+((1-entityface[player])*4)+(playerframe/3);
+			return 31+((1-entity.get(player).face)*4)+(playerframe/3);
 		}
 
-		if(Cond==COND_SURF) return 27+((1-entityface[player])*2)+(playerframe/3);
+		if(Cond==COND_SURF) return 27+((1-entity.get(player).face)*2)+(playerframe/3);
 
 		if(Cond==COND_MOTO)
 		{
 			if(State<=1)
 			{
 				setDimensions(entity.get(player).getx()+9, entity.get(player).gety()+7, 14, 20);
-				return 21+((1-entityface[player])*3)+(playerframe/3);
+				return 21+((1-entity.get(player).face)*3)+(playerframe/3);
 			}
 			else
 			{
 				setDimensions(entity.get(player).getx()+9, entity.get(player).gety()+5, 14, 26);
-				return 23+((1-entityface[player])*3);
+				return 23+((1-entity.get(player).face)*3);
 			}
 		}
 		if (Action==1) // punching
@@ -747,12 +822,12 @@ public class AK extends VergeEngine {
 			if(Cond==COND_SWIM) 
 			{
 				setDimensions(entity.get(player).getx()+10, entity.get(player).gety()+11,13,12);
-				return 17-(entityface[player]*3); // swimming
+				return 17-(entity.get(player).face*3); // swimming
 			}
 			else
 			{
 				setDimensions(entity.get(player).getx()+12, entity.get(player).gety()+6, 8, 20);
-				return 5-entityface[player]; // walking
+				return 5-entity.get(player).face; // walking
 			}
 		}
 
@@ -760,31 +835,31 @@ public class AK extends VergeEngine {
 		if(Cond==COND_WALK || Cond==COND_FLY)  // idle
 		{
 			setDimensions(entity.get(player).getx()+12, entity.get(player).gety()+6, 8, 20);
-			return 1-entityface[player];
+			return 1-entity.get(player).face;
 		}
 		
 		if(State==S_DUCKING || Cond==COND_STAR) // ducking
 		{
 			setDimensions(entity.get(player).getx()+12, entity.get(player).gety()+12, 8, 16);
-			return 40-entityface[player];
+			return 40-entity.get(player).face;
 		}
 		
 		if(Cond==COND_WALK && State==S_WALKING) // running
 		{
 				setDimensions(entity.get(player).getx()+12, entity.get(player).gety()+6, 8, 20);
-				return 9-(3*entityface[player])+(playerframe>>1); 
+				return 9-(3*entity.get(player).face)+(playerframe>>1); 
 		}
 		
 		if(Cond==COND_SWIM) // swimming
 		{
 			setDimensions(entity.get(player).getx()+10, entity.get(player).gety()+11,13,12);
-			return 15-(3*entityface[player])+(playerframe/3);
+			return 15-(3*entity.get(player).face)+(playerframe/3);
 		}
 
 		if(Cond==COND_WALK && State>=2 && State<=3)  //jumping or falling
 		{
 			setDimensions(entity.get(player).getx()+10, entity.get(player).gety()+8, 12, 20);
-			return 3-entityface[player];
+			return 3-entity.get(player).face;
 		}
 		
 		return 0;
@@ -800,43 +875,43 @@ public class AK extends VergeEngine {
 			if(Cond==COND_SHIS) 
 			{
 				setDimensions(entity.get(player).getx()+10, entity.get(player).gety()+11,13,12);
-				return 15-(entityface[player]*3); // swimming
+				return 15-(entity.get(player).face*3); // swimming
 			}
 			else
 			{
 				setDimensions(entity.get(player).getx()+16, entity.get(player).gety()+12, 8, 24);
-				return 55-(entityface[player]*6); // walking
+				return 55-(entity.get(player).face*6); // walking
 			}
 		}
 
 		if(State==S_STOPPED && Cond==COND_SHIW) // idle
 		{
 			setDimensions(entity.get(player).getx()+16, entity.get(player).gety()+12, 8, 24);
-			return (1-entityface[player])*2;
+			return (1-entity.get(player).face)*2;
 		}
 		
 		if(State==S_DUCKING) // ducking
 		{
 			setDimensions(entity.get(player).getx()+12, entity.get(player).gety()+12, 8, 16);
-			return 40-entityface[player];
+			return 40-entity.get(player).face;
 		}
 		
 		if(Cond==COND_SHIW && State==S_WALKING) // running
 		{
 				setDimensions(entity.get(player).getx()+16, entity.get(player).gety()+12, 8, 24);
-				return (1-entityface[player])*2+(playerframe/3);
+				return (1-entity.get(player).face)*2+(playerframe/3);
 		}
 		
 		if(Cond==COND_SHIS) // swimming
 		{
 			setDimensions(entity.get(player).getx()+10, entity.get(player).gety()+11,13,12);
-			return 15-(3*entityface[player])+(playerframe/3);
+			return 15-(3*entity.get(player).face)+(playerframe/3);
 		}
 
 		if(Cond==COND_SHIW && State>=2 && State<=3)  //jumping or falling
 		{
 			setDimensions(entity.get(player).getx()+12, entity.get(player).gety()+12, 10, 20);
-			return 7-entityface[player]; //+((State-2)*2);
+			return 7-entity.get(player).face; //+((State-2)*2);
 		}
 		
 		return 0;
@@ -844,8 +919,8 @@ public class AK extends VergeEngine {
 
 	static void ProcessMisc()
 	{
-		printstring(0,230,screen,small_font,"$"+Gold);
-		printstring(0,0,screen,small_font,"Cond:"+str(Cond)+" State:"+str(State)+" Face:" + str(entityface[player]) + " Velocity: " + str(velocity));
+		drawText(10,10, "$ "+Gold);
+		//drawText(0,230,"Cond:"+str(Cond)+" State:"+str(State)+" Face:" + str(entity.get(player).face) + " Velocity: " + str(velocity));
 		
 		for(int i=0;i<Energy;i++)
 		{
@@ -925,8 +1000,8 @@ public class AK extends VergeEngine {
 		if(pdelay==0 && Cond!=COND_HELI && Cond!=COND_SURF) 
 		{  
 			if(brac==0) playsound(snd[3]);
-			unpress(1);Action=1;
-			ge=Getpunch(entityface[player]*32);
+			unpress(1);	Action=1;
+			ge=Getpunch(entity.get(player).face*32);
 			if(ge>=3 && ge<=8) // Eventos que são processados pelo soco
 			{
 				CallEvent(ge);
@@ -981,14 +1056,14 @@ public class AK extends VergeEngine {
 		return z;
 	}
 
-	static void vehicleDestroy() 
+	static void vehicleAttack() 
 	{
 		int ge;
-		ge=Getpunch(entityface[player]*32);
+		ge=Getpunch(entity.get(player).face*32);
 		if(ge==0)
-			ge=Getpunch(entityface[player]*40);
+			ge=Getpunch(entity.get(player).face*40);
 		
-		if(ge>=3 && ge<=8) // Eventos que são processados pela destruição da moto/lancha
+		if(ge>=3 && ge<=8) // Events processed by the vehicle
 			CallEvent(ge);
 	}
 
@@ -1019,56 +1094,56 @@ public class AK extends VergeEngine {
 	    {
 		if (entity.get(aa).speed==50) // Dust
 		{
-			if(entityface[aa]==0) entity.get(aa).specframe=53; // small dust
-			else if(entityface[aa]==1) entity.get(aa).specframe=54; // big dust
-			else if(entityface[aa]==2) entity.get(aa).specframe=53; // small dust
-			else { entity.get(aa).specframe=52; entity.get(aa).speed=0;entityface[aa]=0; }
-			if(monsterframe==0) entityface[aa]++;
+			if(entity.get(aa).face==0) entity.get(aa).specframe=53; // small dust
+			else if(entity.get(aa).face==1) entity.get(aa).specframe=54; // big dust
+			else if(entity.get(aa).face==2) entity.get(aa).specframe=53; // small dust
+			else { entity.get(aa).specframe=52; entity.get(aa).speed=0;entity.get(aa).face=0; }
+			if(monsterframe==0) entity.get(aa).face++;
 		}
 		else if (entity.get(aa).speed==51) // Big Dust
 		{
-			if(entityface[aa]==0) entity.get(aa).specframe=53; // small dust
-			else if(entityface[aa]==1) entity.get(aa).specframe=54; // big dust
-			else if(entityface[aa]==2) entity.get(aa).specframe=55; // huge dust
-			else if(entityface[aa]==3) entity.get(aa).specframe=54; // big dust
-			else if(entityface[aa]==4) entity.get(aa).specframe=53; // small dust
-			else { entity.get(aa).specframe=52; entity.get(aa).speed=0;entityface[aa]=0; }
-			if(monsterframe==0) entityface[aa]++;
+			if(entity.get(aa).face==0) entity.get(aa).specframe=53; // small dust
+			else if(entity.get(aa).face==1) entity.get(aa).specframe=54; // big dust
+			else if(entity.get(aa).face==2) entity.get(aa).specframe=55; // huge dust
+			else if(entity.get(aa).face==3) entity.get(aa).specframe=54; // big dust
+			else if(entity.get(aa).face==4) entity.get(aa).specframe=53; // small dust
+			else { entity.get(aa).specframe=52; entity.get(aa).speed=0;entity.get(aa).face=0; }
+			if(monsterframe==0) entity.get(aa).face++;
 		}
 
 		else if(entity.get(aa).speed==1) // Eagle
 		{ 
-			if(entityface[aa]>1) entityface[aa]=1;
-			if(entityface[aa]==0) entity.get(aa).incx(-2);
-			if(entityface[aa]==1) entity.get(aa).incx(2);
-			if(Obstruct(aa,1,24,16)) entityface[aa]=0;
-			if(Obstruct(aa,0,24,16)) entityface[aa]=1;
-			entity.get(aa).specframe=(2-(entityface[aa]*2))+(monsterframe/6);
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
+			if(entity.get(aa).face==0) entity.get(aa).incx(-2);
+			if(entity.get(aa).face==1) entity.get(aa).incx(2);
+			if(Obstruct(aa,1,24,16)) entity.get(aa).face=0;
+			if(Obstruct(aa,0,24,16)) entity.get(aa).face=1;
+			entity.get(aa).specframe=(2-(entity.get(aa).face*2))+(monsterframe/6);
 			if(Punched(aa,28,16)) KillThem(aa, DUST);
 			if(akiddCollision(1,entity.get(aa).getx()+1, entity.get(aa).gety(), 22,14)) GetKilled(1);
 		}
 		
 		else if (entity.get(aa).speed==2)  // Fish
 		{
-			if(entityface[aa]>1) entityface[aa]=1;
-			if(entityface[aa]==0) entity.get(aa).incx(-2);
-			if(entityface[aa]==1) entity.get(aa).incx(2);
-			if(Obstruct(aa,1,16,14)) entityface[aa]=0;
-			if(Obstruct(aa,0,16,14)) entityface[aa]=1;
-			entity.get(aa).specframe=(6-(entityface[aa]*2))+(monsterframe/6);
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
+			if(entity.get(aa).face==0) entity.get(aa).incx(-2);
+			if(entity.get(aa).face==1) entity.get(aa).incx(2);
+			if(Obstruct(aa,1,16,14)) entity.get(aa).face=0;
+			if(Obstruct(aa,0,16,14)) entity.get(aa).face=1;
+			entity.get(aa).specframe=(6-(entity.get(aa).face*2))+(monsterframe/6);
 			if(Punched(aa,18,18)) KillThem(aa, DUST);
 			if(akiddCollision(1,entity.get(aa).getx()+1, entity.get(aa).gety(), 14,14)) GetKilled(1);
 		}
 		
 		else if(entity.get(aa).speed==3)  // Scorpion
 		{
-			if(entityface[aa]>1) entityface[aa]=1;
-			if(entityface[aa]==0) entity.get(aa).incx(-2);
-			if(entityface[aa]==1) entity.get(aa).incx(2);
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
+			if(entity.get(aa).face==0) entity.get(aa).incx(-2);
+			if(entity.get(aa).face==1) entity.get(aa).incx(2);
 			if(!Obstruct(aa,3,14,16)) entity.get(aa).incy(2); // falling
-			if(Obstruct(aa,5,14,14)) entityface[aa]=0;
-			if(Obstruct(aa,4,14,14)) entityface[aa]=1;
-			entity.get(aa).specframe=(10-(entityface[aa]*2))+(monsterframe/6);
+			if(Obstruct(aa,5,14,14)) entity.get(aa).face=0;
+			if(Obstruct(aa,4,14,14)) entity.get(aa).face=1;
+			entity.get(aa).specframe=(10-(entity.get(aa).face*2))+(monsterframe/6);
 			if(Punched(aa,14,16)) KillThem(aa, DUST);
 			if(akiddCollision(1,entity.get(aa).getx(), entity.get(aa).gety(), 14,16)) GetKilled(1);
 		}
@@ -1076,45 +1151,63 @@ public class AK extends VergeEngine {
 		else if(entity.get(aa).speed==4)  // Frog
 		{
 			if(entity.get(player).getx()>entity.get(aa).getx()) cc = 0; else cc=1;
-			if(entityface[aa]<=3)  // stopped
+			if(entity.get(aa).face<=3)  // stopped
 			{
 				entity.get(aa).specframe=12+(2*cc);
-				if(!Obstruct(aa,3,14,16)) entityface[aa]=7;
+				if(!Obstruct(aa,3,14,16)) entity.get(aa).face=7;
 			}
-			if(entityface[aa]==3 && monsterframe==0) entity.get(aa).incy(-10);
-			else if(entityface[aa]>=4 && entityface[aa]<=5) // jumping
+			if(entity.get(aa).face==3 && monsterframe==0) entity.get(aa).incy(-10);
+			else if(entity.get(aa).face>=4 && entity.get(aa).face<=5) // jumping
 			{
-				 entity.get(aa).incy(-(6-entityface[aa]));
+				 entity.get(aa).incy(-(6-entity.get(aa).face));
 				 entity.get(aa).specframe=13+(2*cc);
 				 cc=10;
 			}
-			else if(entityface[aa]>=6 && entityface[aa]<=7) // falling
+			else if(entity.get(aa).face>=6 && entity.get(aa).face<=7) // falling
 			{
-				 entity.get(aa).incy(entityface[aa]-5);
+				 entity.get(aa).incy(entity.get(aa).face-5);
 				 entity.get(aa).specframe=13+(2*cc);
-				 if(Obstruct(aa,3,12,26)) entityface[aa]=1;
+				 if(Obstruct(aa,3,12,26)) entity.get(aa).face=1;
 				 cc=10;
 			}
-			if(entityface[aa]>=8) { entity.get(aa).incy(10);entityface[aa]=0;}
-			if(monsterframe==0) entityface[aa]++;
+			if(entity.get(aa).face>=8) { entity.get(aa).incy(10);entity.get(aa).face=0;}
+			if(monsterframe==0) entity.get(aa).face++;
 			if(Punched(aa,14,26)) KillThem(aa, DUST);
 			if(akiddCollision(1,entity.get(aa).getx(), entity.get(aa).gety()+10-cc, 14,24)) GetKilled(1);
 		}
 
-	//5 sea horse
+		else if(entity.get(aa).speed==5)  // Sea horse
+		{
+			entity.get(aa).specframe = 40 + monsterframe / 6;
+			
+			if(entity.get(aa).face == 0) entity.get(aa).incy();
+			if(entity.get(aa).face == 1) entity.get(aa).incx(-1);
+			if(entity.get(aa).face == 2) entity.get(aa).incx(-1);
+			if(entity.get(aa).face == 3) entity.get(aa).incy();
+			if(entity.get(aa).face == 4) entity.get(aa).incy(-1);
+			if(entity.get(aa).face == 5) entity.get(aa).incx();
+			if(entity.get(aa).face == 6) entity.get(aa).incx();
+			if(entity.get(aa).face == 7) entity.get(aa).incy(-1);
+			
+			if(entity.get(aa).face >= 8) entity.get(aa).face = 0;
+			
+			if(monsterframe==0) entity.get(aa).face++;
+			if(Punched(aa,11,15)) KillThem(aa, DUST);
+			if(akiddCollision(1,entity.get(aa).getx(), entity.get(aa).gety(), 11,15)) GetKilled(1);
+		}
 	//6 piranha fish
 		
 		else if(entity.get(aa).speed==7) // Big Fish
 		{
-			if(entityface[aa]%2==0) entity.get(aa).incx(-1); 
-			if(entityface[aa]%2==1) entity.get(aa).incx();
-			if(entityface[aa]==0 || entityface[aa]==1) entity.get(aa).incy(3); 
-			if(entityface[aa]==2 || entityface[aa]==3) entity.get(aa).incy(-3);
-			if(Obstruct(aa,1,24,16)) entityface[aa]--;
-			if(Obstruct(aa,0,24,16)) entityface[aa]++;
-			if(monsterframe==0) entityface[aa]+=2;
-			if(entityface[aa]>3) entityface[aa]=entityface[aa]%2;
-			cc =(22-((entityface[aa]%2)*2))+(monsterframe/6);if(cc<0) cc=0;
+			if(entity.get(aa).face%2==0) entity.get(aa).incx(-1); 
+			if(entity.get(aa).face%2==1) entity.get(aa).incx();
+			if(entity.get(aa).face==0 || entity.get(aa).face==1) entity.get(aa).incy(3); 
+			if(entity.get(aa).face==2 || entity.get(aa).face==3) entity.get(aa).incy(-3);
+			if(Obstruct(aa,1,24,16)) entity.get(aa).face--;
+			if(Obstruct(aa,0,24,16)) entity.get(aa).face++;
+			if(monsterframe==0) entity.get(aa).face+=2;
+			if(entity.get(aa).face>3) entity.get(aa).face=entity.get(aa).face%2;
+			cc =(22-((entity.get(aa).face%2)*2))+(monsterframe/6);if(cc<0) cc=0;
 			entity.get(aa).specframe=cc;
 			if(Punched(aa,24,16)) KillThem(aa, BIGDUST);
 			if(akiddCollision(1,entity.get(aa).getx(), entity.get(aa).gety(), 22,15)) GetKilled(1);
@@ -1122,16 +1215,16 @@ public class AK extends VergeEngine {
 		
 		else if(entity.get(aa).speed==8 || entity.get(aa).speed==9) // Ghost and Fast Ghost
 		{
-			if(entityface[aa]>1) entityface[aa]=1;
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
 			if(entity.get(player).getx()+4 <= entity.get(aa).getx())
 			{
-				entityface[aa]=0;
+				entity.get(aa).face=0;
 				entity.get(aa).incx(-(entity.get(aa).speed-7));
 				entity.get(aa).specframe=34+(monsterframe/6);
 			}
 			if(entity.get(player).getx()-4 >= entity.get(aa).getx())
 			{
-				entityface[aa]=1;
+				entity.get(aa).face=1;
 				entity.get(aa).incx(entity.get(aa).speed-7);
 				entity.get(aa).specframe=32+(monsterframe/6);
 			}
@@ -1143,10 +1236,10 @@ public class AK extends VergeEngine {
 		
 		else if(entity.get(aa).speed==10) // Bat
 		{
-			if(entityface[aa]>1) entityface[aa]=1;
-			if(entityface[aa]==0 && !Obstruct(aa,0,15,12)) entity.get(aa).incx(-2);
-			if(entityface[aa]==1 && !Obstruct(aa,1,15,12)) entity.get(aa).incx(2);
-			if(Obstruct(aa,1,14,10)) entityface[aa]=0;if(Obstruct(aa,0,14,10)) entityface[aa]=1;
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
+			if(entity.get(aa).face==0 && !Obstruct(aa,0,15,12)) entity.get(aa).incx(-2);
+			if(entity.get(aa).face==1 && !Obstruct(aa,1,15,12)) entity.get(aa).incx(2);
+			if(Obstruct(aa,1,14,10)) entity.get(aa).face=0;if(Obstruct(aa,0,14,10)) entity.get(aa).face=1;
 			if(monsterframe<6) entity.get(aa).incy(2);else entity.get(aa).incy(-2);
 			entity.get(aa).specframe=30+(monsterframe/6);
 			if(Punched(aa,15,16)) KillThem(aa, DUST); 
@@ -1155,10 +1248,10 @@ public class AK extends VergeEngine {
 		
 		else if(entity.get(aa).speed==11) //Owl
 		{
-			if(entityface[aa]>1) entityface[aa]=1;
-			if(entityface[aa]==0 && !Obstruct(aa,0,15,16)) entity.get(aa).incx(-1);
-			if(entityface[aa]==1 && !Obstruct(aa,1,15,16)) entity.get(aa).incx();
-			if(Obstruct(aa,1,15,14)) entityface[aa]=0;if(Obstruct(aa,0,15,14)) entityface[aa]=1;
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
+			if(entity.get(aa).face==0 && !Obstruct(aa,0,15,16)) entity.get(aa).incx(-1);
+			if(entity.get(aa).face==1 && !Obstruct(aa,1,15,16)) entity.get(aa).incx();
+			if(Obstruct(aa,1,15,14)) entity.get(aa).face=0;if(Obstruct(aa,0,15,14)) entity.get(aa).face=1;
 			if(!Obstruct(aa,3,15,16)) entity.get(aa).incy(2);
 			entity.get(aa).specframe=28+(monsterframe/6);
 			if(Punched(aa,15,15)) KillThem(aa, DUST); 
@@ -1167,36 +1260,36 @@ public class AK extends VergeEngine {
 
 		else if(entity.get(aa).speed==12) //Monkey
 		{
-			if(entityface[aa]<=2) entity.get(aa).specframe=40; // idle
-			if(entityface[aa]>2 && entityface[aa]<=4) entity.get(aa).specframe=41; // leaf prepare
-			if(entityface[aa]==5) // leaf throw
+			if(entity.get(aa).face<=2) entity.get(aa).specframe=50; // idle
+			if(entity.get(aa).face>2 && entity.get(aa).face<=4) entity.get(aa).specframe=51; // leaf prepare
+			if(entity.get(aa).face==5) // leaf throw
 			{
-				entityface[aa]=0;
+				entity.get(aa).face=0;
 				if(entity.get(aa).getx()>entity.get(player).getx())
 					AddSprite(entity.get(aa).getx(), entity.get(aa).gety(),10);
 				else
 					AddSprite(entity.get(aa).getx(), entity.get(aa).gety(),11);
 			}		
-			if (monsterframe==0) entityface[aa]++;
+			if (monsterframe==0) entity.get(aa).face++;
 			if(Punched(aa,15,26)) KillThem(aa, BIGDUST); 	
 			if(akiddCollision(1,entity.get(aa).getx(), entity.get(aa).gety(), 15,24)) GetKilled(1);		
 		}
 
 		else if(entity.get(aa).speed==13) // Strange monster
 		{
-			if(entityface[aa]==0 || entityface[aa]==2) entity.get(aa).incx(-1); 
-			if(entityface[aa]==1 || entityface[aa]==3) entity.get(aa).incx();
-			if(entityface[aa]==0 || entityface[aa]==1) if(!Obstruct(aa,3,16,16)) entity.get(aa).incy(2); //falling
-			if(entityface[aa]==2 || entityface[aa]==3) if(!Obstruct(aa,2,16,16)) entity.get(aa).incy(-2); //jumping
-			if(Obstruct(aa,1,14,14)) entityface[aa]--;
-			if(Obstruct(aa,0,14,14)) entityface[aa]++;
+			if(entity.get(aa).face==0 || entity.get(aa).face==2) entity.get(aa).incx(-1); 
+			if(entity.get(aa).face==1 || entity.get(aa).face==3) entity.get(aa).incx();
+			if(entity.get(aa).face==0 || entity.get(aa).face==1) if(!Obstruct(aa,3,16,16)) entity.get(aa).incy(2); //falling
+			if(entity.get(aa).face==2 || entity.get(aa).face==3) if(!Obstruct(aa,2,16,16)) entity.get(aa).incy(-2); //jumping
+			if(Obstruct(aa,1,14,14)) entity.get(aa).face--;
+			if(Obstruct(aa,0,14,14)) entity.get(aa).face++;
 			if(monsterframe==0)
 			{
-				if(Obstruct(aa,3,16,16) && entityface[aa]<2) entityface[aa]+=2;
-				else entityface[aa]=entityface[aa]%2;
+				if(Obstruct(aa,3,16,16) && entity.get(aa).face<2) entity.get(aa).face+=2;
+				else entity.get(aa).face=entity.get(aa).face%2;
 			}
-			if(entityface[aa]<0 || entityface[aa]>3) entityface[aa]=entityface[aa]%2;
-			cc =(18-((entityface[aa]%2)*2))+(monsterframe/6);if(cc<0) cc=52;
+			if(entity.get(aa).face<0 || entity.get(aa).face>3) entity.get(aa).face=entity.get(aa).face%2;
+			cc =(18-((entity.get(aa).face%2)*2))+(monsterframe/6);if(cc<0) cc=52;
 			entity.get(aa).specframe=cc;
 			if(Punched(aa,16,16)) KillThem(aa, DUST);
 			if(akiddCollision(1,entity.get(aa).getx(), entity.get(aa).gety(), 15,15)) GetKilled(1);
@@ -1213,15 +1306,15 @@ public class AK extends VergeEngine {
 		
 		else if(entity.get(aa).speed>=17 && entity.get(aa).speed<=25) // Bull
 		{
-			if(entityface[aa]>1) entityface[aa]=1;
-			if(entityface[aa]==0) entity.get(aa).incx(-(entity.get(aa).speed-16)); else entity.get(aa).incx((entity.get(aa).speed-16));
-			if(Obstruct(aa,5,32,24)) entityface[aa]=0;
-			if(Obstruct(aa,4,32,24)) entityface[aa]=1;
-			entity.get(aa).specframe=(46-(entityface[aa]<<1))+(monsterframe/6);
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
+			if(entity.get(aa).face==0) entity.get(aa).incx(-(entity.get(aa).speed-16)); else entity.get(aa).incx((entity.get(aa).speed-16));
+			if(Obstruct(aa,5,32,24)) entity.get(aa).face=0;
+			if(Obstruct(aa,4,32,24)) entity.get(aa).face=1;
+			entity.get(aa).specframe=(46-(entity.get(aa).face<<1))+(monsterframe/6);
 			if(Punched(aa,32,24)) 
 			{
-				entityface[aa]=entityface[player];
-				entity.get(aa).incx((entityface[aa]*24)-12);
+				entity.get(aa).face=entity.get(player).face;
+				entity.get(aa).incx((entity.get(aa).face*24)-12);
 				if(entity.get(aa).speed==25) KillThem(aa, BIGDUST);
 				else {entity.get(aa).speed++;playsound(snd[7]);}
 			}
@@ -1230,16 +1323,16 @@ public class AK extends VergeEngine {
 		
 		else if(entity.get(aa).speed==26) // Bear
 		{
-			if(entityface[aa]>1) entityface[aa]=1;
+			if(entity.get(aa).face>1) entity.get(aa).face=1;
 			if(entity.get(player).getx()+8 <= entity.get(aa).getx())
 			{
-				entityface[aa]=0;
+				entity.get(aa).face=0;
 				entity.get(aa).incx(-1);
 				entity.get(aa).specframe=0+(monsterframe/6);
 			}
 			if(entity.get(player).getx()-8 >= entity.get(aa).getx())
 			{
-				entityface[aa]=1;
+				entity.get(aa).face=1;
 				entity.get(aa).incx();
 				entity.get(aa).specframe=3+(monsterframe/6);
 			}
@@ -1254,7 +1347,7 @@ public class AK extends VergeEngine {
 	static void KillThem(int index, int dst)
 	{
 		entitystop(index);
-		entityface[index]=0;
+		entity.get(index).face=0;
 		entity.get(index).specframe=52;
 		entity.get(index).speed=dst;
 		playsound(snd[7]);
@@ -1291,8 +1384,8 @@ public class AK extends VergeEngine {
 	  	int a;
 	  	if(Action==1 || Cond==COND_MOTO || Cond==COND_STAR)
 	  	{
-		  	if((entity.get(player).getx()+(entityface[player]*24)) >= entity.get(ind).getx() && 
-		  	   (entity.get(player).getx()+(entityface[player]*24)) <= entity.get(ind).getx()+wx &&
+		  	if((entity.get(player).getx()+(entity.get(player).face*24)) >= entity.get(ind).getx() && 
+		  	   (entity.get(player).getx()+(entity.get(player).face*24)) <= entity.get(ind).getx()+wx &&
 	  		   (entity.get(player).gety()+14) >= entity.get(ind).gety() && (entity.get(player).gety()+14) <= entity.get(ind).gety()+wy) return true;
 	  	}
 	  	if(brac==1 || Cond==COND_HELI || Cond==COND_SURF)
@@ -1405,6 +1498,7 @@ public class AK extends VergeEngine {
 				spe[i]--;
 				if(spt[i]==2) ptr=rock_g; // sea rock
 				else if(spt[i]==3) ptr=rock_c; // cave rock
+				else if(spt[i]==4) ptr=firing; // vehicle fragments
 				else ptr=rock_t; // common rock
 				if(spt[i]<=9) // rock fragment
 				{
@@ -1464,6 +1558,12 @@ public class AK extends VergeEngine {
 		}
 	}
 
+	public static void drawText(int x, int y, String text) {
+		screen.g.setFont(sys_font);
+		screen.g.setColor(Color.WHITE);
+		screen.g.drawString(text, x, y);	
+	}
+
 
 	/* Version 
 	22/06/2000	Sounds, Basic engine, Akidd character
@@ -1494,15 +1594,17 @@ public class AK extends VergeEngine {
 
 
 	PENDENCIAS
-	NEW: Trocar speed e entityface por description e face, respectivamente (Alterar mapas)
+	NEW: Trocar speed por description (Alterar mapas)
+	(X) NEW: Trocar entityface por face.
+	(X) NEW: Destroy vehicles (moto, surf, heli)
 	Reformular Collision(), Punched() e getobs. Area do monstro (wx,wy) deve ser a mesma de getPunched.
 	Alterar movimento do Bear
 	Método CreateGhost() para criar um fantasma com entityface = 2 (onde ele fica parado, até normalizar).
 	Criar menu para escolha de WALK/SWIM/MOTO/HELI/..., Shopping e Itens (Bengala, Manto da Invencibilidade, Cápsulas)
-	Fazer com que a moto tenha altura limitada quando a velocidade estiver reduzida
+	(X)Fazer com que a moto tenha altura limitada quando a velocidade estiver reduzida
 	Sons melhores (usar sons na chamada de AddSprite)
 	Novos tiles (castelo, espetos, etc)
-	Tela de título e seleção
+	(X)Tela de título e seleção
 	Chefes e jo-ken-po
 	Tiles, VSP Merge (automated)
 	Internal Map Editor, random generator
@@ -1512,20 +1614,4 @@ public class AK extends VergeEngine {
 	Sprites do AK do Mega (or twin-brother Alex)
 	Wonder boy merge
 	*/
-
-
-	public static void mapswitch(String mapname, int x, int y) {
-		gotox=x;gotoy=y;
-		map(mapname);
-	}
-
-	static void DrawBox(int a, int b, int c, int d) 
-	{
-		rectfill(a+4,b+4,c+a-4,d+b-4, new Color(30,30,150), screen);
-		rect(a+3,b+3,c+a-3,d+b-3,new Color(60,60,60), screen);
-		rect(a+2,b+2,c+a-2,d+b-2,new Color(90,90,90), screen);
-		rect(a+1,b+1,c+a-1,d+b-1,new Color(90,90,90), screen);
-		rect(a,b,c+a,d+b,new Color(60,60,60), screen);
-	}
-	
 }

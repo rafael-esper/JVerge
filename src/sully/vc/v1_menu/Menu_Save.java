@@ -1,9 +1,31 @@
 package sully.vc.v1_menu;
 
 import static core.Script.*;
+
 import static sully.Sully.*;
+import static sully.Flags.*;
+import static sully.vc.Sfx.*;
+import static sully.vc.v1_menu.Menu_Equip.MenuDrawSubWindow;
 import static sully.vc.v1_menu.Menu_System.*;
-import static sully.vc.v1_menu.Menu_Equip.*;
+import static sully.vc.simpletype_rpg.Inventory.*;
+import static sully.vc.simpletype_rpg.Data.*;
+import static sully.vc.simpletype_rpg.Party.*;
+import static sully.vc.v1_rpg.V1_RPG.*;
+import static sully.vc.v1_rpg.V1_Simpletype.FindItem;
+
+
+import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+
+import persist.ExtendedDataInputStream;
+import persist.ExtendedDataOutputStream;
+import sully.Sully;
+import sully.vc.simpletype_rpg.Cast;
+import sully.vc.simpletype_rpg.Inventory;
 import domain.VImage;
 
 public class Menu_Save {
@@ -24,80 +46,97 @@ public class Menu_Save {
 		String time; // Time saved, from computer clock
 	}
 	// Make
-	public static Save_display_struct save_display[] = new Save_display_struct[5];
+	static Save_display_struct save_display[] = new Save_display_struct[5];
+	
+	static {
+		Menu_Save ms = new Menu_Save();
+		save_display[0] = ms.new Save_display_struct();
+		save_display[1] = ms.new Save_display_struct();
+		save_display[2] = ms.new Save_display_struct();
+		save_display[3] = ms.new Save_display_struct();
+		save_display[4] = ms.new Save_display_struct();
+	}
+	
 	
 	// Control function for the Save and Load screens of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Some scary stuff here to navigate the sub window and ensure resources are freed
-	void MenuControlSave()
+	public static void MenuControlSave()
 	{
-		// If saving, move between number of saves plus one (for 'New save' slot)
-		if (menu_option == 5) menu_item = MenuControlArrows(menu_item, menu_sub + 1);
-		// If loading move between number of saves
-		else menu_item = MenuControlArrows(menu_item, menu_sub);
-	
-		// This handles if the focus of the sub window changes, necessitating freeing/loading slots
-		if (menu_start + 5 == menu_item) // If moving one slot down
-		{
-			MenuFreeSaveDisplay(menu_start % 5); // Free slot at top of sub window
-			if (menu_item < menu_sub) MenuLoadSaveDisplay(menu_item); // Load new slot if needed
-			menu_start++; // Increment first item displayed
-		}
-		else if (menu_start - 1 == menu_item) // If moving one slot up
-		{
-			if (menu_item + 5 < menu_sub) MenuFreeSaveDisplay(menu_item + 5); // Free slot at bottom of sub window if needed
-			MenuLoadSaveDisplay(menu_item); // Load new slot
-			menu_start = menu_item; // First item becomes current item
-		}
-		else if (menu_start + 4 < menu_item) // If 'gone off top' of sub window
-		{
-			menu_start = menu_item - 4; // First item becomes item four before current item
-			MenuRefreshSlots(); // Clear all slots and reload
-		}
-		else if (menu_start > menu_item) // If 'gone off bottom' of sub window
-		{
-			menu_start = menu_item; // First item becomes current item
-			MenuRefreshSlots(); // Clear all slots and reload
-		}
-	
-		if (MenuConfirm())
-		{
-			if (menu_option == 5) // If saving
+		
+		try {
+			// If saving, move between number of saves plus one (for 'New save' slot)
+			if (menu_option == 5) menu_item = MenuControlArrows(menu_item, menu_sub + 1);
+			// If loading move between number of saves
+			else menu_item = MenuControlArrows(menu_item, menu_sub);
+		
+			// This handles if the focus of the sub window changes, necessitating freeing/loading slots
+			if (menu_start + 5 == menu_item) // If moving one slot down
 			{
-				MenuSaveGame(menu_item + 1);
+				MenuFreeSaveDisplay(menu_start % 5); // Free slot at top of sub window
+				if (menu_item < menu_sub) 
+					MenuLoadSaveDisplay(menu_item); // Load new slot if needed
+				menu_start++; // Increment first item displayed
+			}
+			else if (menu_start - 1 == menu_item) // If moving one slot up
+			{
+				if (menu_item + 5 < menu_sub) MenuFreeSaveDisplay(menu_item + 5); // Free slot at bottom of sub window if needed
+				MenuLoadSaveDisplay(menu_item); // Load new slot
+				menu_start = menu_item; // First item becomes current item
+			}
+			else if (menu_start + 4 < menu_item) // If 'gone off top' of sub window
+			{
+				menu_start = menu_item - 4; // First item becomes item four before current item
+				MenuRefreshSlots(); // Clear all slots and reload
+			}
+			else if (menu_start > menu_item) // If 'gone off bottom' of sub window
+			{
+				menu_start = menu_item; // First item becomes current item
+				MenuRefreshSlots(); // Clear all slots and reload
+			}
+		
+			if (MenuConfirm())
+			{
+				if (menu_option == 5) // If saving
+				{
+					MenuSaveGame(menu_item + 1);
+					MenuHappyBeep();
+					MenuMinibox("Game saved in slot "+str(menu_item + 1), "sully.vc.v1_menu.Menu_Save.MenuDrawSave");
+					MenuRoot(); // Return to main menu
+				}
+				else if (menu_sub!=0) // If loading, and there is 1 or more saved games
+				{
+					menu_done = true; // Close the menu when the game is loaded
+					MenuHappyBeep();
+					MenuMinibox("Loading game from slot "+str(menu_item + 1), "sully.vc.v1_menu.Menu_Save.MenuDrawSave");
+					MenuLoadGame(menu_item + 1);
+					_title_menu_load_done = true; // rbp
+				}
+				else MenuAngryBuzz();
+			}
+		
+			if (MenuCancel())
+			{
 				MenuHappyBeep();
-				MenuMinibox("Game saved in slot "+str(menu_item + 1), "MenuDrawSave");
+				MenuClearDisplay(); // Free images and data used for display from memory
+				
+				if( _title_menu !=0 )
+				{
+					_title_menu_load_cancel = true;
+					return;
+				}
+				
 				MenuRoot(); // Return to main menu
 			}
-			else if (menu_sub!=0) // If loading, and there is 1 or more saved games
-			{
-				menu_done = true; // Close the menu when the game is loaded
-				MenuHappyBeep();
-				MenuMinibox("Loading game from slot "+str(menu_item + 1), "MenuDrawSave");
-				MenuLoadGame(menu_item + 1);
-			}
-			else MenuAngryBuzz();
-		}
-	
-		if (MenuCancel())
-		{
-			MenuHappyBeep();
-			MenuClearDisplay(); // Free images and data used for display from memory
-			
-			if( _title_menu !=0 )
-			{
-				_title_menu_load_done = true;
-				return;
-			}
-			
-			MenuRoot(); // Return to main menu
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
 	// Drawing function for the Save and Load screens of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Not quite as scary as it looks at first
-	void MenuDrawSave()
+	public static void MenuDrawSave()
 	{
 		int i;
 	
@@ -129,28 +168,28 @@ public class Menu_Save {
 	
 		if (menu_item < menu_sub) // If a full save slot is currently selected
 		{
-			//REMOVERBPprintright(220, 35, screen, 0, save_display[(menu_item) % 5].time); // Print when game was saved
-			//REMOVERBPprintstring(20, 35, screen, 0, GetTimeString(save_display[menu_item % 5].gametime)); // Print playtime of game
+			printright(220, 35, screen, menu_font[0], save_display[(menu_item) % 5].time); // Print when game was saved
+			printstring(20, 35, screen, menu_font[0], GetTimeString(save_display[menu_item % 5].gametime)); // Print playtime of game
 		}
 	}
 	
 	// blits a save slot to the screen from passed information (does not look in save_display[] struct)
-	void MenuBlitSaveSlot(int location, String text, VImage image)
+	public static void MenuBlitSaveSlot(int location, String text, VImage image)
 	// Pass: Location within sub window, text to display, and image (pass negative for no image)
 	// Clips long descriptions, no other error detection
 	{
 		int i;
-		text = wraptext(menu_font[0], text, 125); // Wrap any text passed
-		int lines = tokencount(text, "&"); // Count lines used
+		java.util.List<String> rows = wraptext(menu_font[0], text, 125); // Wrap any text passed
+		int lines = rows.size(); // Count lines used
 		if (lines > 2) // If there are more than two lines
 		{
-			//REMOVERBPtext = (text, "&", 0) + "&" + (text, "&", 1) + "..."; // Performs a little clipping
+			text = rows.get(0) + "&" + rows.get(1) + "..."; // Performs a little clipping
 			lines = 2;
 		}
 		for (i = 0; i < lines; i++) // Loops throught text lines
 		{
 			// Displays the text
-			//REMOVERBPprintstring(40, 52 + (menu_fonth * i) + (location * 31), screen, menu_font[0], (text, "&", i));
+			printstring(40, 52 + (menu_fonth * i) + (location * 31), screen, menu_font[0], rows.get(i));
 		}
 		// Displays a rectangle if no image was passed, otherwise blits the image
 		if (image == null) rect(172, 51 + (location * 31), 203, 74 + (location * 31), menu_colour[2], screen);
@@ -162,315 +201,377 @@ public class Menu_Save {
 	// Called before the saves are displayed, checks number of saves and loads data to slots
 	public static int MenuInitSave()
 	// Return: the number of save games
-	// Checks for existance of save files. Can be fooled by renaming or deletion.
+	// Checks for existence of save files. Can be fooled by renaming or deletion.
 	{
-		int count = 1; // Assume first save exists
-		/*REMOVERBPint file = FileOpen("save/save001.sve", FILE_READ); // Trys to open the save file 001
-		while(file!=0) // As long as the save can be opened
-		{
-			FileClose(file); // Close the current save
-			count++; // Increase the number of saves found
-			file = FileOpen("save/save"+ThreeDigit(count)+".sve", FILE_READ); // Try to open next save
+		int count = 1;
+		
+		try {
+			while(true) // As long as the save can be opened
+			{
+				URL url = load("save/save"+ThreeDigit(count+1)+".sve");
+				if(url!=null) {
+					File file = new File(url.getFile()); // Trys to open the save file 001
+					if(file.exists())
+						count++; // Increase the number of saves found
+				}
+				if(url==null)
+					break;
+			}
+			int filecount = count;
+			System.out.println("Found " + filecount + " files.");
+			if (filecount > 5) filecount = 5; // If more than five saves exist, still only load 5 file headers
+			while (filecount > 0) // Count down the save games
+			{
+				MenuLoadSaveDisplay(filecount-1); // Load the save header, minus 1 as array starts at 0
+				filecount--;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//error(e.getMessage());
 		}
-		file = count - 1; // Reuse file variable to store number of save games succesfully opened
-		if (file > 5) file = 5; // If more than five saves exist, still only load 5 file headers
-		while (file > 0) // Count down the save games
-		{
-			MenuLoadSaveDisplay(file - 1); // Load the save header, minus 1 as array starts at 0
-			file--;
-		}*/
-		return count - 1; // Total number of saves is one less than count, as the last open must have failed
+		return count; // Total number of saves is one less than count, as the last open must have failed
 	}
 	
 	// Writes the system time at the current postion of a file
-	void WriteSystemTime(int filehandle)
+	static void WriteSystemTime(ExtendedDataOutputStream edos) throws IOException
 	// Pass: An open file handle in FILE_WRITE mode
 	// No error checking
 	{
-		/*REMOVERBPFileWriteQuad(filehandle, vc_GetYear());	// the system clock year
-		FileWriteQuad(filehandle, vc_GetMonth());	// current month
-		FileWriteQuad(filehandle, vc_GetDay());	// current day-of-month
+		
+		edos.writeSignedIntegerLittleEndian(vc_GetYear());	// the system clock year
+		edos.writeSignedIntegerLittleEndian(vc_GetMonth());	// current month
+		edos.writeSignedIntegerLittleEndian(vc_GetDay());	// current day-of-month
 		//int sysdate.dayofweek; 	// current day of week (0=sunday, 6=saturday)
 	
-		FileWriteQuad(filehandle, vc_GetHour());	// system clock hour (24hour format)
-		FileWriteQuad(filehandle, vc_GetMinute());	// current clock minute
-		FileWriteQuad(filehandle, vc_GetSecond());	// current clock second*/
+		edos.writeSignedIntegerLittleEndian(vc_GetHour());	// system clock hour (24hour format)
+		edos.writeSignedIntegerLittleEndian(vc_GetMinute());	// current clock minute
+		edos.writeSignedIntegerLittleEndian(vc_GetSecond());	// current clock second
 	}
 	
 	// Reads a date from current postion in file, and returns in String form
-	String ReadSystemTime(int filehandle)
+	static String ReadSystemTime(ExtendedDataInputStream edis) throws IOException
 	// Pass: An open file handle in FILE_READ mode
 	// Returns a String in pretty date format
 	// No error checking
 	{
 		int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-		/*REMOVERBPyear = FileReadQuad(filehandle);
-		month = FileReadQuad(filehandle);
-		day = FileReadQuad(filehandle);
+		year = edis.readSignedIntegerLittleEndian(); 
+		month = edis.readSignedIntegerLittleEndian(); ;
+		day = edis.readSignedIntegerLittleEndian(); ;
 	
-		hour = FileReadQuad(filehandle);
-		minute = FileReadQuad(filehandle);
-		second = FileReadQuad(filehandle);*/
+		hour = edis.readSignedIntegerLittleEndian(); ;
+		minute = edis.readSignedIntegerLittleEndian(); ;
+		second = edis.readSignedIntegerLittleEndian(); ;
 		return TwoDigit(hour)+":"+TwoDigit(minute)+":"+TwoDigit(second)+"  "+TwoDigit(day)+"/"+TwoDigit(month)+"/"+str(year);
 	}
 	
 	// Saves the current position in the game to file specified
-	void MenuSaveGame(int slot)
+	public static void MenuSaveGame(int slot) throws IOException
 	{
-		/*REMOVERBPint xc, yc;
+		int xc, yc;
 		String gamedesc = "Save game in file: save/save"+ThreeDigit(slot)+".sve";
 		int ver = (VERSION_4_BYTE << 24) + (VERSION_3_BYTE << 16) + (VERSION_2_BYTE << 8) + VERSION_1_BYTE;
-		int screenshot = NewImage(ImageWidth(screen), ImageHeight(screen));
+		VImage screenshot = new VImage(imagewidth(screen), imageheight(screen));
 		VImage mini = new VImage(32, 24);
-		RenderMap(xwin, ywin, screenshot);
+		rendermap(xwin, ywin, screenshot);
 		scaleblit(0, 0, 32, 24, screenshot, mini);
-		int savegame = FileOpen("save/save"+ThreeDigit(slot)+".sve", FILE_WRITE);
+		
+		File savegame = new File(load(".").getFile() + "save/save"+ThreeDigit(slot)+".sve");
+		log("Saving file at: " + savegame);
+		savegame.createNewFile();
+		
+		FileOutputStream fos = new FileOutputStream(savegame);
+		ExtendedDataOutputStream edos = new ExtendedDataOutputStream(fos); // rbp
+		
 		// [4] Header Size
-			FileWriteQuad(savegame, 3120 + len(VERSION_STRING) + len(gamedesc));
+			edos.writeSignedIntegerLittleEndian(3120 + len(VERSION_STRING) + len(gamedesc));
 		// [4] Version Number
-			FileWriteQuad(savegame, ver);
+			edos.writeSignedIntegerLittleEndian(ver);
 		// [6 + LEN] Version String
-			FileWriteQuad(savegame, len(VERSION_STRING));
-			FileWriteString(savegame, VERSION_STRING);
+			edos.writeSignedIntegerLittleEndian(len(VERSION_STRING));
+			edos.writeShort(0);//rbp
+			//edos.writeFixedString(VERSION_STRING, len(VERSION_STRING));
+			edos.writeSimpleString(VERSION_STRING);
 		// [4] Game Time Count
-			FileWriteQuad(savegame, global_gametime + systemtime);
+			edos.writeSignedIntegerLittleEndian(global_gametime + systemtime);
 		// [24] System Time
-			WriteSystemTime(savegame);
+			WriteSystemTime(edos);
 		// [6 + LEN] Game Description
-			FileWriteQuad(savegame, len(gamedesc));
-			FileWriteString(savegame, gamedesc);
+			edos.writeSignedIntegerLittleEndian(len(gamedesc));
+			edos.writeShort(0);//rbp
+			edos.writeSimpleString(gamedesc);
 		// [3072] Mini Screenshot
 			for (yc = 0; yc <  24; yc++)
 			{
 				for (xc = 0; xc <  32; xc++)
 				{
-					FileWriteQuad(savegame, GetPixel(xc, yc, mini));
+					edos.writeSignedIntegerLittleEndian(readpixel(xc, yc, mini));
 				}
 			}
 		// Party Data
-			FileWriteQuad(savegame, PartySize());
-			FileWriteQuad(savegame, MAX_PARTY_SIZE);
+			edos.writeSignedIntegerLittleEndian(PartySize());
+			edos.writeSignedIntegerLittleEndian(MAX_PARTY_SIZE);
 			for (yc = 0; yc <  MAX_PARTY_SIZE; yc++)
 			{
-				FileWriteQuad(savegame, party[yc]);
+				edos.writeSignedIntegerLittleEndian(party[yc]);
 			}
 	
-			FileWriteQuad(savegame, MAX_CAST);
-			FileWriteQuad(savegame, MAX_STATS);
-			FileWriteQuad(savegame, MAX_EQUIP_SLOTS);
+			edos.writeSignedIntegerLittleEndian(MAX_CAST);
+			edos.writeSignedIntegerLittleEndian(MAX_STATS);
+			edos.writeSignedIntegerLittleEndian(MAX_EQUIP_SLOTS);
 			for (yc = 0; yc <  MAX_CAST; yc++)
 			{
-				FileWriteQuad(savegame, master_cast[yc].level);
-				FileWriteQuad(savegame, master_cast[yc].exp);
-				FileWriteQuad(savegame, master_cast[yc].cur_hp);
-				FileWriteQuad(savegame, master_cast[yc].cur_mp);
+				edos.writeSignedIntegerLittleEndian(master_cast[yc].level);
+				edos.writeSignedIntegerLittleEndian(master_cast[yc].exp);
+				edos.writeSignedIntegerLittleEndian(master_cast[yc].cur_hp);
+				edos.writeSignedIntegerLittleEndian(master_cast[yc].cur_mp);
 				for (xc = 0; xc <  MAX_STATS; xc++)
 				{
-					FileWriteQuad(savegame, master_cast[yc].stats[xc]);
+					edos.writeSignedIntegerLittleEndian(master_cast[yc].stats[xc]);
 				}
 				for (xc = 0; xc <  MAX_EQUIP_SLOTS; xc++)
 				{
-					FileWriteQuad(savegame, master_cast[yc].equipment[xc]);
+					edos.writeSignedIntegerLittleEndian(master_cast[yc].equipment[xc]);
 				}
 			}
 		// Item Data
-			FileWriteQuad(savegame, money); // Nearly forgot!
-			FileWriteQuad(savegame, _supply_count);
-			FileWriteQuad(savegame, MAX_SUPPLIES);
+			edos.writeSignedIntegerLittleEndian(money); // Nearly forgot!
+			edos.writeSignedIntegerLittleEndian(_supply_count);
+			edos.writeSignedIntegerLittleEndian(MAX_SUPPLIES);
 			for (yc = 0; yc <  MAX_SUPPLIES; yc++)
 			{
-				FileWriteQuad(savegame, supply_inventory[yc].item_ref);
-				FileWriteQuad(savegame, supply_inventory[yc].quant);
+				edos.writeSignedIntegerLittleEndian(supply_inventory[yc].item_ref);
+				edos.writeSignedIntegerLittleEndian(supply_inventory[yc].quant);
 			}
 	
-			FileWriteQuad(savegame, _equip_count);
-			FileWriteQuad(savegame, MAX_EQUIPMENT);
+			edos.writeSignedIntegerLittleEndian(_equip_count);
+			edos.writeSignedIntegerLittleEndian(MAX_EQUIPMENT);
 			for (yc = 0; yc <  MAX_EQUIPMENT; yc++)
 			{
-				FileWriteQuad(savegame, equipment_inventory[yc].item_ref);
-				FileWriteQuad(savegame, equipment_inventory[yc].quant);
+				edos.writeSignedIntegerLittleEndian(equipment_inventory[yc].item_ref);
+				edos.writeSignedIntegerLittleEndian(equipment_inventory[yc].quant);
 			}
 	
-			FileWriteQuad(savegame, _key_count);
-			FileWriteQuad(savegame, MAX_KEY_ITEMS);
+			edos.writeSignedIntegerLittleEndian(_key_count);
+			edos.writeSignedIntegerLittleEndian(MAX_KEY_ITEMS);
 			for (yc = 0; yc <  MAX_KEY_ITEMS; yc++)
 			{
-				FileWriteQuad(savegame, key_item_inventory[yc].item_ref);
-				FileWriteQuad(savegame, key_item_inventory[yc].quant);
+				edos.writeSignedIntegerLittleEndian(key_item_inventory[yc].item_ref);
+				edos.writeSignedIntegerLittleEndian(key_item_inventory[yc].quant);
 			}
 		// Options Data
-			FileWriteQuad(savegame, global_music_volume);
-			FileWriteQuad(savegame, sfx_volume);
-			FileWriteQuad(savegame, interface_volume);
-			FileWriteQuad(savegame, global_noscroll);
-			FileWriteQuad(savegame, global_menuluc);
-			FileWriteQuad(savegame, _menu_on);
-			FileWriteQuad(savegame, 0); // Padding
-			FileWriteQuad(savegame, MENU_COLOUR_NUM);
+			edos.writeSignedIntegerLittleEndian(global_music_volume);
+			edos.writeSignedIntegerLittleEndian(sfx_volume);
+			edos.writeSignedIntegerLittleEndian(interface_volume);
+			edos.writeSignedIntegerLittleEndian(global_noscroll?1:0);
+			edos.writeSignedIntegerLittleEndian(global_menuluc);
+			edos.writeSignedIntegerLittleEndian(_menu_on?1:0);
+			edos.writeSignedIntegerLittleEndian(0); // Padding
+			edos.writeSignedIntegerLittleEndian(MENU_COLOUR_NUM);
 			for (yc = 0; yc <  MENU_COLOUR_NUM; yc++)
 			{
-				FileWriteQuad(savegame, menu_colour[yc]);
+				edos.writeSignedIntegerLittleEndian(menu_colour[yc].getRGB());
 			}
 		// Flag Data
-			FileWriteQuad(savegame, MAX_FLAGS);
+			edos.writeSignedIntegerLittleEndian(MAX_FLAGS);
 			for (yc = 0; yc <  MAX_FLAGS; yc++)
 			{
-				FileWriteQuad(savegame, flags[yc]);
+				edos.writeSignedIntegerLittleEndian(flags[yc]);
 			}
 		// Map Data
-			FileWriteQuad(savegame, len(curmap.name));
-			FileWriteString(savegame, curmap.name);
-			FileWriteQuad(savegame, entity.x[playerent]);
-			FileWriteQuad(savegame, entity.y[playerent]);
+			if(current_map == null) { // RBP: Just for robustness
+				edos.writeSignedIntegerLittleEndian(len("NO_MAP"));
+				edos.writeShort(0);
+				edos.writeSimpleString("NO_MAP");
+				edos.writeSignedIntegerLittleEndian(0);
+				edos.writeSignedIntegerLittleEndian(0);
+			}
+			else {	
+				edos.writeSignedIntegerLittleEndian(len(current_map.mapname));
+				edos.writeShort(0);//rbp
+				edos.writeSimpleString(current_map.mapname);
+				edos.writeSignedIntegerLittleEndian(entity.get(playerent).getx());
+				edos.writeSignedIntegerLittleEndian(entity.get(playerent).gety());
+			}
 		// Footer
-			FileWriteQuad(savegame, FileCurrentPos(savegame));
-		FileClose(savegame);
-		FreeImage(mini);
-		FreeImage(screenshot);*/
+			//RBP edos.writeSignedIntegerLittleEndian(FileCurrentPos(savegame));
+		edos.close();
+		//FreeImage(mini);
+		//FreeImage(screenshot);
 	}
 	
 	// Loads a game position from file specified
-	void MenuLoadGame(int slot)
-	{/*REMOVERBP
+	public static void MenuLoadGame(int slot) throws IOException
+	{
 		int xc, yc, max_xc, max_yc;
 		String mapname;
-		int savegame = FileOpen("save/save"+ThreeDigit(slot)+".sve", FILE_READ);
+		File savegame = new File(load("save/save"+ThreeDigit(slot)+".sve").getFile());
+		FileInputStream fis = new FileInputStream(savegame);
+		ExtendedDataInputStream edis = new ExtendedDataInputStream(fis); // rbp
+		
 		// Header Size
-			FileSeekPos(savegame, FileReadQuad(savegame), SEEK_SET);
+		int hsize = edis.readSignedIntegerLittleEndian(); // rbp
+		System.out.println("Header size: " + hsize);
+		for(int i=0;i<hsize-4; i++) {
+			edis.readByte();
+		}
+		
+		//RBP FileSeekPos(savegame, edis.readSignedIntegerLittleEndian(), SEEK_SET);
 		// Party Data
-			curpartysize = FileReadQuad(savegame);
-			if (FileReadQuad(savegame) != MAX_PARTY_SIZE) error("Your MAX_PARTY_SIZE is screwed");
+			curpartysize = edis.readSignedIntegerLittleEndian();
+			System.out.println("curpartysize: " + curpartysize);
+			
+			if (edis.readSignedIntegerLittleEndian() != MAX_PARTY_SIZE) 
+				error("Your MAX_PARTY_SIZE is screwed");
+			
 			for (yc = 0; yc <  MAX_PARTY_SIZE; yc++)
 			{
-				party[yc] = FileReadQuad(savegame);
+				party[yc] = edis.readSignedIntegerLittleEndian();
 			}
 	
-			if (FileReadQuad(savegame) != MAX_CAST) error("Your MAX_CAST is screwed");
-			if (FileReadQuad(savegame) != MAX_STATS) error("Your MAX_STATS is screwed");
-			if (FileReadQuad(savegame) != MAX_EQUIP_SLOTS) error("Your MAX_EQUIP_SLOTS is screwed");
+			if (edis.readSignedIntegerLittleEndian() != MAX_CAST) error("Your MAX_CAST is screwed");
+			if (edis.readSignedIntegerLittleEndian() != MAX_STATS) error("Your MAX_STATS is screwed");
+			if (edis.readSignedIntegerLittleEndian() != MAX_EQUIP_SLOTS) error("Your MAX_EQUIP_SLOTS is screwed");
 			for (yc = 0; yc <  MAX_CAST; yc++)
 			{
-				master_cast[yc].level = FileReadQuad(savegame);
-				master_cast[yc].exp = FileReadQuad(savegame);
-				master_cast[yc].cur_hp = FileReadQuad(savegame);
-				master_cast[yc].cur_mp = FileReadQuad(savegame);
+				if(master_cast[yc]==null) // RBP: Just for robustness
+					master_cast[yc] = new Cast();
+				
+				master_cast[yc].level = edis.readSignedIntegerLittleEndian();
+				master_cast[yc].exp = edis.readSignedIntegerLittleEndian();
+				master_cast[yc].cur_hp = edis.readSignedIntegerLittleEndian();
+				master_cast[yc].cur_mp = edis.readSignedIntegerLittleEndian();
 				for (xc = 0; xc <  MAX_STATS; xc++)
 				{
-					master_cast[yc].stats[xc] = FileReadQuad(savegame);
+					master_cast[yc].stats[xc] = edis.readSignedIntegerLittleEndian();
 				}
 				for (xc = 0; xc <  MAX_EQUIP_SLOTS; xc++)
 				{
-					master_cast[yc].equipment[xc] = FileReadQuad(savegame);
+					master_cast[yc].equipment[xc] = edis.readSignedIntegerLittleEndian();
 				}
 			}
 		// Item Data
-			money = FileReadQuad(savegame); // Nearly forgot!
-			_supply_count = FileReadQuad(savegame);
-			if (FileReadQuad(savegame) != MAX_SUPPLIES) error("Your MAX_SUPPLIES is screwed");
+			money = edis.readSignedIntegerLittleEndian(); // Nearly forgot!
+			_supply_count = edis.readSignedIntegerLittleEndian();
+			if (edis.readSignedIntegerLittleEndian() != MAX_SUPPLIES) error("Your MAX_SUPPLIES is screwed");
 			for (yc = 0; yc <  MAX_SUPPLIES; yc++)
 			{
-				supply_inventory[yc].item_ref = FileReadQuad(savegame);
-				supply_inventory[yc].quant = FileReadQuad(savegame);
+				supply_inventory[yc] = new Inventory();
+				supply_inventory[yc].item_ref = edis.readSignedIntegerLittleEndian();
+				supply_inventory[yc].quant = edis.readSignedIntegerLittleEndian();
 			}
 	
-			_equip_count = FileReadQuad(savegame);
-			if (FileReadQuad(savegame) != MAX_EQUIPMENT) error("Your MAX_EQUIPMENT is screwed");
+			_equip_count = edis.readSignedIntegerLittleEndian();
+			if (edis.readSignedIntegerLittleEndian() != MAX_EQUIPMENT) error("Your MAX_EQUIPMENT is screwed");
 			for (yc = 0; yc <  MAX_EQUIPMENT; yc++)
 			{
-				equipment_inventory[yc].item_ref = FileReadQuad(savegame);
-				equipment_inventory[yc].quant = FileReadQuad(savegame);
+				equipment_inventory[yc] = new Inventory();
+				equipment_inventory[yc].item_ref = edis.readSignedIntegerLittleEndian();
+				equipment_inventory[yc].quant = edis.readSignedIntegerLittleEndian();
 			}
 	
-			_key_count = FileReadQuad(savegame);
-			if (FileReadQuad(savegame) != MAX_KEY_ITEMS) error("Your MAX_KEY_ITEMS is screwed");
+			_key_count = edis.readSignedIntegerLittleEndian();
+			if (edis.readSignedIntegerLittleEndian() != MAX_KEY_ITEMS) error("Your MAX_KEY_ITEMS is screwed");
 			for (yc = 0; yc <  MAX_KEY_ITEMS; yc++)
 			{
-				key_item_inventory[yc].item_ref = FileReadQuad(savegame);
-				key_item_inventory[yc].quant = FileReadQuad(savegame);
+				key_item_inventory[yc] = new Inventory();
+				key_item_inventory[yc].item_ref = edis.readSignedIntegerLittleEndian();
+				key_item_inventory[yc].quant = edis.readSignedIntegerLittleEndian();
 			}
 		// Options Data
-			global_music_volume = FileReadQuad(savegame);
-			sfx_volume = FileReadQuad(savegame);
-			interface_volume = FileReadQuad(savegame);
-			global_noscroll = FileReadQuad(savegame);
-			global_menuluc = FileReadQuad(savegame);
-			_menu_on = FileReadQuad(savegame); // Ah well
-			xc = FileReadQuad(savegame); // Padding
-			if (FileReadQuad(savegame) != MENU_COLOUR_NUM) error("Your MENU_COLOUR_NUM is screwed");
+			global_music_volume = edis.readSignedIntegerLittleEndian();
+			sfx_volume = edis.readSignedIntegerLittleEndian();
+			interface_volume = edis.readSignedIntegerLittleEndian();
+			global_noscroll = edis.readSignedIntegerLittleEndian()==1?true:false;
+			global_menuluc = edis.readSignedIntegerLittleEndian();
+			_menu_on = edis.readSignedIntegerLittleEndian()==1?true:false; // Ah well
+			xc = edis.readSignedIntegerLittleEndian(); // Padding
+			if (edis.readSignedIntegerLittleEndian() != MENU_COLOUR_NUM) 
+				error("Your MENU_COLOUR_NUM is screwed");
 			for (yc = 0; yc <  MENU_COLOUR_NUM; yc++)
 			{
-				menu_colour[yc] = FileReadQuad(savegame);
+				menu_colour[yc] = new Color(edis.readSignedIntegerLittleEndian());
 			}
 		// Flag Data
-			if (FileReadQuad(savegame) != MAX_FLAGS) error("Your MAX_FLAGS is screwed");
+			if (edis.readSignedIntegerLittleEndian() != MAX_FLAGS) error("Your MAX_FLAGS is screwed");
 			for (yc = 0; yc <  MAX_FLAGS; yc++)
 			{
-				flags[yc] = FileReadQuad(savegame);
+				flags[yc] = edis.readSignedIntegerLittleEndian();
 			}
 		// Map Data
-			xc = FileReadQuad(savegame);
-			mapname = FileReadString(savegame);
+			xc = edis.readSignedIntegerLittleEndian();
+			edis.readShort(); // rbp
+			mapname = edis.readFixedString(xc);
+			log("Loaded Map: " + mapname);
 			if (len(mapname) != xc) error("Incorrect size of map name found");
-			xc = FileReadQuad(savegame);
-			yc = FileReadQuad(savegame);
+			xc = edis.readSignedIntegerLittleEndian();
+			yc = edis.readSignedIntegerLittleEndian();
 		// Footer
-			if (FileCurrentPos(savegame) == FileReadQuad(savegame))
-			{
-				FileClose(savegame);
+//RBP			if (FileCurrentPos(savegame) == edis.readSignedIntegerLittleEndian())
+			//RBP			{
+				edis.close();
 				global_gametime = save_display[(slot - 1) % 5].gametime - systemtime;
 	
-	//things to make loading smooth no matter what.
-	// this should be in something like LoadUpkeep()
-	// Meh.
-	// -Grue
-	ClearVCLayer();
-	cameratracking = 1;
-	_title_menu = 0;
-				
+				//things to make loading smooth no matter what.
+				// this should be in something like LoadUpkeep()
+				// Meh.
+				// -Grue
+				ClearVCLayer();
+				cameratracking = 1;
+				_title_menu = 0;
+
+				hookretrace(""); // rbp ??
 				V1_MapSwitch(mapname+".map", xc / 16, yc / 16, TBLACK);
-			}
-			else
-			{
-				FileClose(savegame);
-				error("Errors have occurred reading this save format, load aborted");
-			}
+
+				//RBP			}
+				//RBPelse
+				//RBP{
+				//RBPedis.close();
+				//RBPerror("Errors have occurred reading this save format, load aborted");
+				//RBP}
 			
-			*/
 	}
 	
 	// Loads the header of a save file for selection purposes
-	static void MenuLoadSaveDisplay(int slot)
+	public static void MenuLoadSaveDisplay(int slot) throws IOException
 	{
-		/*REMOVERBPint xc, yc;
-		save_display[slot % 5].image = NewImage(32, 24);
-		int savegame = FileOpen("save/save"+ThreeDigit(slot + 1)+".sve", FILE_READ);
+		int xc, yc;
+		save_display[slot % 5].image = new VImage(32, 24);
+
+		File savegame = new File(load("save/save"+ThreeDigit(slot + 1)+".sve").getFile());
+		FileInputStream fis = new FileInputStream(savegame);
+		ExtendedDataInputStream edis = new ExtendedDataInputStream(fis); // rbp
+		
 		//Log("***Loading from: 'save/save"+ThreeDigit(slot + 1)+".sve'");
 		// Header Size
-			xc = FileReadQuad(savegame);
+			xc = edis.readSignedIntegerLittleEndian();
 		// Version Number
-			xc = FileReadQuad(savegame);
+			xc = edis.readSignedIntegerLittleEndian();
 			if (xc < (VERSION_4_BYTE << 24) + (VERSION_3_BYTE << 16) + (VERSION_2_BYTE << 8) + VERSION_1_BYTE)
 			{
 				error("Attempting to load old savegame format, errors may occur.");
 			}
-			log("Quad version: "+str(xc));
 		// Version String
-			xc = FileReadQuad(savegame);
-			save_display[slot % 5].text = FileReadString(savegame);
+			xc = edis.readSignedIntegerLittleEndian();
+			edis.readShort(); // rbp
+			
+			save_display[slot % 5].text = edis.readFixedString(xc);
+
 			if (len(save_display[slot % 5].text) != xc) error("Incorrect size of version String found");
-			if (strcmp(save_display[slot % 5].text , VERSION_STRING))
+			if (!strcmp(save_display[slot % 5].text , VERSION_STRING))
 			{
 				error("Reading version String: '"+save_display[slot % 5].text+"' does not match that of current: '"+VERSION_STRING+"'");
 			}
 			//Log("String version: "+save_display[slot % 5].text);
 		// Game Time Count
-			save_display[slot % 5].gametime = FileReadQuad(savegame);
+			save_display[slot % 5].gametime = edis.readSignedIntegerLittleEndian();
 			//Log("Systime: "+str(xc));
 		// System Time
-			save_display[slot % 5].time = ReadSystemTime(savegame);
+			save_display[slot % 5].time = ReadSystemTime(edis);
 		// Game Description
-			xc = FileReadQuad(savegame);
-			save_display[slot % 5].text = FileReadString(savegame);
+			xc = edis.readSignedIntegerLittleEndian();
+			edis.readShort(); // rbp
+			save_display[slot % 5].text = edis.readFixedString(xc);
 			if (len(save_display[slot % 5].text) != xc) error("Incorrect size of game description found");
 			//Log("Text: '"+save_display[slot % 5].text+"'");
 		// Mini Screenshot
@@ -478,15 +579,15 @@ public class Menu_Save {
 			{
 				for (xc = 0; xc <  32; xc++)
 				{
-					 SetPixel(xc, yc, FileReadQuad(savegame), save_display[slot % 5].image);
+					 setpixel(xc, yc, new Color(edis.readSignedIntegerLittleEndian()), save_display[slot % 5].image);
 				}
 			}
-		FileClose(savegame);
-		//Log("***Done with: 'save/save"+ThreeDigit(slot + 1)+".sve'");*/
+		edis.close();
+		//Log("***Done with: 'save/save"+ThreeDigit(slot + 1)+".sve'");
 	}
 	
 	// Frees all currently loaded save display slots
-	void MenuClearDisplay()
+	static void MenuClearDisplay()
 	{
 		int i;
 		for (i = 0; i < 5; i++)
@@ -496,14 +597,14 @@ public class Menu_Save {
 	}
 	
 	// Frees the specified save display slot
-	void MenuFreeSaveDisplay(int slot)
+	static void MenuFreeSaveDisplay(int slot)
 	{
 		//FreeImage(save_display[slot % 5].image);
 		save_display[slot % 5].text = "";
 	}
 	
-	// Frees all loaded save display slots, and loads all slots required
-	void MenuRefreshSlots()
+	static // Frees all loaded save display slots, and loads all slots required
+	void MenuRefreshSlots() throws IOException
 	{
 		int i;
 		MenuClearDisplay();

@@ -18,14 +18,16 @@ public class Menu_Skill {
 	// Control function for the Skill screen of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Very simple at the moment, room for additions
-	void MenuControlSkill()
+	public static void MenuControlSkill()
 	{
 		//Right now it's an angry buzz because the selector's sposta be there allowing you to choose a 
 	
 		// skill group to view the contents of... but yeah, that's not like done or anything yet
 		// -Grue
 		Menu2ArrowSetSounds( "MenuAngryBuzz","MenuPageTurn" );
-		MenuControlTwoArrows("menu_item", 1, "menu_cast", PartySize());
+		int ret[] = MenuControlTwoArrows(menu_item, 1, menu_cast, PartySize());
+		menu_item = ret[1]; // rbp
+		menu_cast = ret[2]; // rbp
 		
 		if (MenuConfirm())
 		{
@@ -44,7 +46,7 @@ public class Menu_Skill {
 	// Drawing function for the Skill screen of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Very simple at the moment, room for additions
-	void MenuDrawSkill()
+	public static void MenuDrawSkill()
 	{
 		// Draw the background and title
 		MenuBlitRight(false, menu_option);

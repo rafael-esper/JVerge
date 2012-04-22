@@ -35,7 +35,7 @@ public class Config {
 	//rbp ScaleFormat v3_scale_win = SCALE_FORMAT_ASPECT, v3_scale_full = SCALE_FORMAT_STRETCH;
 
 	private boolean windowmode=true;
-	private boolean sound=true;
+	private boolean nosound=true;
 	private int soundengine = 0;
 	private boolean cheats=false;
 	private String mapname;
@@ -105,7 +105,7 @@ public class Config {
 				}
 				if(strD.startsWith("nosound")) {
 					int i = Integer.parseInt(strD.substring("nosound".length()).trim());
-					this.sound = i == 0 ? true : false;
+					this.setNosound(i == 0 ? true : false);
 				}	
 				
 			}
@@ -210,6 +210,14 @@ public class Config {
 	}
 	public String getMapname() {
 		return mapname;
+	}
+
+	public boolean isNosound() {
+		return nosound;
+	}
+
+	public void setNosound(boolean nosound) {
+		this.nosound = nosound;
 	}
 	
 }

@@ -3,6 +3,7 @@ package sully;
 import static core.Script.*;
 import static sully.Flags.*;
 import static sully.Sully.*;
+import sully.vc.v1_rpg.V1_Simpletype;
 
 import static sully.vc.v1_rpg.V1_RPG.*;
 import static sully.vc.v1_rpg.V1_Music.*;
@@ -20,7 +21,7 @@ public class Shack {
 
 	public static void start() 
 	{
-		SaveDisable(); //cannot save in towns.
+		Sully.SaveDisable(); //cannot save in towns.
 			
 		InitMap();
 	
@@ -47,10 +48,10 @@ public class Shack {
 		}
 	
 		//sets all the tiles as they should be.
-		shack_upkeep();	
+		Shack_Upkeep();	
 	}
 	
-	public static void shack_upkeep() /* 0 */
+	public static void Shack_Upkeep() /* 0 */
 	{
 		if(flags[F_LOVE_PITFALL]!=0)
 		{
@@ -71,22 +72,22 @@ public class Shack {
 		}
 	}
 	
-	public static void cabin_enter() /* 1 */
+	public static void Cabin_Enter() /* 1 */
 	{
 		Warp(79,23,TNONE);
 	}
 	
-	public static void cabin_exit() /* 2 */
+	public static void Cabin_Exit() /* 2 */
 	{
 		flags[F_LOVE_FUNKSWITCH] = 0;
 		
-		hookretrace( "V1RPG_renderFunc" );
+		hookretrace( "sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc" );
 		
 		AlterBTile(80,4,550,2);
 		Warp(26,6, TNONE);
 	}
 	
-	public static void pit_trap() /* 3 */
+	public static void Pit_Trap() /* 3 */
 	{
 		if( flags[F_LOVE_PITFALL]==0 )
 		{
@@ -108,7 +109,7 @@ public class Shack {
 		}
 	}
 	
-	public static void stone() /* 4 */
+	public static void Stone() /* 4 */
 	{
 		int darin, sara, i;
 		
@@ -213,16 +214,16 @@ public class Shack {
 		EntFinish();
 	}
 	
-	public static void map_exit() /* 5 */
+	public static void Map_Exit() /* 5 */
 	{
 		V1_MapSwitch("overworld.map",42,60,TBLACK);
 	}
 	
-	public static void enter_speak() /* 6 */
+	public static void Enter_Speak() /* 6 */
 	{
 		int darin, dexter;
 		
-		MenuOff();
+		EntStart(); //rbp 
 		
 		if(flags[F_LOVE_INTRO]==0)
 		{
@@ -245,10 +246,10 @@ public class Shack {
 			flags[F_LOVE_INTRO]=1;
 		}
 		
-		MenuOn();
+		EntFinish(); //rbp 
 	}
 	
-	public static void dungeon() /* 7 */
+	public static void Dungeon() /* 7 */
 	{
 		V1_MapSwitch("DUNGEON.MAP",25,5,TNONE);
 	}
@@ -264,7 +265,7 @@ public class Shack {
 		entity.get(0).face = FACE_DOWN;
 	}
 	
-	public static void dexter_talk() /* 9 */
+	public static void Dexter_Talk() /* 9 */
 	{
 		EntStart();
 		entity.get(1).specframe=25;
@@ -503,7 +504,7 @@ public class Shack {
 		EntFinish();
 	}
 	
-	public static void disco_lever() /* 13 */
+	public static void Disco_Lever() /* 13 */
 	{
 		if(flags[F_LOVE_FUNKSWITCH]==0)
 		{
@@ -520,7 +521,7 @@ public class Shack {
 			SoundSwitch();
 			
 			flags[F_LOVE_FUNKSWITCH]=1;
-			hookretrace( "funkOrama" );	//RageCage's FUNKORAMA
+			hookretrace( "sully.vc.Special_effects.Funk_o_rama.funkOrama" );	//RageCage's FUNKORAMA
 			unpress(0);
 			return;
 		}
@@ -531,7 +532,9 @@ public class Shack {
 			AlterBTile(80,4,550,2);
 			flags[F_LOVE_FUNKSWITCH]=0;
 			unpress(0);
-			hookretrace( "V1RPG_renderFunc" );
+			hookretrace( "sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc" );
 		}
 	}
+	
+
 }

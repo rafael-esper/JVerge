@@ -1,6 +1,9 @@
 package sully.vc.util;
 
 import static core.Script.*;
+
+import java.awt.font.ImageGraphicAttribute;
+
 import domain.VImage;
 
 public class Icons {
@@ -68,6 +71,10 @@ public class Icons {
 		x = (x*(ICON_WIDTH+1)) +1;
 		y = (y*(ICON_HEIGHT+1)) +1;
 			
-		return imageshell(x, y, ICON_WIDTH, ICON_HEIGHT, im_iconsource );
+		// Rbp
+		VImage dst = new VImage(ICON_WIDTH, ICON_HEIGHT);
+		grabregion(x, y, x+ICON_WIDTH, y+ICON_HEIGHT, 0, 0, im_iconsource, dst);
+		return dst;
+		//return imageshell(x, y, ICON_WIDTH, ICON_HEIGHT, im_iconsource );
 	}
 }

@@ -66,7 +66,7 @@ public class Menu_Shop {
 		int shop_i = 0;
 		int shop_count = 0;
 		String item_list = "";
-		String item_name = gettoken(items, "&, ", 0);
+		String item_name = gettoken(items, "&", 0);
 		while (len(item_name)>0)
 		{
 			for (shop_i = 0; shop_i < MAX_ITEMS; shop_i++) // Loops through items
@@ -82,28 +82,27 @@ public class Menu_Shop {
 				ErrorLoadType("MenuShop()", item_name); // Throws error
 			}
 			shop_count++;
-			item_name = gettoken(items, "&, ", shop_count);
+			item_name = gettoken(items, "&", shop_count);
 		}
 		MenuShopI(item_list);
 	}
 	
 	public static void MenuShopI(String items)
 	{
-		boolean menu_done = false;
+		menu_done = false;
 		menu_option = 0;
 		menu_item = 0;
 		menu_cast = 0;
 		menu_idx = 1;
 		menu_number = 1;
-		menu_sub = tokencount(items, "&, ");
+		menu_sub = tokencount(items, "&");
 		save_display[0].text = items;
 		
 		UpdateShopPretend();
-	
+
 		while(!menu_done)
 		{
 			MenuBackGroundDraw(); //draw universal things
-			
 			if (menu_idx == 0) MenuDrawShopMain();
 			else if (menu_idx == 1) MenuDrawShopBuy();
 			else if (menu_idx == 2) MenuDrawShopSellSupply();
@@ -122,6 +121,7 @@ public class Menu_Shop {
 				menu_start = 0;
 			}
 		}
+
 	}
 	
 	
@@ -159,7 +159,8 @@ public class Menu_Shop {
 						}
 						else MenuAngryBuzz();
 					break;
-				case 3:	menu_done = true;
+				case 3:	
+					menu_done = true;
 					break;
 	
 			}
@@ -199,7 +200,11 @@ public class Menu_Shop {
 	public static void MenuControlShopBuy()
 	{
 		Menu2ArrowSetSounds( "MenuHappyBeep","MenuPageTurn" );
-		int movey = MenuControlTwoArrows("menu_item", menu_sub, "menu_number", MAX_INV_SLOT);
+		int ret[] = MenuControlTwoArrows(menu_item, menu_sub, menu_number, MAX_INV_SLOT);
+		int movey = ret[0];
+		menu_item = ret[1]; // rbp
+		menu_number = ret[2]; // rbp
+		
 		int q, item_idx;
 		int _slot, choice;
 		
@@ -374,7 +379,11 @@ public class Menu_Shop {
 		int answer, item_idx, cleanup = 0, choice;
 		
 		Menu2ArrowSetSounds( "MenuHappyBeep","MenuPageTurn" );
-		int movey = MenuControlTwoArrows("menu_item", _supply_count, "menu_number", 99);
+		int ret[] = MenuControlTwoArrows(menu_item, _supply_count, menu_number, 99);
+		int movey = ret[0];
+		menu_item = ret[1]; // rbp
+		menu_number = ret[2]; // rbp
+		
 		if ((movey & 1)!=0)
 		{
 			if (menu_start  + 10 < menu_item) menu_start = menu_item - 10;
@@ -445,7 +454,11 @@ public class Menu_Shop {
 		int item_idx,answer,cleanup = 0, choice;
 		
 		Menu2ArrowSetSounds( "MenuHappyBeep","MenuPageTurn" );
-		int movey = MenuControlTwoArrows("menu_item", _equip_count, "menu_number", 99);
+		int ret[] = MenuControlTwoArrows(menu_item, _equip_count, menu_number, 99);
+		int movey = ret[0];
+		menu_item = ret[1]; // rbp
+		menu_number = ret[2]; // rbp
+		
 		if ((movey & 1)!=0)
 		{
 			if (menu_start  + 10 < menu_item) menu_start = menu_item - 10;

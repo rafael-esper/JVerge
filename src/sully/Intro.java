@@ -21,6 +21,8 @@ import static sully.vc.util.Credits.*;
 
 import static sully.Flags.F_COT_STAN;
 import static sully.Flags.F_CRYS_JOIN;
+import static sully.Flags.F_LAB_FOUND_CRYSTAL;
+import static sully.Flags.F_MOUNT_DEX_JOIN;
 import static sully.Flags.flags;
 import static sully.Sully.*;
 import static sully.vc.v1_menu.Menu_System.*;
@@ -40,8 +42,6 @@ public class Intro {
 	
 	public static void startIntro()
 	{
-		//LECICIA
-		if(true==true)return;
 		MenuOff();
 		cameratracking = 0;
 		xwin = 10*16;
@@ -67,9 +67,7 @@ public class Intro {
 					try {
 						doIntroAnimation();
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						Thread.currentThread().interrupt();
-						System.out.println("Gostei!");
 					} // RBP
 					runningIntro = false;
 			}
@@ -359,17 +357,21 @@ public class Intro {
 		_title_menu = 1;
 		
 		_title_menu_load_done = false;
+		_title_menu_load_cancel = false; // rbp
 		
-		while( !_title_menu_load_done )
+		while( !_title_menu_load_done && !_title_menu_load_cancel)
 		{
 			MenuBackGroundDraw(); //draw universal things
-			callfunction( "MenuDrawSave" );
+			callfunction( "sully.vc.v1_menu.Menu_Save.MenuDrawSave" );
 	
 			showpage();
-			callfunction( "MenuControlSave" );
+			callfunction( "sully.vc.v1_menu.Menu_Save.MenuControlSave" );
 		}
-		
 		_title_menu = 0;
+		if(_title_menu_load_done) { // RBP (because map doesn't interrupt execution anymore)
+			MenuOn();
+			return;
+		}
 		DoMenu();
 	}
 	
@@ -422,7 +424,7 @@ public class Intro {
 		ForceEquip( "Darin", "Garment", SLOT_BODY );
 	
 		ForceEquip( "Sara", "Brass_Pipe", SLOT_RHAND );
-		ForceEquip( "Sara", "Cap", SLOT_ACC1 );
+		ForceEquip( "Sara", "LongCap", SLOT_ACC1 );
 		ForceEquip( "Sara", "Bracer", SLOT_ACC2 );
 		ForceEquip( "Sara", "Garment", SLOT_BODY );
 	
@@ -470,23 +472,7 @@ public class Intro {
 	
 		FadeIn(30);
 		
-		//LECICIA doSimpleCredits( menu_font[0] );
-		//LECICIA START
-		ClearVCLayer();
-		MenuOn();
-		cameratracking = 1;
-		SpawnParty( mapswitchx, mapswitchy );
-		
-		JoinParty("Crystal",1); // Island
-		flags[F_CRYS_JOIN] = 1;
-		
-		RemovePlayer( "Crystal" ); // Cottage
-		flags[F_COT_STAN]=1;
-		
-		V1_MapSwitch("overworld.map", 35,7,TBLACK); // cottage
-		//V1_MapSwitch("overworld.map", 4, 8, TBLACK); // island
-		if(true==true)return;
-		//LECICIA END
+		doSimpleCredits( menu_font[0] );
 		
 		FadeOut(30);
 		ClearVCLayer();

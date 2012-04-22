@@ -436,6 +436,7 @@ public class V1_RPG {
 	//
 	public static void V1_MapSwitch(String mapn, int x, int y, int effect)
 	{
+		unpress(9); //rbp
 		mapswitche = effect;
 		mapswitchx = x;
 		mapswitchy = y;
@@ -508,6 +509,7 @@ public class V1_RPG {
 		entity.get(getplayer()).setx(x*16);
 		entity.get(getplayer()).sety(y*16);
 		render();
+		unpress(9); //rbp
 			
 		switch (effect)
 		{
@@ -561,6 +563,7 @@ public class V1_RPG {
 	{
 		boolean menu_mode = MenuCanBeOn();
 		MenuOff();
+		pauseplayerinput(); // rbp
 	
 		timer = 0;
 		while ( timer<duration && !b1   )
@@ -574,6 +577,7 @@ public class V1_RPG {
 		unpress(0);
 		
 		if(menu_mode)	MenuOn();
+		unpauseplayerinput(); // rbp
 	}
 	
 	

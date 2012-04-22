@@ -117,17 +117,18 @@ public class Menu_System {
 	// Load the menus into the struct and set defaults
 	public static void SMENU_InitMenus()
 	{
+		//Rafael: changed to full path (sully.vc.v1_menu.etc)
 		AddMenu( "main", "sully.vc.v1_menu.Menu_Main.MenuDrawMain", "sully.vc.v1_menu.Menu_Main.MenuControlMain" );
 		AddMenu( "item", "sully.vc.v1_menu.Menu_Item.MenuDrawItem", "sully.vc.v1_menu.Menu_Item.MenuControlItem" );
 		AddMenu( "skill", "sully.vc.v1_menu.Menu_Skill.MenuDrawSkill", "sully.vc.v1_menu.Menu_Skill.MenuControlSkill" );
-		AddMenu( "equip", "MenuDrawEquip", "MenuControlEquip" );
-		AddMenu( "status", "MenuDrawStatus", "MenuControlStatus" );
-		AddMenu( "option", "MenuDrawOption", "MenuControlOption" );
-		AddMenu( "save", "MenuDrawSave", "MenuControlSave" );
-		AddMenu( "cast", "MenuDrawCast", "MenuControlCast" );
-		AddMenu( "equipsub", "MenuDrawEquipSub", "MenuControlEquipSub" );
-		AddMenu( "optionrgb", "MenuDrawOptionRGB", "MenuControlOptionRGB" );
-		AddMenu( "optionvol", "MenuDrawOptionVol", "MenuControlOptionVol" );
+		AddMenu( "equip", "sully.vc.v1_menu.Menu_Equip.MenuDrawEquip", "sully.vc.v1_menu.Menu_Equip.MenuControlEquip" );
+		AddMenu( "status", "sully.vc.v1_menu.Menu_Status.MenuDrawStatus", "sully.vc.v1_menu.Menu_Status.MenuControlStatus" );
+		AddMenu( "option", "sully.vc.v1_menu.Menu_Option.MenuDrawOption", "sully.vc.v1_menu.Menu_Option.MenuControlOption" );
+		AddMenu( "save", "sully.vc.v1_menu.Menu_Save.MenuDrawSave", "sully.vc.v1_menu.Menu_Save.MenuControlSave" );
+		AddMenu( "cast", "sully.vc.v1_menu.Menu_Cast.MenuDrawCast", "sully.vc.v1_menu.Menu_Cast.MenuControlCast" );
+		AddMenu( "equipsub", "sully.vc.v1_menu.Menu_Equip.MenuDrawEquipSub", "sully.vc.v1_menu.Menu_Equip.MenuControlEquipSub" );
+		AddMenu( "optionrgb", "sully.vc.v1_menu.Menu_Option.MenuDrawOptionRGB", "sully.vc.v1_menu.Menu_Option.MenuControlOptionRGB" );
+		AddMenu( "optionvol", "sully.vc.v1_menu.Menu_Option.MenuDrawOptionVol", "sully.vc.v1_menu.Menu_Option.MenuControlOptionVol" );
 	
 		ValidateMenuFunctions();
 	
@@ -236,8 +237,7 @@ public class Menu_System {
 		int i;
 		for (i = 0; i < _menuCount; i++)
 		{
-			if (master_menus[i].name.equals(name)
-				|| capitalize(master_menus[i].name).equals(name) // rbp	
+			if (master_menus[i].name.equalsIgnoreCase(name) // rbp	
 					) return i;
 		}
 		error("POOOOOOOO!");
@@ -310,7 +310,7 @@ public class Menu_System {
 		while(!MenuConfirm() && !MenuCancel())
 		{		
 			MenuBackGroundDraw(); //draw universal things
-			callmenufunction(draw_func);
+			callfunction(draw_func);
 			
 			MenuDrawBackground(((imagewidth(screen)-wid)/2)-border, 110, ((imagewidth(screen)-wid)/2)+wid+border, 130, true); // CatchMe
 			printcenter(160, 120 - (menu_fonth / 2) + 1, screen, menu_font[0], " "+text+" ");
@@ -521,14 +521,15 @@ public class Menu_System {
 	
 	
 	// A generic control method for 2 dimensions
-	static int MenuControlTwoArrows(String int_one, int lim_one, String int_two, int lim_two)
+	// Rafael: changed parameters to ints and return to int[] . GetInt() won't work in Java.
+	static int[] MenuControlTwoArrows(int int_one, int lim_one, int int_two, int lim_two)
 	{
-		int change = 0;
+		int change = 0, return_1 = int_one, return_2 = int_two;
 		if (up)
 		{
 			if (lastpress + MENU_PRESS_DELAY < timer)
 			{
-				int_one = str((val(int_one) - 1 + lim_one) % lim_one);
+				return_1 = lim_one==0? 0: ((int_one - 1 + lim_one) % lim_one);
 				lastpress = timer;
 				change = 1;
 				
@@ -539,7 +540,7 @@ public class Menu_System {
 		{
 			if (lastpress + MENU_PRESS_DELAY < timer)
 			{
-				int_one = str((val(int_one) + 1) % lim_one);
+				return_1 = lim_one==0? 0: ((int_one + 1) % lim_one);
 				lastpress = timer;
 				change = 1;
 				
@@ -550,7 +551,7 @@ public class Menu_System {
 		
 		if (left)
 		{
-			int_two = str((val(int_two) - 1 + lim_two) % lim_two);
+			return_2 = lim_two==0? 0: (((int_two) - 1 + lim_two) % lim_two);
 			unpress(7);
 			change += 2;
 			
@@ -558,48 +559,50 @@ public class Menu_System {
 		}
 		else if (right)
 		{
-			int_two = str((val(int_two) + 1) % lim_two);
+			return_2 = lim_two==0? 0: (((int_two) + 1) % lim_two);
 			unpress(8);
 			change += 2;
-			
 			callmenufunction(_m2ASnd2); //call the sound function defined with Menu2ArrowSetSounds()
 		}
-		return change;
+		return new int[]{change, return_1, return_2};
 	}
 	
 	// A different version of the above. should probably be combined
-	static int MenuControlFastArrows(String int_one, int max_one, String int_two, int lim_two)
+	// Rafael: changed parameters to ints. No need to call GetInt()
+	static int[] MenuControlFastArrows(int int_one, int max_one, int int_two, int lim_two)
 	{
+		int return_1 = int_one, return_2 = int_two;
+		
 		if (up)
 		{
-			if (lastpress + MENU_SLIDE_DELAY < timer && val(int_one) < max_one)
+			if (lastpress + MENU_SLIDE_DELAY < timer && int_one < max_one)
 			{
-				int_one = str(val(int_one) + 1);
+				return_1 = ((int_one) + 1);
 				lastpress = timer;
 			}
 		}
 		else if (down)
 		{
-			if (lastpress + MENU_SLIDE_DELAY < timer && val(int_one) > 0)
+			if (lastpress + MENU_SLIDE_DELAY < timer && int_one > 0)
 			{
-				int_one = str(val(int_one) - 1);
+				return_1 = ((int_one) - 1);
 				lastpress = timer;
 			}
 		}
 		else lastpress = 0;
 		if (left)
 		{
-			int_two = str((val(int_two) - 1 + lim_two) % lim_two);
+			return_2 = ((int_two) - 1 + lim_two) % lim_two;
 			unpress(7);
-			return 1;
+			return new int[]{1, return_1, return_2};
 		}
 		else if (right)
 		{
-			int_two = str((val(int_two) + 1) % lim_two);
+			return_2 = ((int_two) + 1) % lim_two;
 			unpress(8);
-			return 1;
+			return new int[]{1, return_1, return_2};
 		}
-		return 0;
+		return new int[]{0, return_1, return_2};
 	}
 	
 	
@@ -630,13 +633,14 @@ public class Menu_System {
 	// Draws a box. This needs moar options
 	public static void MenuDrawBackground(int x1, int y1, int x2, int y2, boolean active)
 	{
-		//setlucent(global_menuluc * 10);
+		setlucent(global_menuluc * 10);
+		//RBP TODO: Make it work as a filter?
 		//setcustomcolorfilter(ColourDivider(menu_colour[2 + (active ? 1: 0)], 4), menu_colour[2 + (active ? 1: 0)]);
 		//VImage act = imageshell(x1 + 4, y1 + 4, x2 - 5 - x1, y2 - 5 - y1, screen);
 		//colorfilter(CF_CUSTOM, act);
 		//act = null;
-		setlucent(20);
-		rectfill(x1+4, y1+4, x2-4, y2-4, Color.BLUE, screen);
+
+		rectfill(x1+4, y1+4, x2-4, y2-4, menu_colour[2 + (active?1:0)], screen);
 		setlucent(0);
 	
 		
@@ -807,7 +811,7 @@ public class Menu_System {
 	}
 	
 	// Returns number in three digit format. Hyper useful
-	String ThreeDigit(int number)
+	static String ThreeDigit(int number)
 	{
 		if (number > 999) error("Number to convert to 3 digits past 999. This is bad.");
 		if (number < 0) error("Number to convert to 3 digits negative. This is bad.");
@@ -863,13 +867,16 @@ public class Menu_System {
 	{
 		int x2 = x1+w;
 		int y2 = y1+h; 
-		
+
 		setlucent(global_menuluc * 10);
-		setcustomcolorfilter(ColourDivider(menu_colour[2 + (active ? 1: 0)], 4), menu_colour[2 + (active ? 1: 0)]);
-		VImage act = imageshell(x1 + 4, y1 + 4, x2 - 5 - x1, y2 - 5 - y1, dest);
-		colorfilter(CF_CUSTOM, act);
-		act = null;
-		setlucent(0);
+		//RBP TODO: Make it work as a filter?
+//		setcustomcolorfilter(ColourDivider(menu_colour[2 + (active ? 1: 0)], 4), menu_colour[2 + (active ? 1: 0)]);
+//		VImage act = imageshell(x1 + 4, y1 + 4, x2 - 5 - x1, y2 - 5 - y1, dest);
+//		colorfilter(CF_CUSTOM, act);
+//		act = null;
+
+		rectfill(x1+4, y1+4, x2-4, y2-4, menu_colour[2 + (active?1:0)], screen);
+		setlucent(0); 
 	
 		
 		line(x1, y1 + 2, x1, y2 - 3, menu_colour[0], dest); // TL -> BL
@@ -898,7 +905,7 @@ public class Menu_System {
 		 setpixel(x2 - 4, y1 + 3, menu_colour[2], dest); // TR
 		 setpixel(x1 + 3, y2 - 4, menu_colour[2], dest); // BL
 		 setpixel(x2 - 4, y2 - 4, menu_colour[2], dest); // BR
-		 
+
 		if( VCCustomFilterOn() )
 		{
 			VCCustomFilterRestore();

@@ -22,6 +22,12 @@ public class ExtendedDataOutputStream extends DataOutputStream {
 		this.writeByte((byte) c);
 	}
 
+	// Without the '\0'
+	public void writeSimpleString(String s) throws IOException {
+		for (int i = 0; i < s.length(); i++)
+			this.writeChar(s.charAt(i));
+	}
+	
 	public void writeString(String s) throws IOException {
 		for (int i = 0; i < s.length(); i++)
 			this.writeChar(s.charAt(i));

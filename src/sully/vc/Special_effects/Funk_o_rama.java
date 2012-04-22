@@ -23,7 +23,7 @@ public class Funk_o_rama {
 		loadDisco(0);
 		loadDisco(1);
 		loadDisco(2);
-		hookretrace("funkOrama");
+		hookretrace("sully.vc.Special_effects.Funk_o_rama.funkOrama");
 	}
 	
 	

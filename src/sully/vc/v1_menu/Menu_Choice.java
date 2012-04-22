@@ -321,7 +321,7 @@ public class Menu_Choice {
 		int alen = len(astr);
 		for (i = 0; i < alen; i++)
 		{
-			if (!strcmp(achr, mid(astr, i, 1))) return 1;
+			if (strcmp(achr, mid(astr, i, 1))) return 1;
 		}
 		return 0;
 	}
@@ -335,7 +335,7 @@ public class Menu_Choice {
 		int alen = len(astr);
 		for (i = 0; i < alen; i++)
 		{
-			if (!strcmp(asub, mid(astr, i, al))) count++;
+			if (strcmp(asub, mid(astr, i, al))) count++;
 		}
 		return count;
 	}
@@ -347,7 +347,7 @@ public class Menu_Choice {
 		int alen = len(astr);
 		for (i = start; i < alen; i++)
 		{
-			if (!strcmp(asub, mid(astr, i, al))) return i;
+			if (strcmp(asub, mid(astr, i, al))) return i;
 		}
 		return alen;
 	}
@@ -374,7 +374,7 @@ public class Menu_Choice {
 		int sourcelen = len(source);
 		for (i = 0; i < sourcelen; i++)
 		{
-			if (!strcmp(sub, mid(source, i, sublen)))
+			if (strcmp(sub, mid(source, i, sublen)))
 			{
 				dest = dest + mid(source, i - count, count) + rep;
 				count = 0;

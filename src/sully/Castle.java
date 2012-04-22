@@ -27,7 +27,7 @@ public class Castle {
 		//DeMorgan, I'll see you in HELL!
 		//if( (flags[F_RODNE_FLASHBACK] || flags[F_LAB_SAVE_CRYSTAL]) == 0 ) //also bad
 		
-		SaveDisable();
+		Sully.SaveDisable();
 		
 		heck_upkeep();
 		
@@ -573,7 +573,7 @@ public class Castle {
 		V1_MapSwitch( "overworld.map",93,41,TBLACK );
 	}
 	
-	public static void main_gate() {
+	public static void Main_Gate() {
 		
 		if( flags[F_RODNE_FLASHBACK]!=0 )
 		{
@@ -1023,6 +1023,7 @@ public class Castle {
 		
 	
 		entity.get(dexter).sety(30000);
+		entity.get(dexter).visible = false; // rbp
 		
 	
 		AutoOff();
@@ -1070,7 +1071,7 @@ public class Castle {
 	{
 		if( OpenTreasure(CHEST_HECK_WEST, 49,101, 443) )
 		{
-			FindItem( "EAST_Tower_Key", 1 );
+			FindItem( "East_Tower_Key", 1 );
 		}
 	}
 	
@@ -1443,8 +1444,8 @@ public class Castle {
 			
 			WaitForEntity( galfrey );
 			
-			RemovePlayer( "sara" );
-			RemovePlayer( "crystal" );
+			RemovePlayer( "Sara" );
+			RemovePlayer( "Crystal" );
 			
 			entity.get(3).incx(-(20*16)); //move the mapentity versions into place.
 			entity.get(4).incx(-(20*16));
@@ -1552,8 +1553,8 @@ public class Castle {
 								
 			TextBox(T_DARIN,	"...","","");
 			
-			RemovePlayer("dexter");
-			RemovePlayer("galfrey");
+			RemovePlayer("Dexter");
+			RemovePlayer("Galfrey");
 			AutoOff();
 			
 			entity.get(0).setx(63*16);

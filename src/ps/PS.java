@@ -57,7 +57,7 @@ public class PS extends VergeEngine {
 	}
 
 	static int Prompt(String text, String[] choices) {
-		List<String> rows = splitTextIntoRows(text);
+		List<String> rows = splitTextIntoRows(text, 38);
 		if(rows.size() == 1) {
 			MenuStack.instance.push(MenuStack.instance.createTextBox(20,185,280,42,rows.get(0), ""));
 		}
@@ -72,7 +72,7 @@ public class PS extends VergeEngine {
 	}
 
 	static void Stext(String text) {
-		List<String> rows = splitTextIntoRows(text);
+		List<String> rows = splitTextIntoRows(text, 38);
 		
 		// Show multiples textboxes with at most two rows for the text
 		for(int j=0; j<rows.size(); j++) {
@@ -86,43 +86,6 @@ public class PS extends VergeEngine {
 			j++;
 		}
 	}
-
-	// Split list of words into rows 
-	static List<String> splitTextIntoRows(String text) {
-		final int MAX_PER_ROW = 38;
-		
-		List<String> words = splitTextIntoWords(text);
-		List<String> rows = new ArrayList<String>();
-		int i = 0;
-		String str;
-		while (i < words.size()) {
-			str = words.get(i);
-		    while (i < words.size()-1 && str.length()+ 1 + words.get(i+1).length() <= MAX_PER_ROW) {
-		       str = str.concat(" " + words.get(i+1));
-		       i += 1;
-			}
-		    rows.add(str); //System.out.println(str);
-		    str = "";i+=1;
-		}
-		return rows;
-	}
-		// Split String in trimmed words
-	static List<String> splitTextIntoWords(String text) { 
-		int initial = 0;
-		List<String> words = new ArrayList<String>();
-		for(int i=0; i<text.length(); i++) {
-			while(i<text.length() && (Character.isLetterOrDigit(text.charAt(i)) || text.charAt(i) == '\'')) {
-				i++;
-			}
-			while(i<text.length() && !Character.isLetterOrDigit(text.charAt(i))) {
-				i++;
-			}
-			words.add(text.substring(initial, i).trim());
-			initial = i;
-		}
-		return words;
-	}
-
 	
 	public static void startmap()   {
 		

@@ -201,6 +201,9 @@ public class VFont {
 		int xsize = 0;
 		int start = 0, end = 0;
 
+		if(msg==null)
+			return;
+		
 	    for (end = 0; end < msg.length(); end++)
 		{
 			if (msg.charAt(end) == '\n' || msg.charAt(end) == '\r')

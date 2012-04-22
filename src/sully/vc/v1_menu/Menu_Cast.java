@@ -20,7 +20,7 @@ public class Menu_Cast {
 	// Called from MenuEntry() based on global menu_idx variable
 	// Mostly simple, but has to deal with being called from several different origins
 	// Also includes various item use code for this reason
-	void MenuControlCast()
+	public static void MenuControlCast()
 	{
 		menu_cast = MenuControlArrows(menu_cast, PartySize());
 		if (MenuConfirm())
@@ -31,18 +31,18 @@ public class Menu_Cast {
 				case 0:	if (menu_sub == 0)
 						{
 							callfunction(master_items[supply_inventory[menu_item].item_ref].effect_func);
-							MenuMinibox(master_items[supply_inventory[menu_item].item_ref].name+" used on "+master_cast[party[menu_cast]].name+"!", "MenuDrawCast");
+							MenuMinibox(master_items[supply_inventory[menu_item].item_ref].name+" used on "+master_cast[party[menu_cast]].name+"!", "sully.vc.v1_menu.Menu_Cast.MenuDrawCast");
 							GiveItemI(supply_inventory[menu_item].item_ref, 0-1);
 						}
 						else if (menu_sub == 1)
 						{
 							callfunction(master_items[equipment_inventory[menu_item].item_ref].effect_func);
-							MenuMinibox(master_items[equipment_inventory[menu_item].item_ref].name+" used on "+master_cast[party[menu_cast]].name+"!", "MenuDrawCast");
+							MenuMinibox(master_items[equipment_inventory[menu_item].item_ref].name+" used on "+master_cast[party[menu_cast]].name+"!", "sully.vc.v1_menu.Menu_Cast.MenuDrawCast");
 						}
 						else if (menu_sub == 2)
 						{
 							callfunction(master_items[key_item_inventory[menu_item].item_ref].effect_func);
-							MenuMinibox(master_items[key_item_inventory[menu_item].item_ref].name+" used on "+master_cast[party[menu_cast]].name+"!", "MenuDrawCast");
+							MenuMinibox(master_items[key_item_inventory[menu_item].item_ref].name+" used on "+master_cast[party[menu_cast]].name+"!", "sully.vc.v1_menu.Menu_Cast.MenuDrawCast");
 						}
 						menu_cast = 0-1;
 						menu_idx = MenuGet("Item");
@@ -72,7 +72,7 @@ public class Menu_Cast {
 	// Draw function for the Cast screen of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Nice and straightforward
-	void MenuDrawCast()
+	public static void MenuDrawCast()
 	{
 		// Display background, party, and prompt
 		MenuBlitRight(false, menu_option);

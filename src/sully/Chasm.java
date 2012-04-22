@@ -15,11 +15,11 @@ import static sully.vc.util.General.*;
 
 public class Chasm {
 	
-	public static void start()
+	public static void Start()
 	{
 		InitMap();
 		
-		SaveDisable();
+		Sully.SaveDisable();
 		
 		//If we're in the flashback, don't play our music or 
 		// remove the boulder
@@ -36,12 +36,12 @@ public class Chasm {
 		}
 	}
 	
-	public static void nexit()
+	public static void NExit()
 	{
 		V1_MapSwitch("overworld.map", 33,25,TBLACK);
 	}
 	
-	public static void sexit()
+	public static void SExit()
 	{
 		V1_MapSwitch("overworld.map", 39,26,TBLACK);
 	}
@@ -64,10 +64,8 @@ public class Chasm {
 	
 	public static void ranger()
 	{
-		MenuOff();
-	
-		//EntStart();
-		
+		EntStart();
+		System.out.println(event_entity);
 		if( flags[F_LAB_FOUND_CRYSTAL] == 0 )
 		{
 			TextBox(0,	"Sorry. Nobody can cross the bridge to",
@@ -96,8 +94,10 @@ public class Chasm {
 	
 			TextBox(0,	"I shall remove the rock from trail here.","","");
 	
-	
-			entitymove( event_entity,"D1 R4 W30");
+			entity.get(event_entity).obstructable = false;
+			entity.get(event_entity).speed = 100; // rbp
+			
+			entitymove(event_entity, "D1 R4 W30");
 			WaitForEntity( event_entity );
 	
 			settile( 41,29, 1, 182 );
@@ -110,7 +110,7 @@ public class Chasm {
 			flags[F_RAVEN_GULCH] = 1;
 		}
 		
-		MenuOn();
+		EntFinish(); //MenuOn();
 	}
 	
 	public static void sun() 

@@ -3,6 +3,8 @@ package sully;
 import static core.Script.*;
 import static sully.Flags.*;
 import static sully.Sully.*;
+import sully.vc.v1_rpg.V1_RPG;
+import sully.vc.v1_rpg.V1_Simpletype;
 
 import static sully.vc.v1_rpg.V1_RPG.*;
 import static sully.vc.v1_rpg.V1_Music.*;
@@ -23,7 +25,7 @@ public class Dungeon {
 	
 	public static void start() 
 	{
-		SaveDisable(); //cannot save in towns.
+		Sully.SaveDisable(); //cannot save in towns.
 			
 		InitMap();
 	
@@ -75,22 +77,22 @@ public class Dungeon {
 	
 		if(flags[F_LOVE_SARA_JOIN]==0)
 		{
-			sara_event();
+			Sara_event();
 		}
 	}
 	
-	public static void upstair() /* 1 */
+	public static void Upstair() /* 1 */
 	{
 		flags[F_LOVE_ESCAPE] = 1; //we've escaped!
 		V1_MapSwitch("SHACK.MAP",71,5,0);
 	}
 	
-	public static void sara_event() /* 2 */
+	public static void Sara_event() /* 2 */
 	{
 		int darin, dexter, sara;
 		int i;
 		
-		MenuOff();
+		EntStart(); //rbp
 		
 		darin	= GetPartyEntity( "Darin" );
 		dexter	= GetPartyEntity( "Dexter" );
@@ -127,8 +129,8 @@ public class Dungeon {
 	
 		SoundFall();
 		
-	
-		entitymove(darin,"D12 D0");
+		entity.get(darin).obstructable = false; // rbp
+		entitymove(darin,"D12"); // Rbp was "D12 D0"
 		WaitForEntity(darin);
 		
 		SoundBomb();
@@ -171,10 +173,10 @@ public class Dungeon {
 		
 		SoundFall();
 		
-		entitymove(dexter,"D12 D0");
+		entitymove(dexter,"D12");
 		WaitForEntity(dexter);
 		
-		entitymove(darin,"R2 L0");
+		entitymove(darin,"R2 F2");
 		SoundBomb();
 	
 		for(i=10; i>1; i--)
@@ -284,8 +286,8 @@ public class Dungeon {
 		TextBox(T_DARIN,	"Step aside, wizard boy. This",
 							"is a job for me!","");
 		
-		entitymove(darin,"D3 F3 W30 U0");
-		entitymove(sara,"D3 F2 W30 U0");
+		entitymove(darin,"D3 F3 W30 F0");
+		entitymove(sara,"D3 F2 W30 F0");
 		WaitForEntity(sara);
 		
 		entity.get(sara).speed  = 150;
@@ -306,7 +308,7 @@ public class Dungeon {
 		entity.get(sara).speed= 75;
 		entity.get(sara).specframe=0;
 		
-		entitymove(sara,"D1 R1 F0 W30 L0");
+		entitymove(sara,"D1 R1 F0 W30 F3");
 		WaitForEntity(sara);
 		
 		TextBox(T_DARIN,"Sho-Ryu-Ken!","","");
@@ -365,7 +367,9 @@ public class Dungeon {
 										// 'Cuz she's rockin'.
 		
 	
-		entity.get(0).setx(30000); //warp the mapent of Sara away.
+		entity.get(0).setx(3000); //warp the mapent of Sara away.
+		entity.get(0).visible = false; // rbp
+		entity.get(0).obstruction = false; // rbp
 		
 	
 		Warp(25,42,TNONE);
@@ -382,7 +386,7 @@ public class Dungeon {
 		
 		flags[F_LOVE_SARA_JOIN]=1;
 		
-		MenuOn();
+		EntFinish(); //rbp
 	}
 	
 	public static void gate() /* 3 */
@@ -394,21 +398,24 @@ public class Dungeon {
 		
 		if( flags[CHEST_LOVE_A] ==0)
 		{
+			EntStart();
 			TextBox(SpcByPos(0),"Oh pooh. This gate is locked.","","");
+			EntFinish();
 			return;
 		}
 		
+		EntStart();
 		SoundSwitch();
 		AlterFTile(25,15,0,0);
 		AlterBTile(25,16,273,0);
 		TextBox(SpcByPos(0),"The Bronze Key fits. Let's go.","","");
 		DestroyItem( "Bronze_Key" );
-		
+		EntFinish();
 	
 		flags[F_LOVE_GATE_OPEN] = 1;
 	}
 	
-	public static void chest_a() /* 4 */
+	public static void Chest_A() /* 4 */
 	{
 		if( OpenTreasure(CHEST_LOVE_A,43,3,367) )
 		{
@@ -416,7 +423,7 @@ public class Dungeon {
 		}
 	}
 	
-	public static void chest_b() /* 5 */
+	public static void Chest_B() /* 5 */
 	{
 		if( OpenTreasure(CHEST_LOVE_B, 45,3,367) )
 		{
@@ -424,7 +431,7 @@ public class Dungeon {
 		}
 	}
 	
-	public static void chest_c() /* 6 */
+	public static void Chest_C() /* 6 */
 	{
 		if( OpenTreasure(CHEST_LOVE_C,21,45,367) )
 		{
@@ -432,7 +439,7 @@ public class Dungeon {
 		}
 	}
 	
-	public static void chest_d() /* 7 */
+	public static void Chest_D() /* 7 */
 	{
 		if( OpenTreasure(CHEST_LOVE_D,29,45,367) )
 		{
@@ -503,7 +510,7 @@ public class Dungeon {
 		current_map.renderstring = "1,2,E,R";
 	}
 	
-	public static void bridge_off() /* 9 */
+	public static void Bridge_Off() /* 9 */
 	{
 		AlterFTile(15,26,0,1);
 		AlterFTile(35,26,0,1);
@@ -572,7 +579,7 @@ public class Dungeon {
 	
 	public static void Console_Lever() /* 15 */
 	{
-		MenuOff();
+		EntStart();
 		
 		if(flags[F_LOVE_LEVER]==0)
 		{
@@ -591,6 +598,7 @@ public class Dungeon {
 				flags[F_LOVE_LEVER]=1;
 				
 				MenuOn();
+				EntFinish();
 				return;
 			}
 			
@@ -599,7 +607,7 @@ public class Dungeon {
 			TextBox( SpcByPos(0), "The lever is stuck.","","" );
 		}
 		
-		MenuOn();
+		EntFinish();
 	}
 	
 	public static void Console_A() /* 16 */
@@ -635,7 +643,7 @@ public class Dungeon {
 		
 		answer = Prompt(SpcByPos(0),	"The red button decreases.",
 										"The green button increases.", "", 
-										"Red|Green");
+										"Red&Green");
 		
 	
 		SetTextBoxScroll( old_state==1?true:false ); //and now we restore the original state!

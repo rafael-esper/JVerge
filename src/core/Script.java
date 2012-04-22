@@ -41,6 +41,7 @@ import domain.VFont;
 import domain.VImage;
 
 import static core.Script.screen;
+import static core.Script.splitTextIntoWords;
 import static core.SinCos.*;
 
 public class Script {
@@ -60,7 +61,7 @@ public class Script {
 	public static final int CF_CUSTOM = 7;	
 	
 	// VERGE ENGINE VARIABLES: Moved to Script for easy of use
-	/*
+	/**
 	 * This is a hardcoded image handle for the screen. It is a pointer to a
 	 * bitmap of the screen's current dimensions (set in v3.cfg or by
 	 * SetResolution() function at runtime). Anything you want to appear in the
@@ -69,10 +70,10 @@ public class Script {
 	 */
 	public static VImage screen;
 
-	// read-only timer variable constantly increasing
+	/** read-only timer variable constantly increasing*/
 	public static int systemtime;
 
-	// read/write timer variable
+	/** read/write timer variable*/
 	public static int timer;
 
 	// internal use only
@@ -82,7 +83,7 @@ public class Script {
 	public static List<Entity> entity = new ArrayList<Entity>();
 	public static Entity myself = null;
 
-	/*
+	/**
 	 * The number of entities currently on the map. Use this an the upper bound
 	 * any time you need to loop through and check entites for something.
 	 */
@@ -364,9 +365,10 @@ public class Script {
 	}
 
 	public static int val(String s) { 
-		if(s==null || s.isEmpty())
+		if(s==null || s.isEmpty() || s.trim().equals("-"))
 			return 0;
-		return Integer.valueOf(s);
+		
+		return Integer.valueOf(s.replace('+', ' ').trim());
 	}
 
 	//VI.d. Map Functions
@@ -692,6 +694,8 @@ public class Script {
 	}
 	
 	public static VImage duplicateimage(VImage s) { // TODO Test
+		if(s==null)
+			return new VImage(1,1);
 		VImage img = new VImage(s.image.getWidth(), s.image.getHeight());
 		img.g.drawImage(s.getImage(), 0, 0, null);
 		return img;
@@ -890,6 +894,7 @@ public class Script {
 		cf_gr = cf_g2 - cf_g1;
 		cf_br = cf_b2 - cf_b1;*/
 		// TODO RBP Implement this
+		graycolorfilter(screen.getImage());
 		error("Non implemented function: setcustomcolorfilter");
 	}
 	
@@ -1083,28 +1088,35 @@ public class Script {
 	static int LoadSong(String fn) { return LoadSong(fn); }
 	static int LoadSound(String fn) { return (int)LoadSample(fn); }*/
 	public static void playsound(String fn) {
+		playsound(fn, 100);
+	}
+	public static void playsound(String fn, int volume) {
+		if(fn==null || fn.isEmpty() || systemclass==null || VergeEngine.config.isNosound())
+			return;
+
+		// TODO RBP IMPLEMENT volume
 		soundplayer = new STest();
 		soundplayer.start(systemclass.getResource(fn));
 	}
-	public static void playsound(String fn, int volume) {
-		// TODO RBP IMPLEMENT volume
-		playsound(fn);
-	}
 	
 	public static void playmusic(String fn) { 
-		if(fn==null || fn.isEmpty() || systemclass==null)
+		if(fn==null || fn.isEmpty() || systemclass==null || VergeEngine.config.isNosound())
 			return;
 		
 		if(musicplayer!=null) {
 			musicplayer.stop();
 		}
-		
-		musicplayer = new MTest();
-		System.out.println("Playing..." + fn);
-		//music.start("file:///" + VergeEngine.path + "\\" + fn);
-		musicplayer.start(systemclass.getResource(fn));
-		//musicplayer.stop();
-		//System.exit(0);
+		try {
+			musicplayer = new MTest();
+			System.out.println("Playing..." + fn);
+			//music.start("file:///" + VergeEngine.path + "\\" + fn);
+			musicplayer.start(systemclass.getResource(fn));
+			//musicplayer.stop();
+			//System.exit(0);
+		}
+		catch(Exception e) {
+			System.err.println("Error when playing " + fn);
+		}
 	}
 	
 	/*
@@ -1959,62 +1971,70 @@ public class Script {
 		}
 	}
 
-	// Overkill: 2005-12-28
-	// Thank you, Zip.
-	static String strovr(String rep, String source, int offset)
-	{
-		// TODO? Where it is used? 
-		//return strovr(source, rep, offset);
-		return "";
+	private static boolean isLetterDigitOrSignal(char c) {
+		if(Character.isLetterOrDigit(c) || c=='+' || c=='-')
+			return true;
+		return false;
 	}
-
-	// Overkill: 2005-12-19
-	// Thank you, Zip.
-	// Rewritten, Kildorf: 2007-10-16
-
-	public static String wraptext(VFont wt_font, String wt_s, int wt_linelen)
-	// Pass: The font to use, the string to wrap, the length in pixels to fit into
-	// Return: The passed string with \n characters inserted as breaks
-	// Assmes: The font is valid, and will overrun if a word is longer than linelen
-	// Note: Existing breaks will be respected, but adjacent \n characters will be
-//	     replaced with a single \n so add a space for multiple line breaks
-	{
-		int lastbreak = -1; // beginning of the current line
-		int lastws = -1; // last whitespace character
-		int currloc = 0; // current character
-		int len = wt_s.length(); // length of string
-
-		String temp = wt_s;
-
-		while (currloc < len)
-		{
-			if (temp.charAt(currloc) == ' ')
-			{
-				lastws = currloc;
+	
+	// Split list of words into rows 
+	public static List<String> splitTextIntoRows(String text, int maxperrow) {
+		
+		List<String> words = splitTextIntoWords(text);
+		List<String> rows = new ArrayList<String>();
+		int i = 0;
+		String str;
+		while (i < words.size()) {
+			str = words.get(i);
+		    while (i < words.size()-1 && str.length()+ 1 + words.get(i+1).length() <= maxperrow) {
+		       str = str.concat(" " + words.get(i+1));
+		       i += 1;
 			}
-			else if (temp.charAt(currloc) == '\n')
-			{
-				lastws = currloc;
-				lastbreak = currloc;
-			}
-			else if (temp.charAt(currloc) == '\r')
-			{
-				if (temp.charAt(currloc+1) == '\n')
-					currloc++;
-				lastws = currloc;
-				lastbreak = currloc;
-			}
-			else if (textwidth(wt_font, temp, lastbreak+1, currloc - (lastbreak)) > wt_linelen && lastws != lastbreak)
-			{
-				temp = temp.substring(0, temp.lastIndexOf(lastws)) + '\n' + temp.substring(temp.lastIndexOf(lastws+1));
-				//temp.lastIndexOf(lastws) = '\n';
-				lastbreak = lastws;
-			}
-
-			currloc++;
+		    rows.add(str); //System.out.println(str);
+		    str = "";i+=1;
 		}
+		return rows;
+	}
+	
+	// Split String in trimmed words
+	public static List<String> splitTextIntoWords(String text) { 
+		int initial = 0;
+		List<String> words = new ArrayList<String>();
+		if(text==null) 
+			return words;
+		
+		for(int i=0; i<text.length(); i++) {
+			while(i<text.length() && (isLetterDigitOrSignal(text.charAt(i)) || text.charAt(i) == '\'')) {
+				i++;
+			}
+			while(i<text.length() && !isLetterDigitOrSignal(text.charAt(i))) {
+				i++;
+			}
+			words.add(text.substring(initial, i).trim());
+			initial = i;
+		}
+		return words;
+	}	
+	
+	
+	// Rafael: changed the implementation
+	// Split list of words into rows 
+	public static List<String> wraptext(VFont wt_font, String wt_s, int wt_linelen) {
+		List<String> words = splitTextIntoWords(wt_s);
+		List<String> rows = new ArrayList<String>();
+		int i = 0;
+		String str;
+		while (i < words.size()) {
+			str = words.get(i);
+		    while (i < words.size()-1 && textwidth(wt_font, str) + textwidth(wt_font, words.get(i+1)) <= wt_linelen) {
+		       str = str.concat(" " + words.get(i+1));
+		       i += 1;
+			}
+		    rows.add(str); //System.out.println(str);
+		    str = "";i+=1;
+		}
+		return rows;
 
-		return temp;
 	}
 /*
 	static int strpos(String sub, String source, int start) {
@@ -2234,10 +2254,6 @@ public class Script {
 		return executefunction(function, true);
 	}
 	
-	public static void callfunction(String function) {
-		executefunction(function, false);
-	}
-	
 	/** Check methods in the following order:
 	 * 
 	 * 1. Direct Class-method (ex: sully.vc.v1_menu.Menu_System.DrawMenu)
@@ -2248,8 +2264,11 @@ public class Script {
 	 * The capitalized version is also checked (ex: "entStart" checks also for "EntStart") 
 	 * If the function is not found, nothing happens
 	 * 	 
-	 @author Rafael
 	 */
+	public static void callfunction(String function) {
+		executefunction(function, false);
+	}
+	
 	private static boolean executefunction(String function, boolean justCheck) {
 		
 		if(function==null || function.isEmpty()) 
@@ -2280,7 +2299,7 @@ public class Script {
 				 	if(pos==-1)
 				 		pos = 0;
 				 	
-			 		StringBuilder b = new StringBuilder(current_map.filename);
+			 		StringBuilder b = new StringBuilder(current_map.filename.toLowerCase());
 			 		b.replace(pos, pos+1, String.valueOf(Character.toUpperCase(b.charAt(pos))));
 			 		String s = b.toString().substring(0, b.indexOf(".map")).replace('\\', '.');
 			 		cName.append(s);

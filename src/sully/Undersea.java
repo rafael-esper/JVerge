@@ -18,7 +18,7 @@ public class Undersea {
 	
 	public static void start()
 	{
-		SaveDisable(); //cannot save in dungeons.
+		Sully.SaveDisable(); //cannot save in dungeons.
 		
 		//if we're in the Cyclops' Hall, remove the seaweed so the dramatics are visible!
 		if( flags[F_SEA_IN_CYCLOPS_HALL] != 0 )
@@ -320,14 +320,5 @@ public class Undersea {
 		
 		EntFinish();
 	}
-	
-	// Rbp (These zone functions aren't in Sully class, so it is necessary to be defined here
-	public static void SavePoint() {
-		V1_Simpletype.SavePoint();
-	}
-	public static void SaveDisable() {
-		V1_RPG.SaveDisable();
-	}
-	
 	
 }

@@ -29,7 +29,7 @@ public class Lab {
 	
 	public static void Start()
 	{
-		SaveDisable();
+		Sully.SaveDisable();
 		
 		SetWeather(WEATHER_FOG);
 		
@@ -284,14 +284,14 @@ public class Lab {
 	
 	
 	
-	public static void NExit()
+	public static void Nexit()
 	{
 		if( flags[F_LAB_COUNTDOWN]!=0 )
 		{
 			MenuOn();
 			V1_StopDualMode();
 			VCQuakeOff();
-			hookretrace( "V1RPG_renderFunc" );
+			hookretrace( "sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc" );
 		}
 			
 		V1_MapSwitch("mountain.map", 22, 6, TBLACK);
@@ -461,6 +461,7 @@ public class Lab {
 			TextBox(T_DEXTER,	"Darin, I know more about magic than I",
 								"do about machines.",
 								"We shouldn't try to operate this.");
+			EntFinish();
 			return;
 		}
 	
@@ -473,6 +474,7 @@ public class Lab {
 			TextBox(T_SARA,	"Darin, let's go to my home in Rodne.",
 							"There's a [Thermal Activator] in the",
 							"basement.");
+			EntFinish();
 			return;
 		}
 		
@@ -481,7 +483,6 @@ public class Lab {
 		if(flags[F_LAB_USED_MACHINE]==0)
 		{
 		
-	
 			TextBox(T_SARA,	"Here are controls for the device.",
 							"I can insert the [Thermal Activator]", 
 							"here.");
@@ -491,7 +492,7 @@ public class Lab {
 			Banner( "Used Thermal Activator!", 500 );
 			DestroyItem( "Thermal_Activator" );
 		
-	
+			EntStart(); // rbp
 			TextBox(T_DARIN,	"Sara, will this work?",
 								"It will just melt the crystal and Crystal",
 								"will be OK, right?");
@@ -590,7 +591,7 @@ public class Lab {
 		int sara;
 		int darin;
 		int crystal = 2; //she's #2 on this map.
-		
+
 		EntStart(); //rbp MenuOff();
 		
 		
@@ -747,7 +748,7 @@ public class Lab {
 				
 			camReturnToPlayer(darin, 100);
 			
-			entitymove(a,"F3 W60 F2 W60 D0");
+			entitymove(a,"F3 W60 F2 W60 F2");
 			WaitForEntity(darin);
 			
 			TextBox(1,	"Girls, girls, please.",
@@ -1097,7 +1098,7 @@ public class Lab {
 			flags[F_LAB_COUNTDOWN] = 30; //30 seconds!!!
 	
 			V1_StartDualMode( "3,R,1,E,2,R" );
-			MenuOff();
+			EntFinish();
 			VCQuake( 2,2 );
 			hookretrace( "hooker_washington" );
 		}
@@ -1307,7 +1308,8 @@ public class Lab {
 		int darin, dexter, c ,q;
 		VImage im;
 		
-		MenuOff();
+		EntStart(); //rbp
+		//MenuOff();
 	
 		if(flags[F_LAB_FOUND_CRYSTAL]==0)
 		{
@@ -1727,7 +1729,7 @@ public class Lab {
 	}
 	
 	
-	public static void sancho()
+	public static void Sancho()
 	{
 		EntStart();
 		if( flags[F_LAB_SANCHO]==0 )
@@ -1753,7 +1755,7 @@ public class Lab {
 			if( flags[F_LAB_SULLY] ==0 )
 			{
 			
-				answer = Prompt( T_SANCHO, "So, would you like to skip the switch","puzzle?","", "Yes, it's hard.|No.  I am a MAN." );
+				answer = Prompt( T_SANCHO, "So, would you like to skip the switch","puzzle?","", "Yes, it's hard.&No.  I am a MAN." );
 	
 				if( answer==0 )
 				{

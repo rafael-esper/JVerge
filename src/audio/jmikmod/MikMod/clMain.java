@@ -330,6 +330,7 @@ public int main(String nargv[])
 
 // RBP
 MPlayer.mp_loop=true;
+quiet = true;
 
 
 /*#ifdef SUN

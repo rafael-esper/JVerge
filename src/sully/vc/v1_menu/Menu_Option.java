@@ -16,7 +16,7 @@ public class Menu_Option {
 	//       Option Menu
 	//        -----------------
 	
-	void MenuControlOption()
+	public static void MenuControlOption()
 	{
 		Menu1ArrowSetSounds( "MenuHappyBeep" );
 	
@@ -24,16 +24,23 @@ public class Menu_Option {
 	
 		if (menu_sub == 0)
 		{
-			MenuControlTwoArrows("menu_sub", 4, "menu_item", 5);
+			int ret[] = MenuControlTwoArrows(menu_sub, 4, menu_item, 5);
+			menu_sub = ret[1]; // rbp
+			menu_item = ret[2]; // rbp
+			
 			if (menu_sub != 0) menu_item = 0;
 		}
 		else if (menu_sub == 2)
 		{
-			MenuControlTwoArrows("menu_sub", 4, "global_noscroll", 2);
+			int ret[] = MenuControlTwoArrows(menu_sub, 4, global_noscroll?1:0, 2);
+			menu_sub = ret[1]; // rbp
+			global_noscroll = ret[2]==0?false:true; // rbp			
 		}
 		else if (menu_sub == 3)
 		{
-			MenuControlTwoArrows("menu_sub", 4, "global_menuluc", 11);
+			int ret[] = MenuControlTwoArrows(menu_sub, 4, global_menuluc, 11);
+			menu_sub = ret[1]; // rbp
+			global_menuluc = ret[2]; // rbp
 		}
 		else 
 		{
@@ -66,7 +73,7 @@ public class Menu_Option {
 		}
 	}
 	
-	void MenuDrawOption()
+	public static void MenuDrawOption()
 	{
 		MenuDisplayOption(MenuIsActive("Option"));
 		if (menu_sub == 0)
@@ -90,13 +97,13 @@ public class Menu_Option {
 		}
 	}
 	
-	void MenuDrawOptionVol()
+	public static void MenuDrawOptionVol()
 	{
 		MenuDisplayOption(MenuIsActive("OptionVol"));
 		rect(20 + (menu_item * 65), 115, 86 + (menu_item * 65), 145, menu_colour[2], screen);
 	}
 	
-	void MenuDisplayOption(boolean active)
+	public static void MenuDisplayOption(boolean active)
 	{
 		MenuBlitRight(false, menu_option);
 		MenuDrawBackground(MENU_A_X1, MENU_A_Y1, MENU_A_X2, MENU_A_Y2, active);
@@ -117,17 +124,21 @@ public class Menu_Option {
 		printstring(30, 150, screen, menu_font[0], "Text Scroll");
 		printcenter(130, 150, screen, menu_font[0], "ON");
 		printcenter(190, 150, screen, menu_font[0], "OFF");
-		rect(110 + (global_noscroll?1:0 * 60), 148, 150 + (global_noscroll?1:0 * 60), 159, menu_colour[2], screen);
+		rect(110 + (global_noscroll?1:0) * 60, 148, 150 + (global_noscroll?1:0) * 60, 159, menu_colour[2], screen);
 		printstring(30, 170, screen, menu_font[0], "Menu Lucency: " + str(global_menuluc*10) + "%");
 	}
 	
 	
-	void MenuControlOptionVol()
+	public static void MenuControlOptionVol()
 	{
 		if (menu_item == 0) menu_sub = Sfx.global_music_volume;
 		else if (menu_item == 1) menu_sub = Sfx.sfx_volume;
 		else if (menu_item == 2) menu_sub = Sfx.interface_volume;
-		if (MenuControlFastArrows("menu_sub", 100, "menu_item", 3) !=0)
+
+		int ret[] = MenuControlFastArrows(menu_sub, 100, menu_item, 3); // rbp
+		menu_sub = ret[1]; // rbp
+		menu_item = ret[2]; // rbp
+		if (ret[0] ==0)
 		{
 			if (menu_item == 0)
 			{
@@ -145,12 +156,16 @@ public class Menu_Option {
 		}
 	}
 	
-	void MenuControlOptionRGB()
+	public static void MenuControlOptionRGB()
 	{
 		if (menu_cast == 0) menu_sub = menu_colour[menu_item].getRed();
 		else if (menu_cast == 1) menu_sub = menu_colour[menu_item].getGreen();
 		else if (menu_cast == 2) menu_sub = menu_colour[menu_item].getBlue();
-		if (MenuControlFastArrows("menu_sub", 255, "menu_cast", 3)!=0)
+		
+		int ret[] = MenuControlFastArrows(menu_sub, 255, menu_cast, 3); // rbp
+		menu_sub = ret[1]; // rbp
+		menu_cast = ret[2]; // rbp
+		if (ret[0]==0)
 		{
 			if (menu_cast == 0) menu_colour[menu_item] = RGB(menu_sub, menu_colour[menu_item].getGreen(), menu_colour[menu_item].getBlue());
 			else if (menu_cast == 1) menu_colour[menu_item] = RGB(menu_colour[menu_item].getRed(), menu_sub, menu_colour[menu_item].getBlue());
@@ -174,28 +189,28 @@ public class Menu_Option {
 		}
 	}
 	
-	void MenuDrawOptionRGB()
+	public static void MenuDrawOptionRGB()
 	{
 		MenuDisplayOption(MenuIsActive("OptionRGB"));
 		rect(27 + (menu_item * 50), 47, 63 + (menu_item * 50), 83, menu_colour[2], screen);
 		rect(23 + (menu_cast * 65), 88, 87 + (menu_cast * 65), 102, menu_colour[2], screen);
-		rect(25, 90, 85, 100, RGB(menu_colour[menu_item].getRed(), 0, 0), screen);
-		rect(90, 90, 150, 100, RGB(0, menu_colour[menu_item].getGreen(), 0), screen);
-		rect(155, 90, 215, 100, RGB(0, 0, menu_colour[menu_item].getBlue()), screen);
+		rectfill(25, 90, 85, 100, RGB(menu_colour[menu_item].getRed(), 0, 0), screen);
+		rectfill(90, 90, 150, 100, RGB(0, menu_colour[menu_item].getGreen(), 0), screen);
+		rectfill(155, 90, 215, 100, RGB(0, 0, menu_colour[menu_item].getBlue()), screen);
 		printstring(35, 92, screen, menu_font[0], "R:"+str(menu_colour[menu_item].getRed()));
 		printstring(100, 92, screen, menu_font[0], "G:"+str(menu_colour[menu_item].getGreen()));
 		printstring(165, 92, screen, menu_font[0], "B:"+str(menu_colour[menu_item].getBlue()));
 	}
 	
 	// Displays a square of colour for options
-	void MenuBlitColour(int number)
+	public static void MenuBlitColour(int number)
 	{
-		rect(30 + (number * 50), 50, 60 + (number * 50), 80, menu_colour[number], screen);
+		rectfill(30 + (number * 50), 50, 60 + (number * 50), 80, menu_colour[number], screen);
 		rect(29 + (number * 50), 49, 61 + (number * 50), 81, Color.BLACK, screen);
 	}
 	
 	// Displays a linear slider of pretty triangle type for options
-	void MenuBlitSlider(int number, int value)
+	public static void MenuBlitSlider(int number, int value)
 	{
 		triangle(23 + (number * 65), 140,
 		 23 + (number * 65) + 60, 140,

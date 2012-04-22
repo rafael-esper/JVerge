@@ -124,11 +124,11 @@ public class PCXReader {
 
             if(in.available() != 769)
             {
-              System.out.println("Error in the palette!");
+              System.err.println("Error in the palette!");
             }
             if(in.read()!=12)
             {
-              System.out.println("Error in the palette!");
+              System.err.println("Error in the palette!");
             }
 
             in.read(pal);
@@ -188,7 +188,7 @@ public class PCXReader {
           }
         }
         catch (IOException e) {
-          System.out.println("Error reading PCX-File!");
+          System.err.println("Error reading PCX-File!");
         }
 
         return bufferImage(picture, BufferedImage.TYPE_INT_ARGB);

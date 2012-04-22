@@ -77,15 +77,30 @@ Início dez: Music (vgm, mod)
 29/mar(+1): Sully Conversion (mountain, lab, general fixes).
 30/mar(+1): Sully Conversion (effects, oldville). Merged path+method. Tested mountain map.
 31/mar(+3): Sully Conversion (menus, shack, village, dungeon, castle, menu_shop). 
-			Refactor callfunction ("a.b.function" instead of "a.b", "function"). 
+			Refactor callfunction ("a.b.function" instead of "a.b", "function").
 ==== 108 HOURS ====
+02/abr(.5):	Sully Conversion (fixed menu function calling. removed GetInt() code)
+04/abr(.5): Sully Conversion (paused when showing banner)
+11/abr(+1): Sully Conversion (fixed MenuControl2Arrow, getInt() replacement)
+12/abr(+1): Sully Conversion (globalluc change working, fixed data_load methods, misc)
+15/abr(+1): Sully Conversion (data_load various fixes, all working now)
+16/abr(+3): Sully Conversion (fixed menus: options, equip, stats). Solved ATK/DEF bug.
+ 			Lab map. Village. Added unpress(9) to fix movement bug after warping
+17/abr(+3): Sully Conversion (menu save/load, Shack, Dungeon, solved Shop menu bug)
+18/abr(+3): Sully Conversion (Castle, testing all quest 'till end, solving bugs)
+			Solved saving bug with simple string. Nosound impl.
+19/abr(+2): Sully Conversion (solved entitymove bug, entity wrapping bug, testing)
+			Ak Conversion (moto/surf height depending on speed, title screen, AWT font)
+20/abr(+2): Ak Conversion (map, level name, moto/surf breaking and reverse, clean up)		
+21/abr(+2): Ak Conversion (fixed some bugs, added seahorse). Create CHR from file. 			
 
+
+- Entities' movement get screwed after talking to them
 
 TODO
 - Verify ColorFilter, Implement Rotate, Flip, etc (See Graphics2d Rotate, Scale, etc)
 - Implement AlphaBlit (http://verge-rpg.com/docs/the-verge-3-manual/graphics-functions/alphablit/)
 - Implement wrapblit, twrapblit, and other TODO functions in Script
-- Implement nosound option (and check when there is no sound support)
 - Check if Script unused functions work properly
 - Change files into resources (check: music, sound)
 - Check bug when saving obs in a map
@@ -109,7 +124,7 @@ CONSIDER TODOs
 
 LONG-TERM TODOs
 - Make it more OO (less static methods, no public properties, no static imports)
-- OO Idea: Image functions in VImage (ex: rectfill, etc), Font functions in VFont, etc
+- OO Idea: Image functions in VImage (ex: rectfill, circle etc), Font functions in VFont, etc
 - Create VC parser (parser or JIT Compiler?)
 - Create LUA parser (parser or JIT Compiler?)
 
@@ -174,7 +189,7 @@ http://www.roseindia.net/java/example/java/swing/internationalization.shtml
 
 
 log
-Converting Sully was very useful to stop a lot of errors, misconceptions and buggy code in my JVerge engine conversion. Now it's way more stable. 
+Converting Sully was very useful to fix a lot of errors, misconceptions and buggy code in my JVerge engine conversion. Now it's way more stable. 
 But I've performed a direct conversion - that was faster than rewriting the Sully code to the Java paradigm.
 I kind of regret converting Sully to JVerge this way, because my initial goal was to show that the main tech demo would work properly with the Java engine, but now it is an example of a mindless bad programming practice: lots of static and public methods and properties, lots of static imports, and a general disoriented object programming. 
 For a better example of a OO approach, I've implemented some classes and methods in my PS demo.
@@ -190,7 +205,9 @@ Notes on Sully Conversion
 - As SetClip is not yet implemented, I've changed a little the textbox behavior to produce the same effects.
 - The "|" text delimiter was changed to "&", because "|" has another meaning to regex String function.
 - I've performed some changes in the simpletype_rpg package, creating the structs (in Java, classes) in the corresponding classes. Not enough to be really OO, though.
-- Reimplemented the data_load with Java File API. Not very hard to convert (just text files). 
+- Reimplemented the data_load with Java File API. Not very hard to convert (just text files). But the token separator was changed to a tab ("\t"), and just ONE tab in the .dat files. 
+- Data_load strcmp was different from expected, so changed !strcmp to strcmp and vice-versa
+- The item "Cap" is just three letter long, so was interpreted as junk, because of MIN_LINE_LENGTH. Changed to LongCap.
 - I've changed some MenuOff() and MenuOn() calls to EntStart() and EntFinish(), because somehow, the player wasn't stopped in the dramatic scenes.
 - There were some bugs in the original code, like accessing a -1 index in an array in the AddPlayerI() function. Those bugs become evident in the Java code, as it's now allowed.
 - There were some strange TextBox without the comma (like TextBox(PORTRAIT, "a" "b", "c"); How these were working?!

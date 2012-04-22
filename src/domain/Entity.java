@@ -750,9 +750,14 @@ public class Entity {
 			}
 		}
 
+		int zx = getx() - xwin,
+			zy = gety() - ywin;
+
 		// Adapted by rbp
-		int zx = (getx() - xwin + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4),
-			zy = (gety() - ywin + ((current_map.getHeight()<<4))) % (current_map.getHeight()<<4);
+		if(current_map != null && current_map.horizontalWrapable)
+			zx = zx + ((current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
+		if(current_map != null && current_map.verticalWrapable)	
+			zy = zy + ((current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
 
 		//System.out.println(this.chrname + " " + zx + "," + zy + " " + getx() + "," + gety() + " " + xwin + "," + ywin);
 		
@@ -765,8 +770,6 @@ public class Entity {
 
 		if (chr != null)
 			chr.render(zx, zy, frame, screen);
-		else
-			;//RBP DrawRect(zx, zy, zx + 15, zy + 15, MakeColor(255,255,255), screen);
 	}
 
 	public void SetWanderZone()

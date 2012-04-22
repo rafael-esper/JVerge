@@ -25,18 +25,20 @@ import sully.vc.Sfx;
 import sully.vc.simpletype_rpg.Cast;
 import sully.vc.util.Animation;
 import sully.vc.util.Credits;
+import sully.vc.v1_rpg.V1_RPG;
+import sully.vc.v1_rpg.V1_Simpletype;
 
 public class Sully extends VergeEngine {
 	
 	
 	// Version number in 127.255.255.255 format, byte 4 ->1
-	/*
-	#define VERSION_4_BYTE 0
-	#define VERSION_3_BYTE 0
-	#define VERSION_2_BYTE 1
-	#define VERSION_1_BYTE 0
-	#define VERSION_String "(0.0.1.0) - Sully savefile format rc1"
-	*/
+	
+	public static final int VERSION_4_BYTE = 0;
+	public static final int VERSION_3_BYTE = 0;
+	public static final int VERSION_2_BYTE = 1;
+	public static final int VERSION_1_BYTE = 0;
+	public static final String VERSION_STRING = "(0.0.1.0) - Sully savefile format rc1";
+	
 	
 	// This file is where all the story flag defines live
 	// Flags are awesome and important!
@@ -90,21 +92,6 @@ public class Sully extends VergeEngine {
 		//SSAC_LoadResources();	//loads resources for the Sully: Simple and Clean library
 		SSAC_InitData(); //loads datafiles.
 
-		// TEMP CODE
-/*		master_cast = new Cast[MAX_CAST];
-		master_cast[0] = new Cast();
-		master_cast[0].name = "Darin";
-		master_cast[0].chrname = "Darin.chr";
-		master_cast[1] = new Cast();
-		master_cast[1].name = "Crystal";
-		master_cast[1].chrname = "Crystal.chr";
-		for(int i=2;i<10;i++) {
-			master_cast[i] = new Cast();
-			master_cast[i].name = "";
-		}*/
-		
-		// END TEMP CODE
-		
 		initInventories(); //cleans inventory
 		SMENU_InitMenus(); //SMENU_LoadResources();	//loads resources for the Simple Menu library
 		initSpeechPortsInData(); //OMG HAX!
@@ -129,11 +116,8 @@ public class Sully extends VergeEngine {
 		//This allows alt-f4 to exit verge.
 		//HookKey( SCAN_F4, "alt_f4" );
 		
-		//LECICIA
-		current_map = new domain.Map();
-		Intro.newgame();
-		//LECICIAinitIntro();
-		//LECICIADoIntro();
+		initIntro();
+		DoIntro();
 	}
 	
 	void help()
@@ -384,6 +368,7 @@ public class Sully extends VergeEngine {
 	// Quick workarounds to get loadgames into the main title screen.  
 	public static int _title_menu;
 	public static boolean _title_menu_load_done;
+	public static boolean _title_menu_load_cancel; // rbp
 	
 	
 	static void credits()
@@ -547,7 +532,7 @@ public class Sully extends VergeEngine {
 		Sfx.sfx_volume = 85;
 		Sfx.interface_volume = 85;
 		global_noscroll = false;
-		global_menuluc = 0;
+		global_menuluc = 2;
 		
 		menu_colour[0] = new Color(0, 0, 0);
 		menu_colour[1] = new Color(112, 112, 112);
@@ -597,6 +582,18 @@ public class Sully extends VergeEngine {
 		}
 		unpauseplayerinput(); // rbp
 	}
+
+	// Rbp (These zone functions weren't in Sully class, so it is necessary to be defined here in order to be called by other maps)
+	public static void Heal_Well() {
+		V1_Simpletype.Heal_Well();
+	}
+	public static void SavePoint() {
+		V1_Simpletype.SavePoint();
+	}
+	public static void SaveDisable() {
+		V1_RPG.SaveDisable();
+	}
+
 	
 	
 	// The only new code required to run the JVerge engine

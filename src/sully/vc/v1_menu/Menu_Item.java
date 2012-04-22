@@ -34,7 +34,10 @@ public class Menu_Item {
 		int number = MenuGetItemCount();
 		
 		Menu2ArrowSetSounds( "MenuHappyBeep","MenuPageTurn" );
-		number = MenuControlTwoArrows("menu_item", number, "menu_sub", 3);
+		int ret[] = MenuControlTwoArrows(menu_item, number, menu_sub, 3);
+		number = ret[0]; //rbp
+		menu_item = ret[1];
+		menu_sub = ret[2];
 		
 		if ((number & 1)!=0)
 		{
@@ -122,6 +125,7 @@ public class Menu_Item {
 		printcenter(120, 40, screen, menu_font[0], "Equip");
 		printcenter(190, 40, screen, menu_font[0], "Key");
 		rect(24 + (menu_sub * 70), 36, 76 + (menu_sub * 70), 53, menu_colour[2], screen);
+		
 		if (count == 0)
 		{
 			MenuDrawSubWindow(20, 53, 220, 225 - (2 * (menu_fonth + 2)), menu_item, menu_fonth + 2, 1, menu_start, 3);

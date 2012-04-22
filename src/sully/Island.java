@@ -18,7 +18,7 @@ public class Island {
 	public static void start()
 	{
 		//hookretrace(""); //rbp
-		SaveDisable();
+		Sully.SaveDisable();
 		
 		//if Crystal's already joined, we don't want to see the version of her that's
 		// pre-built into the map...

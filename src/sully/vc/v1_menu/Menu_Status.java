@@ -21,12 +21,15 @@ public class Menu_Status {
 	// Control function for the Status screen of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Very simple at the moment, room for additions
-	void MenuControlStatus()
+	public static void MenuControlStatus()
 	{
 		//setting the angry buzz here as a reminder that it does, in fact, 
 		// have room for additions.
 		Menu2ArrowSetSounds( "MenuAngryBuzz","MenuPageTurn" );
-		MenuControlTwoArrows("menu_item", 1, "menu_cast", PartySize());
+		int ret[] = MenuControlTwoArrows(menu_item, 1, menu_cast, PartySize());
+		menu_item = ret[1]; // rbp
+		menu_cast = ret[2]; // rbp	
+		
 		if (MenuConfirm())
 		{
 			Menu2ArrowSetSounds( "","" );
@@ -43,7 +46,7 @@ public class Menu_Status {
 	// Drawing function for the Status screen of the menu
 	// Called from MenuEntry() based on global menu_idx variable
 	// Very simple at the moment, room for additions
-	void MenuDrawStatus()
+	public static void MenuDrawStatus()
 	{
 		int i;
 	
@@ -69,16 +72,6 @@ public class Menu_Status {
 	//        -------------------------------
 	// A few functions for wrapping and displaying short lines of text
 	
-	// Gives the number of lines a description needs
-	int MenuLenDesc(int desc_font, String desc_text, int desc_width)
-	// Pass: The font that will be used, the text to be displayed, and the width available
-	// Return: The number of lines needed to display the description
-	// No error checking
-	{
-		desc_text = wraptext(menu_font[0], desc_text, desc_width);
-		return tokencount(desc_text, "&");
-	}
-	
 	// Displays a description of up to two lines, at position set by defines
 	public static int MenuPrintDesc(VFont desc_font, String desc_text, int desc_width)
 	// Pass: The font that will be used, the text to be displayed, and the width available
@@ -94,35 +87,34 @@ public class Menu_Status {
 	// Return: The number of lines that were displayed
 	// No error checking
 	{
-		desc_text = wraptext(menu_font[0], desc_text, desc_width);
-		int lines = tokencount(desc_text, "&");
+		// RBP: New implementation!
+		java.util.List<String> rows = wraptext(menu_font[0], desc_text, desc_width);
+		
+		int lines = rows.size();
 		if (lines == 1)
 		{
-			printstring(x, y - (3 * (menu_fonth + 2) / 2), screen, desc_font, gettoken(desc_text, "&", 0));
+			printstring(x, y - (3 * (menu_fonth + 2) / 2), screen, desc_font, rows.get(0));
 		}
 		else
 		{
-			printstring(x, y - ((menu_fonth + 2) * 2), screen, desc_font, gettoken(desc_text, "&", 0));
-			printstring(x, y - ((menu_fonth + 2) * 1), screen, desc_font, gettoken(desc_text, "&", 1));
+			printstring(x, y - ((menu_fonth + 2) * 2), screen, desc_font, rows.get(0));
+			printstring(x, y - ((menu_fonth + 2) * 1), screen, desc_font, rows.get(1));
 		}
 		return lines;
 	}
 	
 	// Prints description of any number of lines, working upwards. You get a free line with this one.
-	int MenuPrintDescVar(VFont desc_font, String desc_text, int desc_width)
-	// Pass: The font that will be used, the text to be displayed, and the width available
-	// Return: The number of lines that were displayed
-	// No error checking
+	static int MenuPrintDescVar(VFont desc_font, String desc_text, int desc_width)
 	{
-		int i;
-		desc_text = wraptext(menu_font[0], desc_text, desc_width);
-		int lines = tokencount(desc_text, "&");
-		for (i = 0; i < lines; i++)
+		// RBP: New implementation!
+		java.util.List<String> rows = wraptext(menu_font[0], desc_text, desc_width);
+
+		for (int i=0; i<rows.size(); i++)
 		{
-			printstring(MENU_DESCRIPTION_X, MENU_DESCRIPTION_Y - ((menu_fonth + 2) * (lines - i)), screen, desc_font, gettoken(desc_text, "&", i));
+			printstring(MENU_DESCRIPTION_X, MENU_DESCRIPTION_Y - ((menu_fonth + 2) * (rows.size() - i)), screen, desc_font, rows.get(i));
 		}
-		line(MENU_DESCRIPTION_X - 5, MENU_DESCRIPTION_Y - 4 - (lines * (menu_fonth + 2)),
-			MENU_DESCRIPTION_X + desc_width + 5, MENU_DESCRIPTION_Y - 4 - (lines * (menu_fonth + 2)), menu_colour[2], screen);
-		return lines;
+		line(MENU_DESCRIPTION_X - 5, MENU_DESCRIPTION_Y - 4 - (rows.size() * (menu_fonth + 2)),
+			MENU_DESCRIPTION_X + desc_width + 5, MENU_DESCRIPTION_Y - 4 - (rows.size() * (menu_fonth + 2)), menu_colour[2], screen);
+		return rows.size();
 	}
 }

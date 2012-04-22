@@ -132,13 +132,13 @@ public class Party {
 		}
 	
 		for (i = 0; i < MAX_GROWABLE_STATS; i++) { 
-			master_cast[cst_idx].stats[i] += master_cast[cst_idx].stat_growth[0][i]; 
+			master_cast[cst_idx].stats[i] = master_cast[cst_idx].stat_growth[0][i];
 		} 
 		master_cast[cst_idx].exp += master_cast[cst_idx].exp_require[0];
 	
 		for (j = 1; j < level; j++) { 
 			for (i = 0; i < MAX_GROWABLE_STATS; i++) { 
-				master_cast[cst_idx].stats[i] += master_cast[cst_idx].stat_growth[j][i]; 
+				master_cast[cst_idx].stats[i] += master_cast[cst_idx].stat_growth[j][i];
 			}
 	
 			master_cast[cst_idx].exp += master_cast[cst_idx].exp_require[j];
@@ -363,7 +363,7 @@ public class Party {
 		}
 		
 		for (i=0; i<PartySize(); i++) {
-	
+			System.err.println(master_cast[party[i]].chrname);
 			e = entityspawn( x,y, master_cast[party[i]].chrname );
 			entitystalk(e, last);
 			master_cast[party[i]].entity = e;

@@ -22,11 +22,14 @@ public class Menu_Equip {
 	//       Equip Menu
 	//        ----------------
 	
-	void MenuControlEquip()
+	public static void MenuControlEquip()
 	{
 		//Menu2ArrowSetSounds( ,"MenuPageTurn" );
 		Menu2ArrowSetSounds( "MenuHappyBeep","MenuPageTurn" );
-		MenuControlTwoArrows("menu_sub", MAX_EQUIP_SLOTS, "menu_cast", PartySize());
+		int ret[] = MenuControlTwoArrows(menu_sub, MAX_EQUIP_SLOTS, menu_cast, PartySize());
+		menu_sub = ret[1]; // rbp
+		menu_cast = ret[2]; // rbp
+		
 		if (MenuConfirm())
 		{
 			MenuHappyBeep();
@@ -42,7 +45,7 @@ public class Menu_Equip {
 		}
 	}
 	
-	void MenuControlEquipSub()
+	public static void MenuControlEquipSub()
 	{
 		Menu1ArrowSetSounds("MenuHappyBeep");
 		menu_item = MenuControlArrows(menu_item, EquCountBySlot(menu_sub) + 1);
@@ -66,7 +69,7 @@ public class Menu_Equip {
 			{
 				MenuForceEquip();
 				EquipItemI(party[menu_cast], GetEquBySlot(menu_sub, menu_item), menu_sub);
-				MenuMinibox(master_items[master_cast[party[menu_cast]].equipment[menu_sub]].name+" equipped!", "MenuDrawEquip");
+				MenuMinibox(master_items[master_cast[party[menu_cast]].equipment[menu_sub]].name+" equipped!", "sully.vc.v1_menu.Menu_Equip.MenuDrawEquip");
 				menu_item = 0-1;
 				menu_idx = MenuGet("Equip");
 			}
@@ -85,7 +88,7 @@ public class Menu_Equip {
 		}
 	}
 	
-	void MenuDrawEquip()
+	public static void MenuDrawEquip()
 	{
 		int i;
 		MenuBlitRight(false, menu_option);
@@ -103,19 +106,22 @@ public class Menu_Equip {
 		{
 			printstring(25, 115 + (15 * i),
 			 screen, menu_font[0], GetSlotName(i));
-			printstring(75, 115 + (15 * i),
-			 screen, menu_font[0], master_items[master_cast[party[menu_cast]].equipment[i]].name);
+			
+			if(master_cast[party[menu_cast]].equipment[i] != -1) // rbp
+				printstring(75, 115 + (15 * i),
+						screen, menu_font[0], master_items[master_cast[party[menu_cast]].equipment[i]].name);
 		}
 		printstring(15, 115 + (15 * menu_sub), screen, menu_font[0], ">");
 	
 	
-		if (HasEquipment(party[menu_cast], menu_sub)) MenuPrintDesc(menu_font[0], master_items[master_cast[party[menu_cast]].equipment[menu_sub]].desc, 180);
+		if (HasEquipment(party[menu_cast], menu_sub) && master_cast[party[menu_cast]].equipment[menu_sub]!= -1) // rbp
+			MenuPrintDesc(menu_font[0], master_items[master_cast[party[menu_cast]].equipment[menu_sub]].desc, 180);
 		else MenuPrintDesc(menu_font[0], "No item", 180);
 		line(20, 225 - (2 * (menu_fonth + 2)), 220, 225 - (2 * (menu_fonth + 2)), menu_colour[2], screen);
 	}
 	
 	
-	void MenuDrawEquipSub()
+	public static void MenuDrawEquipSub()
 	{
 		int i, equ_count, equip;
 		VImage equipImage;
@@ -125,7 +131,8 @@ public class Menu_Equip {
 		MenuBlitCast(menu_cast, 0, 0);
 		line(20, 110, 220, 110, menu_colour[2], screen);
 		printstring(25, 115, screen, menu_font[0], GetSlotName(menu_sub));
-		printstring(75, 115, screen, menu_font[0], master_items[master_cast[party[menu_cast]].equipment[menu_sub]].name);
+		if(master_cast[party[menu_cast]].equipment[menu_sub]!= -1) // rbp
+			printstring(75, 115, screen, menu_font[0], master_items[master_cast[party[menu_cast]].equipment[menu_sub]].name);
 	
 		equ_count = EquCountBySlot(menu_sub);
 	
@@ -179,6 +186,9 @@ public class Menu_Equip {
 	//			height of one entry, total number of entries, entry at top of window, and size modifier
 	// No error checking, and can display strangely if odd values are passed
 	{
+		if (entry_total == 0) // rbp
+			return;
+		
 		int ydiff = y2 - y1 - 8;
 		int entry_fit = (y2 - y1) / entry_size;
 		if (entry_total < entry_fit)  entry_fit = entry_total;
@@ -193,7 +203,7 @@ public class Menu_Equip {
 		}
 	}
 	
-	// Decides what colour font to use based on comparision of current and new values
+	// Decides what colour font to use based on comparison of current and new values
 	public static int MenuEquipFont(int newv, int current)
 	{
 		//if both values are less than or equal to 0, there is no effective change.  Keep them white.

@@ -9,7 +9,9 @@ import java.io.FileReader;
 import sully.Flags;
 import sully.vc.simpletype_rpg.Cast;
 import sully.vc.simpletype_rpg.Data;
+import sully.vc.simpletype_rpg.Skill;
 import sully.vc.simpletype_rpg.Data.SkillType;
+import sully.vc.simpletype_rpg.Item;
 
 import static sully.vc.util.Error_handler.*;
 import static sully.vc.simpletype_rpg.parser.FlagsVH.*;
@@ -75,7 +77,7 @@ public class Data_load {
 	// These are a few data validation functions, and probably the only code in this file that is easily reusable
 	//
 	
-	/*
+	/* RBP: Not necessary, because Java has equalsIgnoreCase()
 	// Pass two Strings to compare
 	// Returns a 1 on a match, and a 0 on a fail
 	// Throws error on close by not exact matches
@@ -120,7 +122,7 @@ public class Data_load {
 	static int SafeVal(String hsv_string)
 	{
 		int hsv_num = val(hsv_string); // Gets number from the String
-		if (!strcmp(hsv_string, str(hsv_num))) ErrorLoadNumber(hsv_num, hsv_string); // If a String of the number doesn't match the original throws an error
+		if (!strcmp(hsv_string.trim(), str(hsv_num).trim())) ErrorLoadNumber(hsv_num, hsv_string); // If a String of the number doesn't match the original throws an error
 		return hsv_num;
 	}
 	
@@ -309,7 +311,6 @@ public class Data_load {
 						}
 					}
 					master_cast[lsca_count].name = lsca_word;
-					System.out.println("RBPCAST: " + master_cast[lsca_count].name);
 		
 					lsca_word = gettoken(lsca_string, lsca_token, 1);
 					for (lsca_i = 0; lsca_i < MAX_CLASSES; lsca_i++) // Loops through classes
@@ -327,7 +328,6 @@ public class Data_load {
 					}
 		
 					master_cast[lsca_count].chrname = chr_dir + SafeString(gettoken(lsca_string, lsca_token, 2));
-					System.out.println("RBPCAST_chr: " + master_cast[lsca_count].chrname);
 					
 					master_cast[lsca_count].desc = SafeString(gettoken(lsca_string, chr(34), 1));
 		
@@ -349,7 +349,7 @@ public class Data_load {
 						global_linenum = 1; // Starting at line 1 of file// Sets line number to first
 						lsca_die = COUNT_OUT; // Resets number of junk lines allowed
 						lsca_string = fing.readLine(); // Reads first line
-						while (strcmp("END_OF_FILE", gettoken(lsca_string, lsca_token, 0))) // While the EOF token isn't found
+						while (!strcmp("END_OF_FILE", gettoken(lsca_string, lsca_token, 0))) // While the EOF token isn't found
 						{
 							if (!strcmp("//", left(lsca_string, 2)) && len(lsca_string) >= MIN_LINE_LENGTH) // If the line is an entry not junk
 							{
@@ -435,7 +435,7 @@ public class Data_load {
 		
 			String lscl_word = gettoken(lscl_string, lscl_token, 0); // Gets first entry of first line
 
-			while (strcmp("END_OF_FILE", lscl_word)) // While the EOF token isn't found
+			while (!strcmp("END_OF_FILE", lscl_word)) // While the EOF token isn't found
 			{
 				if (!strcmp("//", left(lscl_word, 2)) && len(lscl_string) >= MIN_LINE_LENGTH) // If the line is an entry not junk
 				{
@@ -451,7 +451,7 @@ public class Data_load {
 					master_classes[lscl_count].name = lscl_word;
 		
 					master_classes[lscl_count].desc = SafeString(gettoken(lscl_string, chr(34), 1));
-		
+					
 					lscl_string = fin.readLine(); // Read the next line which should contain the skill groups a class has
 					for (lscl_skill = 0; lscl_skill < MAX_SKILLGROUPS_PER_CLASS; lscl_skill++) // Loop through allowable number of skill types per class
 					{
@@ -531,26 +531,26 @@ public class Data_load {
 			String lseq_string = fin.readLine(); // Reads the first line
 
 			String lseq_word = gettoken(lseq_string, lseq_token, 0); // Gets first entry of first line
-			while (strcmp("END_OF_FILE", lseq_word)) // While the EOF token isn't found
+			while (!strcmp("END_OF_FILE", lseq_word)) // While the EOF token isn't found
 			{
 				if (!strcmp("//", left(lseq_word, 2)) && len(lseq_string) >= MIN_LINE_LENGTH) // If the line is an entry not junk
 				{
 					if ((lseq_pos & 3) == 3) // Expecting to read a .equ_modcode line, with allowance for byte flags
 					{
 						lseq_word = gettoken(lseq_string, lseq_token, 0); // Get word to check against list of attributes
-						if (!strcmp("MAX_HP", lseq_word)) lseq_j = STAT_MAX_HP; // 0
-						else if (!strcmp("MAX_MP", lseq_word)) lseq_j = STAT_MAX_MP; // 1
-						else if (!strcmp("STR", lseq_word)) lseq_j = STAT_STR; // 2
-						else if (!strcmp("END", lseq_word)) lseq_j = STAT_END; // 3
-						else if (!strcmp("MAG", lseq_word)) lseq_j = STAT_MAG; // 4
-						else if (!strcmp("MGR", lseq_word)) lseq_j = STAT_MGR; // 5
-						else if (!strcmp("HIT", lseq_word)) lseq_j = STAT_HIT; // 6
-						else if (!strcmp("DOD", lseq_word)) lseq_j = STAT_DOD; // 7
-						else if (!strcmp("MBL", lseq_word)) lseq_j = STAT_MBL; // 8
-						else if (!strcmp("FER", lseq_word)) lseq_j = STAT_FER; // 9
-						else if (!strcmp("REA", lseq_word)) lseq_j = STAT_REA; // 10
-						else if (!strcmp("ATK", lseq_word)) lseq_j = STAT_ATK; // 11
-						else if (!strcmp("DEF", lseq_word)) lseq_j = STAT_DEF; // 12
+						if (strcmp("MAX_HP", lseq_word)) lseq_j = STAT_MAX_HP; // 0
+						else if (strcmp("MAX_MP", lseq_word)) lseq_j = STAT_MAX_MP; // 1
+						else if (strcmp("STR", lseq_word)) lseq_j = STAT_STR; // 2
+						else if (strcmp("END", lseq_word)) lseq_j = STAT_END; // 3
+						else if (strcmp("MAG", lseq_word)) lseq_j = STAT_MAG; // 4
+						else if (strcmp("MGR", lseq_word)) lseq_j = STAT_MGR; // 5
+						else if (strcmp("HIT", lseq_word)) lseq_j = STAT_HIT; // 6
+						else if (strcmp("DOD", lseq_word)) lseq_j = STAT_DOD; // 7
+						else if (strcmp("MBL", lseq_word)) lseq_j = STAT_MBL; // 8
+						else if (strcmp("FER", lseq_word)) lseq_j = STAT_FER; // 9
+						else if (strcmp("REA", lseq_word)) lseq_j = STAT_REA; // 10
+						else if (strcmp("ATK", lseq_word)) lseq_j = STAT_ATK; // 11
+						else if (strcmp("DEF", lseq_word)) lseq_j = STAT_DEF; // 12
 						else lseq_pos = 0; // If it doesn't match these, assume it might be a name and go to check that
 						if (lseq_pos !=0) // If it did match an attribute
 						{
@@ -613,6 +613,7 @@ public class Data_load {
 					{
 						if (lseq_count + 1 == MAX_ITEMS) { ErrorLoadOver(MAX_ITEMS, "Equip.dat"); fin.close(); return 0; } // Throws error on overload and aborts
 						lseq_word = gettoken(lseq_string, lseq_token, 0);
+
 						for (lseq_i = 0; lseq_i < MAX_ITEMS; lseq_i++) // Loops through items
 						{
 							if (master_items[lseq_i].name.equalsIgnoreCase(lseq_word)) // Checks value against item names
@@ -662,70 +663,85 @@ public class Data_load {
 	// Pearl_of_Truth 	22	Menu	-		pearl_use	0	"Opens castle gate."
 	static int LoadStructItems()
 	{
-		/*global_linenum = 1; // Starting at line 1 of file
+		global_linenum = 1; // Starting at line 1 of file
 		String lsit_token = "\t"; //"	 ,|;:"; // Valid entry separation tokens
 		int lsit_i; // Misc iterator
 		int lsit_count = 0; // No entries yet loaded
 		int lsit_die = COUNT_OUT; // Sets the maximum number of junk lines allowed before abort
-		int lsit_file = FileOpen(dat_directory+"Items.dat", FILE_READ); // Attempts to open file in read mode
-		if (!lsit_file) { ErrorLoadFile("Items.dat"); return 0; } // Throws error on fail and aborts
-		String lsit_string = FileReadln(lsit_file); // Reads the first line
-		String lsit_word = gettoken(lsit_string, lsit_token, 0); // Gets first entry of first line
-		while (strcmp("END_OF_FILE", lsit_word)) // While the EOF token isn't found
-		{
-			if (!strcmp("//", left(lsit_word, 2)) && len(lsit_string) >= MIN_LINE_LENGTH) // If the line is an entry not junk
+
+		try {
+			File lsit_file = new File(load(dat_directory+"Items.dat").toURI());
+			BufferedReader fin = new BufferedReader(new FileReader(lsit_file)); // Attempts to open file in read mode
+			String lsit_string = fin.readLine(); // Reads the first line
+
+			String lsit_word = gettoken(lsit_string, lsit_token, 0); // Gets first entry of first line
+
+			while (!strcmp("END_OF_FILE", lsit_word)) // While the EOF token isn't found
 			{
-				if (lsit_count + 1 == MAX_ITEMS) { ErrorLoadOver(MAX_ITEMS, "Items.dat"); FileClose(lsit_file); return 0; } // Throws error on overload and aborts
-				for (lsit_i = 0; lsit_i < lsit_count; lsit_i++) // Loop through previous values
+				if (!strcmp("//", left(lsit_word, 2)) && len(lsit_string) >= MIN_LINE_LENGTH) // If the line is an entry not junk
 				{
-					if(!strcmp(master_items[lsit_i].name, lsit_word)) // Check for duplicate names
+					if (lsit_count + 1 == MAX_ITEMS) { ErrorLoadOver(MAX_ITEMS, "Items.dat"); fin.close(); return 0; } // Throws error on overload and aborts
+					for (lsit_i = 0; lsit_i < lsit_count; lsit_i++) // Loop through previous values
 					{
-						lsit_word = lsit_word + str(lsit_count); // Appends number to duplicate
-						ErrorDuplicateName("master_items["+str(lsit_i)+"].name from Items.dat", master_items[lsit_i].name+" to "+lsit_word); // Throws error
+						if(strcmp(master_items[lsit_i].name, lsit_word)) // Check for duplicate names
+						{
+							lsit_word = lsit_word + str(lsit_count); // Appends number to duplicate
+							ErrorDuplicateName("master_items["+str(lsit_i)+"].name from Items.dat", master_items[lsit_i].name+" to "+lsit_word); // Throws error
+						}
 					}
+					master_items[lsit_count] = new Item(); // rbp
+					master_items[lsit_count].name = lsit_word;
+					
+					master_items[lsit_count].icon = SafeVal(gettoken(lsit_string, lsit_token, 1));
+					
+					master_items[lsit_count].use_flag = 0; // Defaults the use_flag to null
+					lsit_word = gettoken(lsit_string, lsit_token, 2); // Gets value to compare against valid flag defines
+					if ("BOTH".equalsIgnoreCase(lsit_word)) master_items[lsit_count].use_flag = USE_BATTLE | USE_MENU;
+					else if ("MENU".equalsIgnoreCase(lsit_word)) master_items[lsit_count].use_flag = USE_MENU;
+					else if ("BATTLE".equalsIgnoreCase(lsit_word)) master_items[lsit_count].use_flag = USE_BATTLE;
+					else if (!strcmp("-", lsit_word)) ErrorLoadDefine("master_items["+str(lsit_count)+"].use_flag from Items.dat", lsit_word); // Throws an error if the value isn't a valid null either
+		
+					lsit_word = gettoken(lsit_string, lsit_token, 3);
+					if (master_items[lsit_count].use_flag !=0 && len(lsit_word) > 3) master_items[lsit_count].target_func = lsit_word;
+					else master_items[lsit_count].target_func = ""; // If there's a battle function, store the function name, else wipe the value
+					if (master_items[lsit_count].use_flag!=0) master_items[lsit_count].effect_func = SafeString(gettoken(lsit_string, lsit_token, 4));
+					else master_items[lsit_count].effect_func = ""; // If there's a use, store the function name, else wipe the value
+					
+					master_items[lsit_count].price = SafeVal(gettoken(lsit_string, lsit_token, 5));
+					
+					master_items[lsit_count].desc = SafeString(gettoken(lsit_string, chr(34), 1));
+					
+					master_items[lsit_count].equ_modcode = "";
+					for (lsit_i = 0; lsit_i < MAX_CLASSES; lsit_i++) // Loops through classes that can equip and nulls
+					{ master_items[lsit_count].equ_classes[lsit_i] = 0; }
+		
+					FlagsVH.FlagSet(lsit_count + 128); // Remove if not in test bed
+					ShowFlagScreen(); // Remove if not in test bed
+					lsit_count++; // Increments current data entry
 				}
-				master_items[lsit_count].name = lsit_word;
-	
-				master_items[lsit_count].icon = SafeVal(gettoken(lsit_string, lsit_token, 1));
-	
-				master_items[lsit_count].use_flag = 0; // Defaults the use_flag to null
-				lsit_word = gettoken(lsit_string, lsit_token, 2); // Gets value to compare against valid flag defines
-				if ("BOTH".equalsIgnoreCase(lsit_word)) master_items[lsit_count].use_flag = USE_BATTLE | USE_MENU;
-				else if ("MENU".equalsIgnoreCase(lsit_word)) master_items[lsit_count].use_flag = USE_MENU;
-				else if ("BATTLE".equalsIgnoreCase(lsit_word)) master_items[lsit_count].use_flag = USE_BATTLE;
-				else if (strcmp("-", lsit_word)) ErrorLoadDefine("master_items["+str(lsit_count)+"].use_flag from Items.dat", lsit_word); // Throws an error if the value isn't a valid null either
-	
-				lsit_word = gettoken(lsit_string, lsit_token, 3);
-				if (master_items[lsit_count].use_flag && len(lsit_word) > 3) master_items[lsit_count].target_func = lsit_word;
-				else master_items[lsit_count].target_func = ""; // If there's a battle function, store the function name, else wipe the value
-				if (master_items[lsit_count].use_flag) master_items[lsit_count].effect_func = SafeString(gettoken(lsit_string, lsit_token, 4));
-				else master_items[lsit_count].effect_func = ""; // If there's a use, store the function name, else wipe the value
-	
-				master_items[lsit_count].price = SafeVal(gettoken(lsit_string, lsit_token, 5));
-	
-				master_items[lsit_count].desc = SafeString(gettoken(lsit_string, chr(34), 1));
-	
-				master_items[lsit_count].equ_modcode = "";
-				for (lsit_i = 0; lsit_i < MAX_CLASSES; lsit_i++) // Loops through classes that can equip and nulls
-				{ master_items[lsit_count].equ_classes[lsit_i] = 0; }
-	
-				FlagsVH.FlagSet(lsit_count + 128); // Remove if not in test bed
-				ShowFlagScreen(); // Remove if not in test bed
-				lsit_count++; // Increments current data entry
+				else // If the line is not a valid entry
+				{
+					lsit_die--; // Decrease allowed junk counter
+					if (lsit_die < 1) { ErrorCountOut("Items.dat"); fin.close(); return 0; } // Throws a past end of file error and aborts
+				}
+				global_linenum++; // Increments line number being read in file
+				lsit_string =  fin.readLine(); // Reads next line
+				lsit_word = gettoken(lsit_string, lsit_token, 0); // Gets the first entry
 			}
-			else // If the line is not a valid entry
-			{
-				lsit_die--; // Decrease allowed junk counter
-				if (lsit_die < 1) { ErrorCountOut("Items.dat"); FileClose(lsit_file); return 0; } // Throws a past end of file error and aborts
-			}
-			global_linenum++; // Increments line number being read in file
-			lsit_string = FileReadln(lsit_file); // Reads next line
-			lsit_word = gettoken(lsit_string, lsit_token, 0); // Gets the first entry
+			
+			fin.close(); // Closes file	
+			
+		} catch(Exception e) {
+				e.printStackTrace();
+				ErrorLoadFile("Items.dat"); return 0; // Throws error on fail and aborts
 		}
-		FileClose(lsit_file); // Closes file
+		
+
+		
 		lsit_die = lsit_count; // Preserves count valid data loaded
 		while (lsit_die < MAX_ITEMS) // Clears remaining data in struct
 		{
+			master_items[lsit_die] = new Item(); // rbp
 			master_items[lsit_die].name = "";
 			master_items[lsit_die].icon = 0-1;
 			master_items[lsit_die].use_flag = 0;
@@ -738,7 +754,7 @@ public class Data_load {
 			{ master_items[lsit_die].equ_classes[lsit_i] = 0; }
 			lsit_die++;
 		}
-		return lsit_count;*/ return 0;
+		return lsit_count;
 	}
 	
 	// Loads data from Skills.dat into the master_skills structure
@@ -746,82 +762,96 @@ public class Data_load {
 	// A valid data entry (minus comment):
 	// Ice_1 		Black_Magic 	2	BATTLE	targ_single_nme	ice1_effect	3	"Ice-based Attack."
 	static int LoadStructSkills()
-	{/*
+	{
 		global_linenum = 1; // Starting at line 1 of file
 		String lssk_token = "\t"; //"	 ,|;:"; // Valid entry separation tokens
 		int lssk_i; // Misc iterator
 		int lssk_count = 0; // No entries yet loaded
 		int lssk_die = COUNT_OUT; // Sets the maximum number of junk lines allowed before abort
-		int lssk_file = FileOpen(dat_directory+"Skills.dat", FILE_READ); // Attempts to open file in read mode
-		if (!lssk_file) { ErrorLoadFile("Skills.dat"); return 0; } // Throws error on fail and aborts
-		String lssk_string = FileReadln(lssk_file); // Reads the first line
-		String lssk_word = gettoken(lssk_string, lssk_token, 0); // Gets first entry of first line
-		while (strcmp("END_OF_FILE", lssk_word)) // While the EOF token isn't found
-		{
-			if (strcmp("//", left(lssk_word, 2)) != 0 && len(lssk_string) >= MIN_LINE_LENGTH) // If the line is an entry not junk
+
+		try {
+			File lssk_file = new File(load(dat_directory+"Skills.dat").toURI());
+			BufferedReader fin = new BufferedReader(new FileReader(lssk_file)); // Attempts to open file in read mode
+			String lssk_string = fin.readLine(); // Reads the first line
+
+			String lssk_word = gettoken(lssk_string, lssk_token, 0); // Gets first entry of first line
+
+			while (!strcmp("END_OF_FILE", lssk_word)) // While the EOF token isn't found
 			{
-				if (lssk_count + 1 == MAX_SKILLS) { ErrorLoadOver(MAX_SKILLS, "Skills.dat"); FileClose(lssk_file); return 0; } // Throws error on overload and aborts
-				for (lssk_i = 0; lssk_i < lssk_count; lssk_i++) // Loop through previous values
+				if (!strcmp("//", left(lssk_word, 2)) && len(lssk_string) >= MIN_LINE_LENGTH) // If the line is an entry not junk
 				{
-					if(!strcmp(master_skills[lssk_i].name, lssk_word)) // Check for duplicate names
+					if (lssk_count + 1 == MAX_SKILLS) { ErrorLoadOver(MAX_SKILLS, "Skills.dat"); fin.close(); return 0; } // Throws error on overload and aborts
+					for (lssk_i = 0; lssk_i < lssk_count; lssk_i++) // Loop through previous values
 					{
-						lssk_word = lssk_word + str(lssk_count); // Append number to duplicate
-						ErrorDuplicateName("master_skills["+str(lssk_i)+"].name from Skills.dat", master_skills[lssk_i].name+" to "+lssk_word); // Throws error
+						if(strcmp(master_skills[lssk_i].name, lssk_word)) // Check for duplicate names
+						{
+							lssk_word = lssk_word + str(lssk_count); // Append number to duplicate
+							ErrorDuplicateName("master_skills["+str(lssk_i)+"].name from Skills.dat", master_skills[lssk_i].name+" to "+lssk_word); // Throws error
+						}
 					}
-				}
-				master_skills[lssk_count].name = lssk_word;
-	
-				lssk_word = gettoken(lssk_string, lssk_token, 1);
-				for (lssk_i = 0; lssk_i < MAX_SKILLTYPES; lssk_i++) // Loops through skill types
-				{
-					if (master_skilltypes[lssk_i].name.equalsIgnoreCase(lssk_word)) // Checks value against skill type names
+					master_skills[lssk_count] = new Skill(); // rbp
+					master_skills[lssk_count].name = lssk_word;
+		
+					lssk_word = gettoken(lssk_string, lssk_token, 1);
+					for (lssk_i = 0; lssk_i < MAX_SKILLTYPES; lssk_i++) // Loops through skill types
 					{
-						master_skills[lssk_count].type = lssk_i; // Set the pointer to the skill type
-						lssk_i = MAX_SKILLTYPES + 1; // Breaks out of loop
+						if (master_skilltypes[lssk_i].name.trim().equalsIgnoreCase(lssk_word.trim())) // Checks value against skill type names
+						{
+							master_skills[lssk_count].type = lssk_i; // Set the pointer to the skill type
+							lssk_i = MAX_SKILLTYPES + 1; // Breaks out of loop
+						}
 					}
+					if (lssk_i == MAX_SKILLTYPES) // If no match was found
+					{
+						master_skills[lssk_count].type = 0-1;
+						ErrorLoadType("master_skills["+str(lssk_count)+"].type from Skills.dat", lssk_word); // Throws error
+					}
+		
+					master_skills[lssk_count].icon = SafeVal(gettoken(lssk_string, lssk_token, 2));
+		
+					master_skills[lssk_count].use_flag = 0; // Defaults the use_flag to null
+					lssk_word = gettoken(lssk_string, lssk_token, 3); // Gets value to compare against valid flag defines
+					if ("BOTH".equalsIgnoreCase(lssk_word)) master_skills[lssk_count].use_flag = USE_BATTLE | USE_MENU;
+					else if ("MENU".equalsIgnoreCase(lssk_word)) master_skills[lssk_count].use_flag = USE_MENU;
+					else if ("BATTLE".equalsIgnoreCase(lssk_word)) master_skills[lssk_count].use_flag = USE_BATTLE;
+					else ErrorLoadDefine("master_skills["+str(lssk_count)+"].use_flag from Skills.dat", lssk_word); // Throws an error if the value doesn't match one of these
+		
+					lssk_word = gettoken(lssk_string, lssk_token, 4);
+					if (master_skills[lssk_count].use_flag!=0 && len(lssk_word) > 3) master_items[lssk_count].target_func = lssk_word;
+					else master_skills[lssk_count].target_func = ""; // If there's a battle function, store the function name, else wipe the value
+					if (master_skills[lssk_count].use_flag!=0) master_items[lssk_count].effect_func = SafeString(gettoken(lssk_string, lssk_token, 5));
+					else master_skills[lssk_count].effect_func = ""; // If there's a use, store the function name, else wipe the value
+		
+					master_skills[lssk_count].mp_cost = SafeVal(gettoken(lssk_string, lssk_token, 6));
+		
+					master_skills[lssk_count].desc = SafeString(gettoken(lssk_string, chr(34), 1));
+		
+					FlagSet(lssk_count + 96); // Remove if not in test bed
+					ShowFlagScreen(); // Remove if not in test bed
+					lssk_count++; // Increments current data entry
 				}
-				if (lssk_i == MAX_SKILLTYPES) // If no match was found
+				else // If the line is not a valid entry
 				{
-					master_skills[lssk_count].type = 0-1;
-					ErrorLoadType("master_skills["+str(lssk_count)+"].type from Skills.dat", lssk_word); // Throws error
+					lssk_die--; // Decrease allowed junk counter
+					if (lssk_die < 1) { ErrorCountOut("Skills.dat"); fin.close(); return 0; } // Throws a past end of file error and aborts
 				}
-	
-				master_skills[lssk_count].icon = SafeVal(gettoken(lssk_string, lssk_token, 2));
-	
-				master_skills[lssk_count].use_flag = 0; // Defaults the use_flag to null
-				lssk_word = gettoken(lssk_string, lssk_token, 3); // Gets value to compare against valid flag defines
-				if ("BOTH".equalsIgnoreCase(lssk_word)) master_skills[lssk_count].use_flag = USE_BATTLE | USE_MENU;
-				else if ("MENU".equalsIgnoreCase(lssk_word)) master_skills[lssk_count].use_flag = USE_MENU;
-				else if ("BATTLE".equalsIgnoreCase(lssk_word)) master_skills[lssk_count].use_flag = USE_BATTLE;
-				else ErrorLoadDefine("master_skills["+str(lssk_count)+"].use_flag from Skills.dat", lssk_word); // Throws an error if the value doesn't match one of these
-	
-				lssk_word = gettoken(lssk_string, lssk_token, 4);
-				if (master_skills[lssk_count].use_flag && len(lssk_word) > 3) master_items[lssk_count].target_func = lssk_word;
-				else master_skills[lssk_count].target_func = ""; // If there's a battle function, store the function name, else wipe the value
-				if (master_skills[lssk_count].use_flag) master_items[lssk_count].effect_func = SafeString(gettoken(lssk_string, lssk_token, 5));
-				else master_skills[lssk_count].effect_func = ""; // If there's a use, store the function name, else wipe the value
-	
-				master_skills[lssk_count].mp_cost = SafeVal(gettoken(lssk_string, lssk_token, 6));
-	
-				master_skills[lssk_count].desc = SafeString(gettoken(lssk_string, chr(34), 1));
-	
-				FlagSet(lssk_count + 96); // Remove if not in test bed
-				ShowFlagScreen(); // Remove if not in test bed
-				lssk_count++; // Increments current data entry
+				global_linenum++; // Increments line number being read in file
+				lssk_string = fin.readLine(); // Reads next line
+				lssk_word = gettoken(lssk_string, lssk_token, 0); // Gets the first entry
 			}
-			else // If the line is not a valid entry
-			{
-				lssk_die--; // Decrease allowed junk counter
-				if (lssk_die < 1) { ErrorCountOut("Skills.dat"); FileClose(lssk_file); return 0; } // Throws a past end of file error and aborts
-			}
-			global_linenum++; // Increments line number being read in file
-			lssk_string = FileReadln(lssk_file); // Reads next line
-			lssk_word = gettoken(lssk_string, lssk_token, 0); // Gets the first entry
+			
+			fin.close(); // Closes file	
+			
+		} catch(Exception e) {
+				e.printStackTrace();
+				ErrorLoadFile("Skills.dat"); return 0; // Throws error on fail and aborts
 		}
-		FileClose(lssk_file); // Closes file
+	
+		
 		lssk_die = lssk_count; // Preserves count valid data loaded
 		while (lssk_die < MAX_SKILLS) // Clears remaining data in struct
 		{
+			master_skills[lssk_die] = new Skill(); // rbp
 			master_skills[lssk_die].name = "";
 			master_skills[lssk_die].icon = 0-1;
 			master_skills[lssk_die].type = 0-1;
@@ -832,7 +862,7 @@ public class Data_load {
 			master_skills[lssk_die].desc = "";
 			lssk_die++;
 		}
-		return lssk_count;*/ return 0;
+		return lssk_count;
 	}
 	
 	// Loads data from Skilltypes.dat into the master_skilltypes structure

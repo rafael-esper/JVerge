@@ -1,19 +1,27 @@
 package sully.vc.v1_rpg;
 
 import static core.Script.*;
+import static sully.vc.simpletype_rpg.Data.master_items;
+import static sully.vc.simpletype_rpg.Inventory.GiveItem;
+import static sully.vc.simpletype_rpg.Item.IsItem;
+import static sully.vc.simpletype_rpg.Party.RecoverPartyHP;
+import static sully.vc.simpletype_rpg.Party.RecoverPartyMP;
+import static sully.vc.simpletype_rpg.Party.money;
+import static sully.vc.simpletype_rpg.Party.moneyname;
+import static sully.vc.util.Icons.icon_get;
+import static sully.vc.v1_menu.Menu_System.MenuCanBeOn;
+import static sully.vc.v1_menu.Menu_System.MenuHappyBeep;
+import static sully.vc.v1_menu.Menu_System.MenuOff;
+import static sully.vc.v1_menu.Menu_System.MenuOn;
+import static sully.vc.v1_rpg.V1_Maineffects.*;
+import static sully.vc.v1_rpg.V1_Music.V1_CurrentMusicName;
+import static sully.vc.v1_rpg.V1_Music.V1_StartMusic;
+import static sully.vc.v1_rpg.V1_RPG.*;
+import static sully.Sully.*;
 
 import java.awt.Color;
 
 import sully.vc.Sfx;
-import static sully.vc.simpletype_rpg.Party.*;
-import static sully.vc.simpletype_rpg.Inventory.*;
-import static sully.vc.simpletype_rpg.Item.*;
-import static sully.vc.simpletype_rpg.Data.*;
-import static sully.vc.v1_rpg.V1_RPG.*;
-import static sully.vc.v1_rpg.V1_Maineffects.*;
-import static sully.vc.v1_rpg.V1_Music.*;
-import static sully.vc.v1_menu.Menu_System.*;
-import static sully.vc.util.Icons.*;
 import domain.VImage;
 
 // These are functions that are hybrids between the v1-rpg library and the 
@@ -77,6 +85,7 @@ public class V1_Simpletype {
 		wid = textwidth( v1rpg_SmallFont, msgstr );
 		
 		timer = 0;
+		EntStart(); // rbp
 		while( timer<300 && !b1 )
 		{
 			render();
@@ -89,7 +98,8 @@ public class V1_Simpletype {
 			
 			showpage();
 		}
-	
+		EntFinish(); // rbp
+		
 		unpress(0);
 		
 		icon = null;

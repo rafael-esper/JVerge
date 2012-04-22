@@ -3,12 +3,12 @@ package sully;
 import static core.Script.*;
 import static sully.Flags.*;
 import static sully.Sully.*;
+import sully.vc.v1_rpg.V1_Simpletype;
 
 import static sully.vc.v1_rpg.V1_RPG.*;
 import static sully.vc.v1_rpg.V1_Music.*;
 
 import static sully.vc.simpletype_rpg.Party.*;
-import static sully.vc.simpletype_rpg.Cast.*;
 import static sully.vc.simpletype_rpg.Inventory.*;
 import static sully.vc.v1_rpg.V1_Maineffects.*;
 import static sully.vc.v1_rpg.V1_Textbox.*;
@@ -20,9 +20,9 @@ import static sully.vc.v1_rpg.V1_Simpletype.*;
 
 public class Village {
 
-	void start()
+	public static void start()
 	{
-		SaveDisable(); //cannot save in towns.
+		Sully.SaveDisable(); //cannot save in towns.
 			
 		InitMap();
 	
@@ -37,15 +37,10 @@ public class Village {
 		//sets all the tiles as they should be.
 		rodne_upkeepery();
 		
-		int i;
-		
-		for( i=0; i<entity.size(); i++ ) {
-			log( str(i)+": "+str( entity.get(i).movecode ) );
-		}	
 	}
 	
 	
-	void rodne_upkeepery()
+	public static void rodne_upkeepery()
 	{
 		int darin, dexter;
 		
@@ -90,17 +85,17 @@ public class Village {
 		}
 	}
 	
-	void n_exit() /* 1 */
+	public static void n_exit() /* 1 */
 	{
 		V1_MapSwitch("overworld.map",25,74,0);
 	}
 	
-	void e_exit() /* 2 */
+	public static void e_exit() /* 2 */
 	{
 		V1_MapSwitch("overworld.map",32,72,0);
 	}
 	
-	void villager_a() /* 3 */
+	public static void villager_a() /* 3 */
 	{
 		EntStart();
 		
@@ -111,7 +106,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void villager_b() /* 4 */
+	public static void villager_b() /* 4 */
 	{
 		EntStart();
 		
@@ -145,7 +140,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void villager_c() /* 5 */
+	public static void villager_c() /* 5 */
 	{
 		EntStart();
 		
@@ -164,7 +159,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void villager_d() /* 6 */
+	public static void villager_d() /* 6 */
 	{
 		EntStart();
 		
@@ -181,7 +176,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void villager_e() /* 7 */
+	public static void villager_e() /* 7 */
 	{
 		EntStart();
 		
@@ -211,7 +206,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void villager_f() /* 8 */
+	public static void villager_f() /* 8 */
 	{
 		EntStart();
 		
@@ -233,7 +228,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void rabbit() /* 9 */
+	public static void rabbit() /* 9 */
 	{
 		EntStart();
 		
@@ -271,7 +266,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void bird() /* 10 */
+	public static void bird() /* 10 */
 	{
 		EntStart();
 		
@@ -289,7 +284,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void elder_a() /* 11 */
+	public static void elder_a() /* 11 */
 	{
 		EntStart();
 		
@@ -312,7 +307,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void elder_b() /* 12 */
+	public static void elder_b() /* 12 */
 	{
 		EntStart();
 		
@@ -375,7 +370,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void blacksmith() /* 13 */
+	public static void Blacksmith() /* 13 */
 	{
 		EntStart();
 		
@@ -385,7 +380,7 @@ public class Village {
 		
 		SetSellEquipmentShop(true);
 		SetSellSupplyShop(false);
-		MenuShop("Sting_Whip,Lead_Wrench,Iron_Sword,Steel_Lance,Bracer,Buckler,Tower_Shield,Cloak,Robe,Titanium_Suit,Tiara,Head_Brace");
+		MenuShop("Sting_Whip&Lead_Wrench&Iron_Sword&Steel_Lance&Bracer&Buckler&Tower_Shield&Cloak,Robe&Titanium_Suit&Tiara&Head_Brace");
 		
 	
 		TextBox(0,	"I thank you, sir! Good day.","","");
@@ -393,7 +388,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void pharmacy() /* 14 */
+	public static void Pharmacy() /* 14 */
 	{
 		EntStart();
 		
@@ -403,7 +398,7 @@ public class Village {
 		SetSellEquipmentShop(false);
 		SetSellSupplyShop(true);
 	
-		MenuShop("Herb,Medicine,Miracle_Brew,Starlight,Fury_Ring,Protect_Locket");
+		MenuShop("Herb&Medicine&Miracle_Brew&Starlight&Fury_Ring&Protect_Locket");
 		
 		TextBox(0,	"Aww... come on!",
 					"Buy one more medicine, please?","");
@@ -411,7 +406,7 @@ public class Village {
 		EntFinish();
 	}
 	
-	void rat() /* 15 */
+	public static void Rat() /* 15 */
 	{
 		EntStart();
 		
@@ -464,61 +459,62 @@ public class Village {
 		EntFinish();
 	}
 	
-	void elder_enter() /* 16 */
+	public static void Elder_Enter() /* 16 */
 	{
 		Warp( 8,67, TCROSS );
 		Banner( "Elder's Home",100 );
 	}
 	
-	void weap_enter() /* 17 */
+	public static void Weap_Enter() /* 17 */
 	{
 		Warp( 30,69, TCROSS );
 		Banner( "Blacksmith",100 );
 	}
 	
-	void item_enter() /* 18 */
+	public static void Item_Enter() /* 18 */
 	{
 		Warp( 34,90, TCROSS );
 		Banner( "Pharmacy",100 );
 	}
 	
-	void sara_enter() /* 19 */
+	public static void Sara_Enter() /* 19 */
 	{
 		Warp( 53,69, TCROSS );
 		Banner( "Laboratory",100 );
 	}
 	
-	void elder_exit() /* 20 */
+	public static void Elder_Exit() /* 20 */
 	{
 		Warp(11,21, TCROSS);
 	}
 	
-	void elder_upstair() /* 21 */
+	public static void Elder_Upstair() /* 21 */
 	{
 		Warp( 11,79, TCROSS );
 		Banner( "2F",100 );
 	}
 	
-	void elder_down() /* 22 */
+	public static void Elder_Down() /* 22 */
 	{
 		Warp( 13,61, TCROSS );
 	}
 	
-	void sara_upstair() /* 23 */
+	public static void Sara_Upstair() /* 23 */
 	{
 		Warp( 73,64, TCROSS );
 	}
 	
-	void sara_down() /* 24 */
+	public static void Sara_Down() /* 24 */
 	{
 		Warp( 53,80, TCROSS );
 		Banner( "Basement",100 );
 	}
 	
-	void Basement_Up() /* 25 */
+	public static void Basement_Up() /* 25 */
 	{
 		if( flags[F_RODNE_CLEAN_DUST]==0 && CharInParty("Sara") )
 		{
+			EntStart();
 			TextBoxM(T_SARA,	"This leads to my basement.",
 								"Let me remove the dust that",
 								"conceals the passage.");
@@ -535,6 +531,7 @@ public class Village {
 							"storage room below.");
 						
 			flags[F_RODNE_CLEAN_DUST] = 1;
+			EntFinish();
 			return;
 		}
 		
@@ -544,27 +541,27 @@ public class Village {
 		}
 	}
 	
-	void Basement_Down() /* 26 */
+	public static void Basement_Down() /* 26 */
 	{
 		Warp( 54,61, TCROSS );
 	}
 	
-	void Weap_Exit() /* 27 */
+	public static void Weap_Exit() /* 27 */
 	{
 		Warp( 33,21, TCROSS );
 	}
 	
-	void Item_Exit() /* 28 */
+	public static void Item_Exit() /* 28 */
 	{
 		Warp( 29,33, TCROSS );
 	}
 	
-	void Sara_Exit() /* 29 */
+	public static void Sara_Exit() /* 29 */
 	{
 		Warp( 7,35, TCROSS );
 	}
 	
-	void Chest_A() /* 30 */
+	public static void Chest_A() /* 30 */
 	{
 		if( OpenTreasure(CHEST_RODNE_A, 51,81, 177 ) )
 		{
@@ -572,7 +569,7 @@ public class Village {
 		}
 	}
 	
-	void Chest_B() /* 31 */
+	public static void Chest_B() /* 31 */
 	{
 		if( OpenTreasure(CHEST_RODNE_B, 51,85, 177 ) )
 		{
@@ -580,7 +577,7 @@ public class Village {
 		}
 	}
 	
-	void Chest_C() /* 32 */
+	public static void Chest_C() /* 32 */
 	{
 		if( OpenTreasure(CHEST_RODNE_C, 53,83, 177 ) )
 		{
@@ -588,7 +585,7 @@ public class Village {
 		}
 	}
 	
-	void Chest_D() /* 33 */
+	public static void Chest_D() /* 33 */
 	{
 		if( OpenTreasure(CHEST_RODNE_D, 55,81, 177 ) )
 		{
@@ -596,7 +593,7 @@ public class Village {
 		}
 	}
 	
-	void Chest_E() /* 34 */
+	public static void Chest_E() /* 34 */
 	{
 		if( OpenTreasure(CHEST_RODNE_E, 55,85, 177 ) )
 		{
@@ -604,7 +601,7 @@ public class Village {
 		}
 	}
 	
-	void RodneMasterChestCleanup( int flag_idx, int tile_x, int tile_y ) 
+	public static void RodneMasterChestCleanup( int flag_idx, int tile_x, int tile_y ) 
 	{
 		if( flags[flag_idx]!=0 )
 		{
@@ -612,7 +609,7 @@ public class Village {
 		}
 	}
 	
-	void Carrot() /* 39 */
+	public static void Carrot() /* 39 */
 	{
 		int save_vol = V1_GetCurVolume(); //save the current volume to restore later
 		
@@ -654,7 +651,7 @@ public class Village {
 	}
 	
 	
-	void Machine()
+	public static void machine()
 	{
 		EntStart();
 		
@@ -671,4 +668,5 @@ public class Village {
 		
 		EntFinish();
 	}
+	
 }

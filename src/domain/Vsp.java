@@ -89,7 +89,6 @@ public class Vsp {
 	        	a.delay = f.readSignedIntegerLittleEndian();
 	        	a.mode = f.readSignedIntegerLittleEndian();
 	        	
-	        	System.out.println(a);
 	        	this.anims[i] = a;
 	        }			
 
@@ -125,8 +124,7 @@ public class Vsp {
 			
 			
 			// Obtém tiles a partir dos vetores (vspdata)
-			System.err.println(numtiles);
-			System.err.println(vspdata.length);
+			System.out.println("Numtiles: " + numtiles + "(" + vspdata.length + " bytes)");
 			tiles = f.getBufferedImageArrayFromPixels(vspdata, numtiles, 16, 16);
 			//for(int x=0; x<tiles.length; x++)
 				//Script.graycolorfilter(tiles[x]);

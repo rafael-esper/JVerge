@@ -166,11 +166,11 @@ public class Inventory {
 	}
 	
 	
-	public static // Takes a master_items index and a number.
+	// Takes a master_items index and a number.
 	// If the index is valid, adds the number to your inventory.
 	// Otherwise, errors.
 	//
-	void GiveItemI( int idx, int num ) {
+	public static void GiveItemI( int idx, int num ) {
 		//bounds checking.
 		if( idx < 0 || idx > MAX_ITEMS ) {
 			error( "GiveItemI(): "+str(idx)+" is not a valid index." );

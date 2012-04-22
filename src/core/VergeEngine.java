@@ -747,7 +747,7 @@ public class VergeEngine extends Thread {
 		callfunction("autoexec");
 		
 		while(mapname!=null && !mapname.isEmpty()) {
-			System.out.println("Entering: " + mapname);
+			log("Entering: " + mapname);
 			engine_start();
 			
 			// Game Loop
@@ -811,11 +811,6 @@ public class VergeEngine extends Thread {
 			return;
 		}
 
-		//System.out.println("colorfilter");
-		//Script.colorfilter(1, screen);
-		
-		//getGUI().getCanvas().setAlpha(((float)currentLucent / 255));
-		
 		int frames_skipped = 0;
 		long cur_time = System.currentTimeMillis();
 		if (cur_time < target_time+(long)(500.0/VergeEngine.fps)) {

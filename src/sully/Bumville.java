@@ -33,7 +33,7 @@ public class Bumville {
 			flags[F_BUM_FLASHBACK] = 3; //and make it so this if doesn't trigger
 										//again either!
 	
-			SaveDisable(); //cannot save in towns.
+			Sully.SaveDisable(); //cannot save in towns.
 			InitMap();
 			
 			setmusicvolume(0);
@@ -134,7 +134,7 @@ public class Bumville {
 			V1_MapSwitch("LAB.MAP",18,92,TNONE);
 		}
 		
-		SaveDisable(); //cannot save in towns.
+		Sully.SaveDisable(); //cannot save in towns.
 		InitMap();
 		V1_StartMusic( "res/music/SIMPL2.S3M" );
 		

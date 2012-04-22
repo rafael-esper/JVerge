@@ -41,26 +41,31 @@ public class Oldville {
 	
 	public static void rabbit() /* 2 */
 	{
+		EntStart();
 		TextBoxM(T_BUNNY,	"Hey, Sara! What's up, toots?",
 							"I've planted a blessed seed in",
 							"the dirt patch over there.");
 		TextBox(T_BUNNY,	"I'm hoping that a carrot grows,",
 							"so don't change anything, ok?",
 							"I'm counting on you!");
+		EntFinish();
 	}
 	
 	public static void bird() /* 3 */
 	{
+		EntStart();
 		TextBoxM(T_BIRD,	"Hi, Sara! Some weird guy with",
 							"a velvet jacket just passed by",
 							"here, heading into the woods.");
 		TextBox(T_BIRD,		"He mentioned something about",
 							"building a cabin, and putting",
 							"in some psychadelic lights.");
+		EntFinish();
 	}
 	
 	public static void rat() /* 4 */
 	{
+		EntStart();
 		TextBox(T_SLASHER,	"Hi, Mrs. Sara! How are you today?",
 							"I'm so lonely. When are you going to",
 							"clone some rats?");
@@ -71,54 +76,55 @@ public class Oldville {
 	
 		TextBox(T_SLASHER,	"Yay! Don't forget that you stored that",
 							"Copper Gear in the tall cabin to the north.", "");
+		EntFinish();
 	}
 	
-	public static void elder_enter() /* 16 */
+	public static void Elder_Enter() /* 16 */
 	{
 		Warp( 8,67, TCROSS );
 		Banner( "Rat Apartments",100 );
 	}
 	
-	public static void weap_enter() /* 17 */
+	public static void Weap_Enter() /* 17 */
 	{
 		Warp( 30,69, TCROSS );
 		Banner( "Ratcersize Hall",100 );
 	}
 	
-	public static void item_enter() /* 18 */
+	public static void Item_Enter() /* 18 */
 	{
 		Warp( 34,90, TCROSS );
 		Banner( "Ratatorium",100 );
 	}
 	
-	public static void sara_enter() /* 19 */
+	public static void Sara_Enter() /* 19 */
 	{
 		Warp( 53,69, TCROSS );
 		Banner( "Laboratory",100 );
 	}
 	
-	public static void elder_exit() /* 20 */
+	public static void Elder_Exit() /* 20 */
 	{
 		Warp(11,21, TCROSS);
 	}
 	
-	public static void elder_upstair() /* 21 */
+	public static void Elder_Upstair() /* 21 */
 	{
 		Warp( 11,79, TCROSS );
 		Banner( "2F",100 );
 	}
 	
-	public static void elder_down() /* 22 */
+	public static void Elder_Down() /* 22 */
 	{
 		Warp( 13,61, TCROSS );
 	}
 	
-	public static void sara_upstair() /* 23 */
+	public static void Sara_Upstair() /* 23 */
 	{
 		Warp( 73,64, TCROSS );
 	}
 	
-	public static void sara_down() /* 24 */
+	public static void Sara_Down() /* 24 */
 	{
 		Warp( 53,80, TCROSS );
 		Banner( "Basement",100 );
@@ -147,8 +153,8 @@ public class Oldville {
 	
 	public static void The_Well() /* 18 */
 	{
-		Heal_Well();
-		
+		Sully.Heal_Well();
+		EntStart();
 		if( flags[F_FLASH_WATER]==0 )
 		{
 			TextBox(T_SARA,	"I got some water.",
@@ -157,6 +163,7 @@ public class Oldville {
 			
 			flags[F_FLASH_WATER] = 1;
 		}
+		EntFinish();
 	}
 	
 	public static void Basement_Up() /* 19 */
@@ -366,7 +373,7 @@ public class Oldville {
 		}
 	}
 	
-	public static void Nest() /* 22 */
+	public static void nest() /* 22 */
 	{
 		if(flags[F_FLASH_TWIG]==0)
 		{
@@ -378,6 +385,7 @@ public class Oldville {
 	
 	public static void notes() /* 23 */
 	{
+		EntStart();
 		TextBoxM(T_SARA,	"Here's my notes on the clone machine.",
 							"Let's see here...","");
 		TextBoxM(T_SARA,	"The cloning device is a steam powered",
@@ -392,10 +400,12 @@ public class Oldville {
 		TextBox(T_SARA,		"Legends speak of the ancient race of",
 							"Cyclops' whose toe jam has mystical",
 							"lubricant powers.");
+		EntFinish();
 	}
 	         
 	public static void FlashIntro() /* 24 */
 	{
+		EntStart();
 		if( flags[F_FLASH_INTRO]==0 )
 		{
 			FadeIn(30);
@@ -415,6 +425,7 @@ public class Oldville {
 								"I think I locked them up in my basement.", "");
 			flags[F_FLASH_INTRO] = 1;
 		}
+		EntFinish();
 	}
 	
 	public static void do_xplosions( int x, int y ) /* 25 */

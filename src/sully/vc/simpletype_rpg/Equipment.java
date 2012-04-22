@@ -43,26 +43,26 @@ public class Equipment {
 	static int EquGetModcodeStat( int item_idx, int token_idx ) {
 		int stat;
 		String tok = gettoken( master_items[item_idx].equ_modcode , ";", token_idx );
-		tok = gettoken( tok, ",", 0 );
+		tok = gettoken( tok, ",", 0 ).trim().toUpperCase();
 		
-		if 		(!"MAX_HP".equals(tok)) stat = STAT_MAX_HP; // 0
-		else if (!"MAX_MP".equals(tok)) stat = STAT_MAX_MP; // 1
-		else if (!"STR".equals(tok))	stat = STAT_STR; // 2
-		else if (!"END".equals(tok)) 	stat = STAT_END; // 3
-		else if (!"MAG".equals(tok)) 	stat = STAT_MAG; // 4 
-		else if (!"MGR".equals(tok)) 	stat = STAT_MGR; // 5 
-		else if (!"HIT".equals(tok)) 	stat = STAT_HIT; // 6
-		else if (!"DOD".equals(tok)) 	stat = STAT_DOD; // 7 
-		else if (!"MBL".equals(tok)) 	stat = STAT_MBL; // 8
-		else if (!"FER".equals(tok)) 	stat = STAT_FER; // 9
-		else if (!"REA".equals(tok)) 	stat = STAT_REA; // 10
-		else if (!"ATK".equals(tok)) 	stat = STAT_ATK; // 11
-		else if (!"DEF".equals(tok)) 	stat = STAT_DEF; // 12
+		if 		("MAX_HP".equals(tok)) stat = STAT_MAX_HP; // 0
+		else if ("MAX_MP".equals(tok)) stat = STAT_MAX_MP; // 1
+		else if ("STR".equals(tok))	stat = STAT_STR; // 2
+		else if ("END".equals(tok)) 	stat = STAT_END; // 3
+		else if ("MAG".equals(tok)) 	stat = STAT_MAG; // 4 
+		else if ("MGR".equals(tok)) 	stat = STAT_MGR; // 5 
+		else if ("HIT".equals(tok)) 	stat = STAT_HIT; // 6
+		else if ("DOD".equals(tok)) 	stat = STAT_DOD; // 7 
+		else if ("MBL".equals(tok)) 	stat = STAT_MBL; // 8
+		else if ("FER".equals(tok)) 	stat = STAT_FER; // 9
+		else if ("REA".equals(tok)) 	stat = STAT_REA; // 10
+		else if ("ATK".equals(tok)) 	stat = STAT_ATK; // 11
+		else if ("DEF".equals(tok)) 	stat = STAT_DEF; // 12
 		else {
 			error( "EquGetModcodeStat(): stat token '"+tok+"' is not a valid stat." );
 			return 0-1;
 		}
-		
+
 		return stat;
 	}
 	
@@ -587,7 +587,6 @@ public class Equipment {
 	
 	static void _applyModcode( int cast_idx, int equ_idx, boolean onFlag ) {
 		int i, stat, mod;
-		
 		for( i=0; i<EquModcodeCount(equ_idx); i++ ) {
 			stat = EquGetModcodeStat( equ_idx, i );
 			mod = EquGetModcodeVal( equ_idx, i );

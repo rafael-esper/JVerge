@@ -291,7 +291,7 @@ public int main(String argv[])
 
         String outname;
 
-	System.out.print(mikbanner);
+	//System.out.print(mikbanner);
 
 	try {
 

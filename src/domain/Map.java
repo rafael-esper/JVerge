@@ -120,8 +120,6 @@ public class Map {
 			this.startX = f.readUnsignedShortLittleEndian();
 			this.startY = f.readUnsignedShortLittleEndian();
 
-			System.out.println(this);
-
 			int numLayers = f.readSignedIntegerLittleEndian(); // layers.length
 			this.layers = new Layer[numLayers];
 
@@ -135,7 +133,6 @@ public class Map {
 				l.lucent = f.readUnsignedByte();
 				l.tiledata = f.readCompressedUnsignedShorts();
 
-				System.out.println(l);
 				this.layers[i] = l;
 			}
 
@@ -157,7 +154,6 @@ public class Map {
 				z.delay = f.readUnsignedByte();
 				z.method = f.readUnsignedByte();
 
-				System.out.println(z);
 				this.zones[i] = z;
 			}
 
@@ -196,7 +192,6 @@ public class Map {
 				e.description = f.readFixedString(256);
 				e.script = f.readFixedString(256);  // this is the actual script
 
-				System.out.println(e);
 				this.entities[i] = e;
 			}
 
@@ -256,7 +251,6 @@ public class Map {
 			// Write a dummy offset for now, but this needs to be backpatched,
 			// once the real map is completed.
 			int vc = f.size();
-			System.out.println(vc);
 			f.writeSignedIntegerLittleEndian(0);
 			f.writeFixedString(m.mapname, 256);
 			f.writeFixedString(m.vspname, 256);

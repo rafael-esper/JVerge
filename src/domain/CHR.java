@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import core.DefaultPalette;
-import core.Script;
+import static core.Script.*;
 
 import persist.ExtendedDataInputStream;
 
@@ -34,14 +34,12 @@ public class CHR {
 
 	String filename;                        // the filename this was loaded from
 	
-	String parsestr;
-
 	// rbp
 	public BufferedImage [] frames;
 	
 	
 	public CHR(String strFilename) {
-		this(Script.load(strFilename));
+		this(load(strFilename));
 	}
 	
 	public CHR(URL url) {
@@ -92,7 +90,7 @@ public class CHR {
 					this.loadChrVersion5(f);
 			}
 			else {
-				System.err.println("Versão " + version + " diferente do suportado.");
+				System.err.println("Version " + version + " not supported.");
 				System.exit(-1);
 			}
 						
@@ -168,7 +166,6 @@ public class CHR {
 		for(int b=1; b<=4; b++) {
 			int length = f.readSignedIntegerLittleEndian(); // animation length
 			animbuf = f.readFixedString(length);
-			//System.out.println("Leu: " + animbuf);
 			this.animsize[indexes[b]] = this.GetAnimLength(animbuf);
 			this.anims[indexes[b]] = new int[this.animsize[indexes[b]]];
 			this.ParseAnimation(indexes[b], animbuf);
@@ -206,7 +203,6 @@ public class CHR {
 		for(int b=1; b<=4; b++) {
 			int length = f.readSignedIntegerLittleEndian(); // animation length
 			animbuf = f.readFixedString(length);
-			//System.out.println("Leu: " + animbuf);
 			this.animsize[indexes[b]] = this.GetAnimLength(animbuf);
 			this.anims[indexes[b]] = new int[this.animsize[indexes[b]]];
 			this.ParseAnimation(indexes[b], animbuf);
@@ -403,7 +399,6 @@ public class CHR {
 		for(int b=1; b<9; b++) {
 			int length = f.readSignedIntegerLittleEndian(); // animation length
 			animbuf = f.readFixedString(length+1);
-			System.out.println("Leu: " + animbuf);
 			this.animsize[indexes[b]] = this.GetAnimLength(animbuf);
 			if(this.animsize[indexes[b]] == 0)
 				this.animsize[indexes[b]]=1; // rbp
@@ -418,8 +413,7 @@ public class CHR {
 		byte pixels[] = f.readCompressedUnsignedShortsIntoBytes();
 		
 		// Obtém frames a partir dos vetores (pixels)
-		System.err.println("Frames (" + fxsize + ", " + fysize + "): " + totalframes);
-		System.err.println(pixels.length);
+		System.out.println("Frames (" + fxsize + ", " + fysize + "): " + totalframes);
 		frames = f.getBufferedImageArrayFromPixels(pixels, totalframes, fxsize, fysize); 
 		
 	}
@@ -458,7 +452,7 @@ public class CHR {
 	void ParseAnimation(int d, String anim)
 	{
 		int frame=0, len, i, ofs=0;
-		parsestr = anim;
+		String parsestr = anim;
 	
 		int parsecount = 0;
 		while (parsecount < parsestr.length())
@@ -491,7 +485,7 @@ public class CHR {
 	int GetAnimLength(String anim)
 	{
 		int length = 0;
-		parsestr = anim;
+		String parsestr = anim;
 	
 		int parsecount = 0;
 		while (parsecount < parsestr.length())
@@ -542,7 +536,55 @@ public class CHR {
 		
 		CHR chr = new CHR(strFilePath);
 
-	}	
+	}
+	
+	public static CHR createCHRFromImage(int sizex, int sizey, int columns, int totalframes, boolean padding, VImage image) {
+		log("createCHRFromImage (" + sizex + "x" + sizey + ": " + totalframes + " frames.");
+		VImage[] images = new VImage[totalframes];
+		
+		int frames = 0, posx = 0, posy = 0, column = 0;
+
+		if(padding)
+			posy++;
+
+		while(frames < totalframes) {
+			
+			if(padding)
+				posx++;
+				 
+			images[frames] = new VImage(sizex, sizey);
+			grabregion(posx, posy, posx+sizex, posy+sizey, 0, 0, image, images[frames]); 
+			column++;
+			posx+=sizex;
+			if(column >= columns) {
+				column = 0;
+				posx = 0;
+				posy+=sizey;
+				if(padding)
+					posy++;
+			}
+			frames++;
+		}
+			
+		return createCHRFromImage(sizex, sizey, images);
+	}
+	
+	public static CHR createCHRFromImage(int sizex, int sizey, VImage[] images) {
+		CHR c = new CHR();
+		
+		c.fxsize = sizex;
+		c.fysize = sizey;
+		c.totalframes = images.length;
+
+		c.animsize = new int[]{0,1,1,1,1,1,1,1,1};
+		c.anims = new int[][]{new int[]{1}, new int[]{1}};
+	
+		c.frames = new BufferedImage[c.totalframes];
+		for(int i=0; i<c.totalframes; i++)
+			c.frames[i] = images[i].image;
+		
+		return c;
+	}
 
 	
 }

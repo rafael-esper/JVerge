@@ -35,7 +35,14 @@ public class MapUtil {
 		
 		/* Test functions*/
  		int[] a = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-		int[][] b1 = one_into_two(a, 3);
+		
+ 		int[][] a1 = new int[][]{	new int[]{1,2,3},
+ 									new int[]{4,5,6},
+ 									new int[]{7,8,9},
+ 									new int[]{10,11,12}};
+ 		
+ 		
+ 		int[][] b1 = one_into_two(a, 3);
 		int[][] b2 = one_into_two(a, 2);
 		int[][] b3 = one_into_two(a, 4);
 		int[][] b4 = one_into_two(a, 6);
@@ -43,6 +50,11 @@ public class MapUtil {
 		int[] c2 = two_into_one(b2);
 		int[] c3 = two_into_one(b3);
 		int[] c4 = two_into_one(b4);
+		
+		int[][] d1 = rotacionarMatrizAntiHorario(b1);
+		int[][] d2 = rotacionarMatrizAntiHorario(d1);
+		int[][] d3 = rotacionarMatrizAntiHorario(d2);
+		int[][] d4 = rotacionarMatrizAntiHorario(d3);
 		
 		System.out.println("Debug here!");
 		
@@ -118,6 +130,31 @@ public class MapUtil {
 	    }
 	    return ret;
 	}
+	
+	public static int[][] rotacionarMatrizHorario(int[][] matriz)
+	{
+	    int largura = matriz.length;
+	    int altura = matriz[0].length;
+	    int[][] ret = new int[altura][largura];
+	    for (int i=0; i<altura; i++) {
+	        for (int j=0; j<largura; j++) {
+	            ret[i][j] = matriz[largura - j - 1][i];
+	        }
+	    }
+	    return ret;
+	}
+	public static int[][] rotacionarMatrizAntiHorario(int[][] matriz)
+	{
+	    int largura = matriz.length;
+	    int altura = matriz[0].length;   
+	    int[][] ret = new int[altura][largura];
+	    for (int i=0; i<altura; i++) {
+	        for (int j=0; j<largura; j++) {
+	            ret[i][j] = matriz[j][altura - i - 1];
+	        }
+	    }
+	    return ret;
+	}	
 	
 		
 	private static void resizeRotine() {

@@ -24,7 +24,7 @@ public class Mountain {
 		
 	public static void start()
 	{
-		SaveDisable(); //cannot save in dungeons.
+		Sully.SaveDisable(); //cannot save in dungeons.
 		
 		if ( flags[F_MOUNT_DEX_JOIN] !=0)
 			entity.get(0).setx(30000);	//if dexter has already joined, 
@@ -500,7 +500,7 @@ public class Mountain {
 			TextBox(T_DARIN,	"You know, we probably could've just",
 								"moved it.","");
 								
-			hookretrace("V1RPG_renderFunc"); 	//restore the default HookRetrace...
+			hookretrace("sully.vc.v1_rpg.V1_RPG.V1RPG_RenderFunc"); 	//restore the default HookRetrace...
 			entity.get(dexter).specframe = 0; 		//set dexter normal-mode
 								
 			TextBox(T_DEXTER,	"What's the point of spending years learning",
@@ -707,18 +707,5 @@ public class Mountain {
 		//MenuOn();
 		EntFinish(); // rbp
 	}
-	
-	
-	// Rbp (These zone functions aren't in Sully class, so it is necessary to be defined here
-	public static void SavePoint() {
-		V1_Simpletype.SavePoint();
-	}
-	public static void SaveDisable() {
-		V1_RPG.SaveDisable();
-	}
-	public static void Heal_Well() {
-		V1_Simpletype.Heal_Well();
-	}
-	
 	
 }

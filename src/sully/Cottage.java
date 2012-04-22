@@ -25,7 +25,7 @@ public class Cottage {
 	
 	public static void start()
 	{
-		SaveDisable(); //cannot save in towns.
+		Sully.SaveDisable(); //cannot save in towns.
 		
 		//open chest checks
 	
@@ -797,11 +797,5 @@ public class Cottage {
 		
 		EntFinish();
 	}
-	
-	// Rbp (These zone functions aren't in Sully class, so it is necessary to be defined here
-	public static void Heal_Well() {
-		V1_Simpletype.Heal_Well();
-	}
-		
 	
 }
