@@ -2302,7 +2302,7 @@ public class Script {
 		if(resource == null) { // try to capitalize
 			String newUrl;
 			if(url.lastIndexOf('/') != -1) 
-				newUrl = url.substring( url.lastIndexOf('/')) +
+				newUrl = url.substring(0, url.lastIndexOf('/')+1) +
 					capitalize(url.substring( url.lastIndexOf('/')+1));
 			else
 				newUrl = capitalize(url);
@@ -2311,7 +2311,7 @@ public class Script {
 			
 			if(resource==null) { // try uppercase 
 				if(url.lastIndexOf('/') != -1) 
-					newUrl = url.substring( url.lastIndexOf('/')) +
+					newUrl = url.substring(0,  url.lastIndexOf('/')+1) +
 						url.substring( url.lastIndexOf('/')+1).toUpperCase();
 				else
 					newUrl = url.toUpperCase();
@@ -2321,7 +2321,7 @@ public class Script {
 			
 			if(resource==null) { // try lowercase 
 				if(url.lastIndexOf('/') != -1) 
-					newUrl = url.substring( url.lastIndexOf('/')) +
+					newUrl = url.substring(0,  url.lastIndexOf('/')+1) +
 						url.substring( url.lastIndexOf('/')+1).toLowerCase();
 				else
 					newUrl = url.toLowerCase();

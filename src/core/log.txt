@@ -106,8 +106,7 @@ Início dec: Music (vgm, mod)
 			Sully Conversion (Flashback scene in Oldville). Solved PCX bug (odd width). 
 			Music playing/stop synchronized (to avoid playing multiple musics at the same time). 
 			Ak (final adjusting, map coordinates, heli shop, disabled cheats. Fixed GME bug (pause function)
-			
-- Github
+28/apr(+1)	Github first release.
 
 
 TODO
@@ -235,7 +234,13 @@ I have implemented three demos to show JVerge working:
 - Sully Chronicles: Well, converting Sully was very useful to fix a lot of errors, misconceptions and buggy code in my JVerge engine conversion. Now the engine is way more stable. But I've performed a direct conversion - that was faster than rewriting the Sully code to the Java paradigm.
 
 I've packed them in .JAR executable jars (just run java -jar X.jar). It's also possible and recommended to developers to use an IDE like Eclipse or Netbeans, place the project there and see the source code running smoothly, understand it better, etc.
-They are also separate projects/GIT repositories. Ak, Ps and Sully are dependent of JVerge, who is dependend of JLayer (an slightly modified version to play MP3's) 
+They are also separate projects/GIT repositories. For developers: Ak, Ps and Sully are dependent of JVerge. If you just want to experiment the demos, there are a 'redist' folder in each project with an executable JAR. 
+
+https://github.com/rafael-esper/JVerge	
+https://github.com/rafael-esper/Ak	
+https://github.com/rafael-esper/Sully	
+https://github.com/rafael-esper/PS	
+
 
 JVERGE: The Future
 
