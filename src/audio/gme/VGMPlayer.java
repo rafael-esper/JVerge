@@ -16,6 +16,7 @@ having to keep track of whether the file was already loaded. */
 
 import javax.sound.sampled.*;
 import java.io.*;
+import java.net.URL;
 
 /* Copyright (C) 2007-2008 Shay Green. This module is free software; you
 can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -99,7 +100,7 @@ class EmuPlayer implements Runnable
 	// Stops playback and closes audio
 	public void stop() throws Exception
 	{
-		pause();
+		//pause(); Commented by Rafael: was causing the code to freeze
 		
 		if ( line != null )
 		{
@@ -145,12 +146,16 @@ class EmuPlayer implements Runnable
 		while ( playing_ && !emu.trackEnded() )
 		{
 			int count = emu.play( buf, buf.length / 2 );
-			line.write( buf, 0, count * 2 );
+			if(line!= null) // Rafael 
+				line.write( buf, 0, count * 2 );
+			else
+				break;
 			idle();
 		}
 		
 		playing_ = false;
-		line.stop();
+		if(line!=null)
+			line.stop();
 	}
 }
 
@@ -163,15 +168,15 @@ class VGMPlayer extends EmuPlayer
 	// Stops playback and loads file from given URL (HTTP only).
 	// If it's an archive (.zip) then path specifies the file within
 	// the archive.
-	public void loadFile( String url, String path ) throws Exception
+	public void loadFile( URL url, String path ) throws Exception
 	{
 		stop();
 		
-		if ( !loadedUrl.equals( url ) || !loadedPath.equals( path ) )
+		if (loadedUrl==null || !loadedUrl.equals( url ) || !loadedPath.equals( path ) )
 		{
 			byte [] data = readFile( url, path );
 			
-			String name = url.toUpperCase();
+			String name = url.getFile().toUpperCase();
 			if ( name.endsWith( ".ZIP" ) )
 				name = path.toUpperCase();
 			
@@ -196,18 +201,18 @@ class VGMPlayer extends EmuPlayer
 	{
 		stop();
 		setEmu( null, 0 );
-		archiveUrl  = "";
+		archiveUrl  = null;
 		archiveData = null;
-		loadedUrl   = "";
+		loadedUrl   = null;
 		loadedPath  = "";
 	}
 	
 // private
 	
-	String loadedUrl  = ""; // URL and path of file loaded into emulator
+	URL loadedUrl  = null; // URL and path of file loaded into emulator
 	String loadedPath = "";
 	
-	String archiveUrl = ""; // URL of (ZIP) file cached in archiveData
+	URL archiveUrl = null; // URL of (ZIP) file cached in archiveData
 	byte [] archiveData;
 	
 	// Creates appropriate emulator for given filename
@@ -229,14 +234,14 @@ class VGMPlayer extends EmuPlayer
 	}
 			
 	// Loads given URL and file within archive, and caches archive for future access
-	byte [] readFile( String url, String path ) throws Exception
+	byte [] readFile( URL url, String path ) throws Exception
 	{
 		InputStream in = null;
-		String name = url.toUpperCase();
+		String name = url.getFile().toUpperCase();
 		if ( !name.endsWith( ".ZIP" ) )
 		{
 			archiveData = null; // dump previously cached ZIP file
-			archiveUrl  = "";
+			archiveUrl  = null;
 			
 			in = DataReader.openHttp( url );
 			//System.out.println( "Load " + url );

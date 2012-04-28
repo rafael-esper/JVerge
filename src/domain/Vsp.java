@@ -7,6 +7,8 @@ import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 import persist.ExtendedDataInputStream;
 import core.Script;
@@ -42,26 +44,26 @@ public class Vsp {
 	
 	int vadelay[], tileidx[], flipped[];
 	
-	// rbp
+	// [Rafael, the Esper]
 	public BufferedImage [] tiles;
 	
 	public Vsp() {
 		
 	}
 	
-	public Vsp(String filename) {
+	public Vsp(URL urlpath) {
 		try {
-			// create FileInput object
-			FileInputStream fis = new FileInputStream(filename);
-			this.load(fis);
+			this.load(urlpath.openStream());
 			
 		} catch (FileNotFoundException fnfe) {
-			System.err.println("VSP::FileNotFoundException : " + filename);
+			error("VSP::FileNotFoundException : " + urlpath);
+		} catch (IOException e) {
+			error("VSP::IOException : " + e.getMessage());
 		}		
 	}
 	
 	
-	private void load (FileInputStream fis) {
+	private void load (InputStream fis) {
 
 		try    
 		{
@@ -162,8 +164,8 @@ public class Vsp {
 		index = tileidx[index]; // Get the actual pointer to a tile, can change due to VSP animation
 		if (index >= numtiles) return;
 		if (index >= numtiles) System.err.printf("VSP::BlitTile(), tile %d exceeds %d", index, numtiles);
-		//RBP char tile = (char)vspdata.data + (index<<8) * VID_BYTESPERPIXEL;
-		//RBP BlitTile(x, y, tile, dest);
+		//[Rafael, the Esper] char tile = (char)vspdata.data + (index<<8) * VID_BYTESPERPIXEL;
+		//[Rafael, the Esper] BlitTile(x, y, tile, dest);
 		dest.g.drawImage(current_map.tileset.tiles[index], x, y, Color.BLACK, null);
 		//getJGEngine().buf_gfx.drawImage(current_map.tileset.tiles[index], x, y, getJGEngine());
 		
@@ -181,8 +183,8 @@ public class Vsp {
 		index = tileidx[index];
 		if (index >= numtiles) return;
 		if (index >= numtiles) System.err.printf("VSP::BlitTile(), tile %d exceeds %d", index, numtiles);
-		//RBP char tile = (char)vspdata.data + (index<<8) * VID_BYTESPERPIXEL;
-		//RBP TBlitTile(x, y, tile, dest);
+		//[Rafael, the Esper] char tile = (char)vspdata.data + (index<<8) * VID_BYTESPERPIXEL;
+		//[Rafael, the Esper] TBlitTile(x, y, tile, dest);
 		dest.g.drawImage(current_map.tileset.tiles[index], x, y, null);
 		//getJGEngine().buf_gfx.drawImage(current_map.tileset.tiles[index], x, y, getJGEngine());
 	}
@@ -190,11 +192,11 @@ public class Vsp {
 	void BlitObs(int x, int y, int index, VImage dest)
 	{
 		if (index >= numobs) return;
-		//RBP char c[] = (char) obs + (index * 256);
-		//RBP int white = MakeColor(255,255,255);
+		//[Rafael, the Esper] char c[] = (char) obs + (index * 256);
+		//[Rafael, the Esper] int white = MakeColor(255,255,255);
 		for (int yy=0; yy<16; yy++)
 			for (int xx=0; xx<16; xx++)
-				;//RBP if (c[(yy*16)+xx]>0) PutPixel(x+xx, y+yy, white, dest);
+				;//[Rafael, the Esper] if (c[(yy*16)+xx]>0) PutPixel(x+xx, y+yy, white, dest);
 	}
 
 	void AnimateTile(int i, int l)
@@ -231,7 +233,7 @@ public class Vsp {
 	{
 		for (int i=0; i<anims.length; i++)
 		{
-			if(anims[i] == null || vadelay==null)		// rbp
+			if(anims[i] == null || vadelay==null)		// [Rafael, the Esper]
 				return;
 			
 			if ((anims[i].delay>0) && (anims[i].delay<vadelay[i]))

@@ -20,9 +20,10 @@ package audio;
  *************************************************************************/
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import java.net.URL;
 
-import javazoom.jl.player.Player;
+import audio.javazoom.jl.player.Player;
+
 
 /*
  * http://introcs.cs.princeton.edu/java/faq/mp3/mp3.html
@@ -31,36 +32,44 @@ import javazoom.jl.player.Player;
  */
 
 public class Mp3Player {
-    private String filename;
+    private URL url;
+    private float volume;
     private Player player; 
 
-    // constructor that takes the name of an MP3 file
-    public Mp3Player(String filename) {
-        this.filename = filename;
+    // constructor that takes the name of an MP3 resource and the volume
+    public Mp3Player(URL url, float volume) {
+        this.url = url;
+        this.volume = volume;
     }
 
-    public void close() { if (player != null) player.close(); }
+    public void close() { 
+    	if (player != null) 
+    		player.close(); 
+    }
 
     // play the MP3 file to the sound card
     public void play() {
         try {
-            FileInputStream fis     = new FileInputStream(filename);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            player = new Player(bis);
+            BufferedInputStream bis = new BufferedInputStream(url.openStream());
+            player = new Player(bis, volume);
         }
         catch (Exception e) {
-            System.out.println("Problem playing file " + filename);
-            System.out.println(e);
+            System.out.println("Problem playing file " + url);
+            e.printStackTrace();
         }
 
         // run in new thread to play in background
         new Thread() {
             public void run() {
-                try { player.play(); }
-                catch (Exception e) { System.out.println(e); }
+                try { 
+                	player.play(); 
+                }
+                catch (Exception e) { 
+                	System.out.println(e); 
+                }
             }
         }.start();
     }
-
+    
 }
 

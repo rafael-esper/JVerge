@@ -78,7 +78,7 @@ public void keypad(int i, boolean b) {}
 public void clear() {}
 public void addstr(String s)
 {
-    //System.out.print(s); RBP
+    //System.out.print(s); [Rafael, the Esper]
 }
 public void refresh() {}
 public void endwin() {}

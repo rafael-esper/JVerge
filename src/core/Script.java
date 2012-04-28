@@ -5,7 +5,6 @@ import static core.Controls.*;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -17,10 +16,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
 import java.awt.image.RescaleOp;
-import java.awt.image.WritableRaster;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
@@ -30,18 +26,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
 
-import ps.PS;
-
-import audio.MTest;
-import audio.STest;
+import audio.VMusic;
+import audio.VSound;
 
 import domain.Entity;
 import domain.Map;
 import domain.VFont;
 import domain.VImage;
 
-import static core.Script.screen;
-import static core.Script.splitTextIntoWords;
 import static core.SinCos.*;
 
 public class Script {
@@ -77,7 +69,7 @@ public class Script {
 	public static int timer;
 
 	// internal use only
-	static int vctimer = 0; // rbp
+	static int vctimer = 0; // [Rafael, the Esper]
 	static int hooktimer = 0;
 
 	public static List<Entity> entity = new ArrayList<Entity>();
@@ -92,7 +84,7 @@ public class Script {
 	public static int player;
 	public static int playerstep = 1;
 	public static boolean playerdiagonals = true;
-	public static boolean smoothdiagonals = true; // rbp
+	public static boolean smoothdiagonals = true; // [Rafael, the Esper]
 
 	public static int xwin, ywin;
 	public static Map current_map = null;
@@ -121,8 +113,8 @@ public class Script {
 
 	public static int __grue_actor_index;
 	
-	private static MTest musicplayer; // rbp 
-	private static STest soundplayer; // rbp
+	private static VMusic musicplayer; // [Rafael, the Esper] 
+	private static VSound soundplayer; // [Rafael, the Esper]
 	
 	public static int invc;
 
@@ -199,7 +191,6 @@ public class Script {
 	public static void hookretrace()
 	{
 		if(renderfunc != null) {
-			//System.out.println("Executing " + renderfunc);
 			callfunction(renderfunc);
 		}
 	}
@@ -209,18 +200,16 @@ public class Script {
 	}
 
 	
-	// RBP Changed to ExecuteFunctionString 
-	/*public void ExecuteCallback(String function, boolean callingFromLibrary) {
-		if(function != null)
-			System.out.println("It should execute: " + function);
-	}*/
+	// Rafael: Changed to ExecuteFunctionString 
+	/*public void ExecuteCallback(String function, boolean callingFromLibrary) */
 	
 	public static void exit(String message) { 
 		System.err.println(message);
 		System.exit(-1); 
 	}
 
-	/* rbp static void SetButtonJB(int b, int jb) {
+	/* Rafael: TODO Implement this.
+	 public static void SetButtonJB(int b, int jb) {
 		switch (b)
 		{
 			case 1: j_b1 = jb; break;
@@ -304,7 +293,7 @@ public class Script {
 		return Character.toString((char) c);
 	}
 	
-	public static String gettoken(String s, String d, int i) { // Reimplemented by Rbp
+	public static String gettoken(String s, String d, int i) { // Reimplemented by [Rafael, the Esper]
 		String[] retorno = s.split(d);
 		if(retorno.length <= i)
 			return "";
@@ -335,7 +324,7 @@ public class Script {
 		return s1.equals(s2); // ? 1 : 0;
 	}
 	
-	public static String capitalize(String s) { // rbp
+	public static String capitalize(String s) { // [Rafael, the Esper]
 		if (s.length() == 0) return s;
 		return s.substring(0, 1).toUpperCase() + s.substring(1);		
 	}
@@ -474,8 +463,8 @@ public class Script {
 			entity.get(stalker).clear_stalk();
 			return;
 		}
-		entity.get(stalker).setx(entity.get(stalkee).getx()); // rbp
-		entity.get(stalker).sety(entity.get(stalkee).gety()); // rbp
+		entity.get(stalker).setx(entity.get(stalkee).getx()); // [Rafael, the Esper]
+		entity.get(stalker).sety(entity.get(stalkee).gety()); // [Rafael, the Esper]
 		entity.get(stalker).stalk(entity.get(stalkee));
 	}
 	public static void entitystop(int e) {
@@ -506,13 +495,13 @@ public class Script {
 		if (myself==null) return;
 
 		myself.movecode = 0;
-		//rbp implementar afterPlayerMove();
+		//[Rafael, the Esper] implementar afterPlayerMove();
 	}
 
-	public static void pauseplayerinput() { // rbp
+	public static void pauseplayerinput() { // [Rafael, the Esper]
 		invc = 1;
 	}
-	public static void unpauseplayerinput() { // rbp
+	public static void unpauseplayerinput() { // [Rafael, the Esper]
 		invc = 0;
 	}
 	
@@ -548,7 +537,7 @@ public class Script {
 		AdditiveBlit(x, y, s, d);
 	}*/
 	public static void alphablit(int x, int y, VImage src, VImage alpha, VImage dst) {
-		// RBP TODO Implement
+		// [Rafael, the Esper] TODO Implement
 		//AlphaBlit(x, y, s, a, d);
 		//error("Non implemented function");
 		tblit(x, y, src, dst);
@@ -577,7 +566,7 @@ public class Script {
 	public static void blit(int x, int y, VImage src, VImage dst) {
 		blit(x,y,src.getImage(), dst.getImage());
 	}
-	public static void blit(int x, int y, Image src, Image dst) { // RBP Always opaque
+	public static void blit(int x, int y, Image src, Image dst) { // [Rafael, the Esper] Always opaque
 		if(currentLucent < 255) {
 			Graphics2D g2d = (Graphics2D) dst.getGraphics();
 			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)(currentLucent)/255));
@@ -607,7 +596,7 @@ public class Script {
 		BlitWrap(x, y, s, d);
 	}*/
 	
-	public static void circle(int x1, int y1, int xr, int yr, Color c, VImage dst) { // rbp
+	public static void circle(int x1, int y1, int xr, int yr, Color c, VImage dst) { // [Rafael, the Esper]
 		dst.g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), currentLucent));
 		dst.g.drawOval(x1-xr, y1-yr, xr*2, yr*2);
 	}
@@ -625,7 +614,7 @@ public class Script {
 			circlefill(x1, y1, xr, yr, palette.getColor(c, currentLucent), dst);
 		}
 	}
-	public static void circlefill(int x1, int y1, int xr, int yr, Color c, VImage dst) { // rbp
+	public static void circlefill(int x1, int y1, int xr, int yr, Color c, VImage dst) { // [Rafael, the Esper]
 		dst.g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), currentLucent));
 		dst.g.fillOval(x1-xr, y1-yr, xr*2, yr*2);
 	}
@@ -652,7 +641,7 @@ public class Script {
 		int rr, gg, bb, z; Color c = null;
 
 		int x1,x2,y1,y2;
-		// RBP img.GetClip(x1,y1,x2,y2);
+		// [Rafael, the Esper] img.GetClip(x1,y1,x2,y2);
 		x1 = y1 = 0;
 		x2 = img.width;
 		y2 = img.height;
@@ -681,7 +670,7 @@ public class Script {
 					case 4: z = (rr+gg+bb)/3; c = new Color(z, 0, 0); break; // RED
 					case 5: z = (rr+gg+bb)/3; c = new Color(0, z, 0); break; // GREEN
 					case 6: z = (rr+gg+bb)/3; c = new Color(0, 0, z); break; // BLUE
-					// RBP Custom color filter case 7: z = (rr+gg+bb)/3; c = new Color(cf_r1+((cf_rr*z)>>8), cf_g1+((cf_gr*z)>>8), cf_b1+((cf_br*z)>>8)).getRGB(); break;
+					// [Rafael, the Esper] Custom color filter case 7: z = (rr+gg+bb)/3; c = new Color(cf_r1+((cf_rr*z)>>8), cf_g1+((cf_gr*z)>>8), cf_b1+((cf_br*z)>>8)).getRGB(); break;
 				}
 				setpixel(x, y, c, img);
 			}
@@ -796,7 +785,7 @@ public class Script {
 	public static int imagewidth(VImage src) { return src.width; }
 	public static int imageheight(VImage src) { return src.height; }
 	
-	public static void line(int x1, int y1, int x2, int y2, Color c, VImage dst) { // Rbp
+	public static void line(int x1, int y1, int x2, int y2, Color c, VImage dst) { // [Rafael, the Esper]
 		dst.g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), currentLucent));
 		dst.g.drawLine(x1, y1, x2, y2);
 	}
@@ -823,7 +812,7 @@ public class Script {
 	public static void rect(int x1, int y1, int x2, int y2, int c, VImage dst) {
 		rect(x1, y1, x2, y2, palette.getColor(c, currentLucent), dst);
 	}
-	public static void rect(int x1, int y1, int x2, int y2, Color c, VImage dst) { // Rbp
+	public static void rect(int x1, int y1, int x2, int y2, Color c, VImage dst) { // [Rafael, the Esper]
 		dst.g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), currentLucent));
 		if(x1>x2) {	int temp = x1;	x1 = x2;	x2 = temp;	} // swap x1,x2
 		if(y1>y2) {	int temp = y1;	y1 = y2;	y2 = temp;	} // swap y1,y2
@@ -842,7 +831,7 @@ public class Script {
 			rectfill(x1, y1, x2, y2, palette.getColor(c, currentLucent), dst);
 	}
 	
-	public static void rectfill(int x1, int y1, int x2, int y2, Color c, VImage dst) { // Rbp
+	public static void rectfill(int x1, int y1, int x2, int y2, Color c, VImage dst) { // [Rafael, the Esper]
 		if(c.getAlpha()==255)
 			c = new Color(c.getRed(), c.getGreen(), c.getBlue(), currentLucent);
 
@@ -854,13 +843,13 @@ public class Script {
 	
 	
 	public static void rotscale(int x, int y, int angle, int scale, VImage src, VImage dst) {
-		//TODO RBP Implement
+		//TODO [Rafael, the Esper] Implement
 		blit(x, y, src, dst);
 		//RotScale(x, y,  angle*(float)3.14159/(float)180.0, scale/(float)1000.0, s, d);
 	}
 	public static void scaleblit(int x, int y, int dw, int dh, VImage src, VImage dst) {
 		//ScaleBlit(x, y, dw, dh, s, d);
-		blit(x, y, src, dst); // TODO RBP Implement scaling		
+		blit(x, y, src, dst); // TODO [Rafael, the Esper] Implement scaling		
 	}
 	
 	/* Draws a scaled image. A bit more complex than the other blitters to use. 
@@ -883,7 +872,7 @@ public class Script {
 	
 	public static void setclip(int x1, int y1, int x2, int y2, VImage img) {
 		//img.SetClip(x1, y1, x2, y2);
-		// TODO RBP Implement this mechanism in VImage
+		// TODO [Rafael, the Esper] Implement this mechanism in VImage
 		//error("Non implemented function: setclip");
 	}
 	
@@ -893,7 +882,7 @@ public class Script {
 		cf_rr = cf_r2 - cf_r1;
 		cf_gr = cf_g2 - cf_g1;
 		cf_br = cf_b2 - cf_b1;*/
-		// TODO RBP Implement this
+		// TODO [Rafael, the Esper] Implement this
 		graycolorfilter(screen.getImage());
 		error("Non implemented function: setcustomcolorfilter");
 	}
@@ -906,16 +895,22 @@ public class Script {
 		getGUI().setAlpha ((float)p / 100);
 	}
 
+	static int lastchangetime = 0;
+	
 	public static void showpage() {
 		//flipblit(0,0,true, true,screen,screen);
 		//System.out.println("showpage");
 		Controls.UpdateControls();
+		
+		// Check if the player pressed a special key
+		VergeEngine.checkFunctionKeys();
+		
 		//VEngine.updateGUI();
-		DefaultTimer();//rbp
+		DefaultTimer();//[Rafael, the Esper]
 		GUI.paintFrame();
 		//VEngine.synchFramerate();
 		//VergeEngine.PaintToScreen();
-		//getGUI().getCanvas().setCanvas_screen(screen.getImage()); //rbp
+		//getGUI().getCanvas().setCanvas_screen(screen.getImage()); //[Rafael, the Esper]
 	}
 	
 	public static void silhouette(int x, int y, Color c, VImage src, VImage dst) {
@@ -978,7 +973,7 @@ public class Script {
 				   || dx+i >= dst.getWidth() || dy+j >= dst.getHeight())		
 					break;
 				color = new Color(src.getRGB(sx1+i, sy1+j));
-				if(color.getRed() + color.getGreen() + color.getBlue() == 0) // TODO RBP Probably move it to tgrabregion?
+				if(color.getRed() + color.getGreen() + color.getBlue() == 0) // TODO [Rafael, the Esper] Probably move it to tgrabregion?
 					color = new Color(0,0,0,0); //color.getRed(), color.getGreen(), color.getBlue(), 0);
 				setpixel(i+dx, j+dy, color, dst);
 
@@ -1045,7 +1040,7 @@ public class Script {
 	}*/
 
 	// Note: it's a filled triangle. A non-filled triangle can be draw with lines.
-	public static void triangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c, VImage dst) { // rbp
+	public static void triangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c, VImage dst) { // [Rafael, the Esper]
 		Polygon p = new Polygon();
 		p.addPoint(x1, y1);
 		p.addPoint(x2, y2);
@@ -1057,7 +1052,7 @@ public class Script {
 	
 	public static void tscaleblit(int x, int y, int dw, int dh, VImage src, VImage dst) {
 		//TScaleBlit(x, y, dw, dh, s, d);
-		tblit(x, y, src, dst); // TODO RBP Implement scaling
+		tblit(x, y, src, dst); // TODO [Rafael, the Esper] Implement scaling
 		
 	}/*
 	static void TSubtractiveBlit(int x, int y, int src, int dst) {
@@ -1066,12 +1061,12 @@ public class Script {
 		TSubtractiveBlit(x, y, s, d);
 	}*/
 	public static void twrapblit(int x, int y, VImage src, VImage dst) {
-		// TODO RBP Implement
+		// TODO [Rafael, the Esper] Implement
 		//TWrapBlit(x, y, s, d);
 		error("Non implemented function: twrapblit");
 	}
 	public static void wrapblit(int x, int y, VImage src, VImage dst) {
-		// TODO RBP Implement
+		// TODO [Rafael, the Esper] Implement
 		//WrapBlit(x, y, s, d);
 		error("Non implemented function: wrapblit");
 	}
@@ -1087,32 +1082,32 @@ public class Script {
 	static int GetSongVolume(int handle) { return GetSongVol(handle); }
 	static int LoadSong(String fn) { return LoadSong(fn); }
 	static int LoadSound(String fn) { return (int)LoadSample(fn); }*/
-	public static void playsound(String fn) {
+	public static void playsound(URL fn) {
 		playsound(fn, 100);
 	}
-	public static void playsound(String fn, int volume) {
-		if(fn==null || fn.isEmpty() || systemclass==null || VergeEngine.config.isNosound())
+	public static void playsound(URL fn, int volume) {
+		if(fn==null || VergeEngine.config.isNosound())
 			return;
 
-		// TODO RBP IMPLEMENT volume
-		soundplayer = new STest();
-		soundplayer.start(systemclass.getResource(fn));
+		if (volume < 0)
+			volume = 0;
+		else if (volume > 100)
+			volume = 100;
+		soundplayer = new VSound();
+		soundplayer.start(fn, volume);
 	}
-	
-	public static void playmusic(String fn) { 
-		if(fn==null || fn.isEmpty() || systemclass==null || VergeEngine.config.isNosound())
+
+	public static void playmusic(URL fn) { 
+		if(fn==null || VergeEngine.config.isNosound())
 			return;
 		
 		if(musicplayer!=null) {
 			musicplayer.stop();
 		}
 		try {
-			musicplayer = new MTest();
-			System.out.println("Playing..." + fn);
-			//music.start("file:///" + VergeEngine.path + "\\" + fn);
-			musicplayer.start(systemclass.getResource(fn));
-			//musicplayer.stop();
-			//System.exit(0);
+			musicplayer = new VMusic();
+			log("Playing..." + fn);
+			musicplayer.start(fn);
 		}
 		catch(Exception e) {
 			System.err.println("Error when playing " + fn);
@@ -1343,7 +1338,7 @@ public class Script {
 		
 		const char* cpfname = fname;
 
-//	rbp	#ifdef __APPLE__
+//	[Rafael, the Esper]	#ifdef __APPLE__
 		// swap backslashes in path for forward slashes
 		// (windows . unix/max)
 		string converted = fname.str();
@@ -1813,7 +1808,7 @@ public class Script {
 		if (!ret)
 			return String();
 
-	//rbp #ifdef __BIG_ENDIAN__
+	//[Rafael, the Esper] #ifdef __BIG_ENDIAN__
 	//	stlen >>= 16;
 	//#endif
 
@@ -1857,13 +1852,13 @@ public class Script {
 		char t = '3';
 		s.write(1, &t);
 
-	//rbp #ifdef __BIG_ENDIAN__
+	//[Rafael, the Esper] #ifdef __BIG_ENDIAN__
 	//	len <<= 16;
 	//#endif
 
 		s.write(2, &len);
 
-	//rbp #ifdef __BIG_ENDIAN__
+	//[Rafael, the Esper] #ifdef __BIG_ENDIAN__
 	//	len >>= 16;
 	//#endif
 
@@ -1990,7 +1985,7 @@ public class Script {
 		       str = str.concat(" " + words.get(i+1));
 		       i += 1;
 			}
-		    rows.add(str); //System.out.println(str);
+		    rows.add(str);
 		    str = "";i+=1;
 		}
 		return rows;
@@ -2149,7 +2144,7 @@ public class Script {
 	}	
 	*/
 
-	// Handy code by RBP
+	// Handy code by [Rafael, the Esper]
 	public static void fadeout(int delay) {
 		unpress(9);
 		for(int i=0; i<=delay; i++) {
@@ -2182,70 +2177,6 @@ public class Script {
 		}
 		
 	}
-	
-	public static void tvout()
-	// looks kinda like when you turn your TV off
-	{
-	 VImage img = new VImage(screen.width, screen.height);
-	 int i,t;
-
-	 render();
-	 grabregion(0,0,screen.width,screen.height,0,0,screen,img);
-	 setlucent(0);
-
-	 i=screen.height;
-	 t=timer;
-	 while (i>0)
-	  {
-	   i-=(timer-t)<<4;
-	   t=timer;
-	   rectfill(0,0,screen.width-1,screen.height-1,Color.BLACK, screen);
-	   scalesprite(0,(screen.height/2)-(i/2),screen.width,screen.height-1,screen.width-1,i,img);
-	   showpage();
-	  }
-
-	 i=screen.width-1;
-	 t=timer;
-	 while (i>0)
-	  {
-	   i-=(timer-t)<<4;
-	   t=timer;
-	   rectfill(0,0,screen.width-1,screen.height-1,1, screen);
-	   scalesprite((screen.width/2)-(i/2),screen.height/2,screen.width-1,screen.height-1,i,1,img);
-	   showpage();
-	  }
-	}
-	public static void tvin()
-	{
-	 VImage img = new VImage(screen.width, screen.height);
-	 int i,t;
-
-	 render();
-	 grabregion(0,0,screen.width,screen.height,0,0,screen,img);
-	 setlucent(0);
-
-	 i=0;
-	 t=timer;
-	 while (i<screen.width-1)
-	  {
-	   i+=(timer-t)<<4;
-	   t=timer;
-	   rectfill(0,0,screen.width-1,screen.height-1,Color.BLACK, screen);
-	   scalesprite((screen.width/2)-(i/2),screen.height/2,screen.width-1,screen.height-1,i,1,img);
-	   showpage();
-	  }
-
-	 i=0;
-	 t=timer;
-	 while (i<screen.height)
-	  {
-	   i+=(timer-t)<<4;
-	   t=timer;
-	   rectfill(0,0,screen.width-1,screen.height-1,1, screen);
-	   scalesprite(0,(screen.height/2)-(i/2),screen.width,screen.height-1,screen.width-1,i,img);
-	   showpage();
-	  }
-	}	
 	
 	
 	// Function (method) calling
@@ -2324,10 +2255,10 @@ public class Script {
 			 
 				 path = systemclass;
 				 if (invokeMethod(path, function, justCheck)) {
-					 return true; // Sucess
+					 return true; // Success
 				 }
 				 else {
-					 error("Method " + function + " not found in path " + path);
+					 error("Error invoking " + function + " in path " + path);
 				 }
 			 }
 		}
@@ -2345,7 +2276,7 @@ public class Script {
 					return true;
 				
 				try {
-					//System.out.println("Found method " + mname + " in path " + c); // just for debug
+					//log("Found method " + mname + " in path " + c); // just for debug
 					m.invoke(null);
 					return true;
 				} catch (IllegalArgumentException e) {
@@ -2364,9 +2295,47 @@ public class Script {
 	 * Method for loading resources from the classpath, like images, fonts, sounds, etc 
 	 */
 	public static URL load(String url) {
-		System.out.println(systemclass);
-		System.out.println(url);
-		return systemclass.getResource(url);
+		log("(" + systemclass + ")" + ", reading: " + url);
+		URL resource = systemclass.getResource(url);
+		
+		// Optional code, a little robustness to avoid case-sensitive issues
+		if(resource == null) { // try to capitalize
+			String newUrl;
+			if(url.lastIndexOf('/') != -1) 
+				newUrl = url.substring( url.lastIndexOf('/')) +
+					capitalize(url.substring( url.lastIndexOf('/')+1));
+			else
+				newUrl = capitalize(url);
+			log("WARNING! Resource not found. Trying to read: " + newUrl);
+			resource = systemclass.getResource(newUrl);
+			
+			if(resource==null) { // try uppercase 
+				if(url.lastIndexOf('/') != -1) 
+					newUrl = url.substring( url.lastIndexOf('/')) +
+						url.substring( url.lastIndexOf('/')+1).toUpperCase();
+				else
+					newUrl = url.toUpperCase();
+				log("WARNING! Resource not found. Trying to read: " + newUrl);
+				resource = systemclass.getResource(newUrl);				
+			}
+			
+			if(resource==null) { // try lowercase 
+				if(url.lastIndexOf('/') != -1) 
+					newUrl = url.substring( url.lastIndexOf('/')) +
+						url.substring( url.lastIndexOf('/')+1).toLowerCase();
+				else
+					newUrl = url.toLowerCase();
+				log("WARNING! Resource not found. Trying to read: " + newUrl);
+				resource = systemclass.getResource(newUrl);				
+			}			
+			
+			if(resource==null) {
+				error("ERROR! Resource not found: " + url);
+			}
+			
+		}
+		
+		return resource;
 	}
 	public static void setSystemPath(Class c) {
 		systemclass = c;

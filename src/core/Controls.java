@@ -44,7 +44,7 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 	public static void  UnB3() { kill_b3 = true; b3 = false; }
 	public static void  UnB4() { kill_b4 = true; b4 = false; }
 	
-	/*RBP Use interface instead 
+	/*[Rafael, the Esper] Use interface instead 
 	 * boolean k_b1 = SCAN_ENTER,
 	     k_b2 = SCAN_ALT,
 		 k_b3 = SCAN_ESC,
@@ -63,14 +63,14 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 	
 	public static void UpdateControls()
 	{
-		//rbp HandleMessages();
+		//[Rafael, the Esper] HandleMessages();
 
-		/*rbp if( _input_killswitch ) {
+		/*[Rafael, the Esper] if( _input_killswitch ) {
 			b4 = b3 = b2 = b1 = right = left = down = up = false;
 			return;
 		}*/
 
-		/* RBP Use JGame implementation
+		/* [Rafael, the Esper] Use JGame implementation
 		joy_Update();
 		mouse_Update();
 		UpdateKeyboard();
@@ -124,7 +124,7 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 	
 	void updateMouse(MouseEvent e,boolean pressed, boolean released, boolean inside) {
 				mousepos = e.getPoint();
-				/* RBP mousepos.x = (int)(mousepos.x/el.x_scale_fac);
+				/* [Rafael, the Esper] mousepos.x = (int)(mousepos.x/el.x_scale_fac);
 				mousepos.y = (int)(mousepos.y/el.y_scale_fac); */
 				mouseinside=inside;
 				int button=0;
@@ -135,7 +135,7 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 				if (pressed)  {
 					mousebutton[button]=true;
 					keymap[255+button]=true;
-					/* RBp if (wakeup_key==-1 || wakeup_key==255+button) {
+					/* [Rafael, the Esper] if (wakeup_key==-1 || wakeup_key==255+button) {
 						if (!eng.isRunning()) {
 							eng.start();
 							// mouse button is cleared when it is used as wakeup key
@@ -190,7 +190,7 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 					keymap[keycode]=true;
 					lastkey=keycode;
 					lastkeychar=keychar;
-				/* RBP	if (wakeup_key==-1 || wakeup_key==keycode) {
+				/* [Rafael, the Esper]	if (wakeup_key==-1 || wakeup_key==keycode) {
 						if (!eng.isRunning()) {
 							eng.start();
 							// key is cleared when it is used as wakeup key
@@ -201,7 +201,7 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 				/* shift escape = exit */
 				if (e.isShiftDown () 
 				&& e.getKeyCode () == KeyEvent.VK_ESCAPE) {
-				// RBP&& !eng.isApplet()) {
+				// [Rafael, the Esper]&& !eng.isApplet()) {
 					System.exit(0);
 				}
 				//System.out.println(e+" keychar"+e.getKeyChar());
@@ -220,7 +220,9 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 			/* WindowListener handlers */
 
 			public void windowActivated(WindowEvent e) {}
-			public void windowClosed(WindowEvent e) {System.out.println("Closed");}
+			public void windowClosed(WindowEvent e) {
+				System.out.println("Window closed");
+			}
 			public void windowClosing(WindowEvent e) {
 				System.out.println("Window closed; exiting.");
 				VergeEngine.getGUI().closeWindow();
@@ -252,6 +254,21 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 	public static final int KeyTab=9;
 	/** Keymap equivalent of mouse button. */
 	public static final int KeyMouse1=256, KeyMouse2=257, KeyMouse3=258;
+	
+	public static final int KeyF1=112;
+	public static final int KeyF2=113;
+	public static final int KeyF3=114;
+	public static final int KeyF4=115;
+	public static final int KeyF5=116;
+	public static final int KeyF6=117;
+	public static final int KeyF7=118;
+	public static final int KeyF8=119;
+	public static final int KeyF9=120;
+	public static final int KeyF10=121;
+	public static final int KeyF11=122;
+	public static final int KeyF12=123;
+	
+	
 	
 	/* mouse */
 

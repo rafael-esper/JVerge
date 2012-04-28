@@ -27,7 +27,7 @@ public class Layer {
 		tiledata[(y*width)+x] = t;
 	}
 	
-	void SetParallaxX(double p, int xwin) // rbp: changed to receive xwin
+	void SetParallaxX(double p, int xwin) // [Rafael, the Esper]: changed to receive xwin
 	{
 	    // increase the x_offset to the current layer pos given the current parallax
 	    x_offset += (int) ((float) xwin * parallax_x);
@@ -40,7 +40,7 @@ public class Layer {
 
 	}
 
-	void SetParallaxY(double p, int ywin) // rbp: changed to receive ywin
+	void SetParallaxY(double p, int ywin) // [Rafael, the Esper]: changed to receive ywin
 	{
 	    // increase the x_offset to the current layer pos given the current parallax
 	    y_offset += (int) ((float) ywin * parallax_y);

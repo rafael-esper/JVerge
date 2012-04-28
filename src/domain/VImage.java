@@ -57,7 +57,7 @@ public class VImage implements Transferable {
 				  image = ImageIO.read(url);
 			  }
 			  //if(image==null)
-				//  image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_ARGB); // RBP Temp
+				//  image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_ARGB); // [Rafael, the Esper] Temp
 		  } catch (IOException e) {
 			  System.err.println("Unable to read image from URL " + url);
 		  }

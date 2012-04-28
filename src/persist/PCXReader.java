@@ -65,6 +65,8 @@ public class PCXReader {
         int palette_type;
         byte[] filler = new byte[58];
 
+        boolean wasOdd = false; // Rafael: PCSx with odd width (ex: 7, 135, etc)
+        
         int imagebytes;
         
         try {
@@ -98,6 +100,7 @@ public class PCXReader {
              * width is increased when it was odd before.
              */
             pcxwidth++;
+            wasOdd = true;
           }
 
 
@@ -181,7 +184,6 @@ public class PCXReader {
                 RGBImageData[i*pcxwidth+j] = new Color(red,green,blue).getRGB();
               }
             }
-
             ImageProducer prod = new MemoryImageSource(pcxwidth, pcxheight, RGBImageData, 0, pcxwidth);
             picture = Toolkit.getDefaultToolkit().createImage(prod);
 
@@ -191,7 +193,7 @@ public class PCXReader {
           System.err.println("Error reading PCX-File!");
         }
 
-        return bufferImage(picture, BufferedImage.TYPE_INT_ARGB);
+        return bufferImage(picture, BufferedImage.TYPE_INT_ARGB, wasOdd);
     }
 
 
@@ -234,10 +236,10 @@ public class PCXReader {
         }
     }
     
-    public static BufferedImage bufferImage(Image image, int type) {
-        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), type);
+    public static BufferedImage bufferImage(Image image, int type, boolean odd) {
+        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null) - (odd?1:0), image.getHeight(null), type);
         Graphics2D g = bufferedImage.createGraphics();
-        g.drawImage(image, null, null);
+        g.drawImage(image, 0, 0, null);
         //waitForImage(bufferedImage);
         return bufferedImage;
     }

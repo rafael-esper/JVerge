@@ -34,12 +34,12 @@ public class CHR {
 
 	String filename;                        // the filename this was loaded from
 	
-	// rbp
+	// [Rafael, the Esper]
 	public BufferedImage [] frames;
 	
 	
 	public CHR(String strFilename) {
-		this(load(strFilename));
+		this(load(strFilename.replace('\\', '/')));
 	}
 	
 	public CHR(URL url) {
@@ -401,7 +401,7 @@ public class CHR {
 			animbuf = f.readFixedString(length+1);
 			this.animsize[indexes[b]] = this.GetAnimLength(animbuf);
 			if(this.animsize[indexes[b]] == 0)
-				this.animsize[indexes[b]]=1; // rbp
+				this.animsize[indexes[b]]=1; // [Rafael, the Esper]
 			this.anims[indexes[b]] = new int[this.animsize[indexes[b]]];
 			this.ParseAnimation(indexes[b], animbuf);
 		}
@@ -425,8 +425,8 @@ public class CHR {
 		if (frame <0 || frame >= totalframes)
 			System.err.printf("CHR::render(), frame requested is undefined (%d of %d)", frame, totalframes);
 		
-		//RBP container.data = (quad *) ((int) rawdata->data + (frame*fxsize*fysize*vid_bytesperpixel));
-		//RBP TBlit(x, y, container, dest);
+		//[Rafael, the Esper] container.data = (quad *) ((int) rawdata->data + (frame*fxsize*fysize*vid_bytesperpixel));
+		//[Rafael, the Esper] TBlit(x, y, container, dest);
 		dest.g.drawImage(this.frames[frame], x, y, null);
 		
 	//SetLucent(50);
@@ -436,8 +436,10 @@ public class CHR {
 	
 	int GetFrame(int d, int framect)
 	{
-		if (d<1 || d>4)
+		if (d<1 || d>4) {
 			System.err.printf("CHR::GetFrame() - invalid direction %d", d);
+			return 0;
+		}
 		framect %= animsize[d];
 		return anims[d][framect];
 	}
@@ -464,7 +466,7 @@ public class CHR {
 					parsecount++;
 					frame = GetArg(parsestr.substring(parsecount));
 					parsecount+=Integer.toString(frame).length();
-					//System.out.println("Anim(F" + frame + "), sobrou " + parsestr.substring(parsecount));
+					//System.out.println("Anim(F" + frame + "), resting " + parsestr.substring(parsecount));
 					break;
 				case 'w':
 				case 'W':
@@ -474,7 +476,7 @@ public class CHR {
 						this.anims[d][i] = frame;
 					ofs += len;
 					parsecount+=Integer.toString(len).length();
-					//System.out.println("Anim(W" + len + "), sobrou " + parsestr.substring(parsecount));
+					//System.out.println("Anim(W" + len + "), resting " + parsestr.substring(parsecount));
 					break;
 				default:
 					System.err.printf("CHR::ParseAnimation() - invalid animscript command! %c", parsestr.charAt(parsecount));
@@ -525,19 +527,14 @@ public class CHR {
 		while (parsecount < str.length() && str.charAt(parsecount) >= '0' && str.charAt(parsecount) <= '9')
 			retorno = retorno.concat(Character.toString(str.charAt(parsecount++)));
 	
-		if(retorno.trim().equals("")) // rbp
+		if(retorno.trim().equals("")) // [Rafael, the Esper]
 			return 0;
 		return Integer.parseInt(retorno);
 	}
 	
-	
-	public static void main(String[] args) {
-		String strFilePath = "D:\\RBP\\PESSOAL\\VERGE\\V3TILED\\CRYSTAL.CHR";
-		
-		CHR chr = new CHR(strFilePath);
-
-	}
-	
+	/**Rafael:
+	 * New method implemented to allow bypassing .chr files and use an image file instead
+	 */
 	public static CHR createCHRFromImage(int sizex, int sizey, int columns, int totalframes, boolean padding, VImage image) {
 		log("createCHRFromImage (" + sizex + "x" + sizey + ": " + totalframes + " frames.");
 		VImage[] images = new VImage[totalframes];
@@ -577,7 +574,7 @@ public class CHR {
 		c.totalframes = images.length;
 
 		c.animsize = new int[]{0,1,1,1,1,1,1,1,1};
-		c.anims = new int[][]{new int[]{1}, new int[]{1}};
+		c.anims = new int[][]{new int[]{0}, new int[]{0}, new int[]{0}, new int[]{0}, new int[]{0}, new int[]{0}, new int[]{0}, new int[]{0}};
 	
 		c.frames = new BufferedImage[c.totalframes];
 		for(int i=0; i<c.totalframes; i++)

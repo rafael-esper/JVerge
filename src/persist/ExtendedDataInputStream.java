@@ -74,7 +74,6 @@ public class ExtendedDataInputStream extends DataInputStream {
     	return ret;
     }
 
-	// RBP: Exclusively for VSP
 	public byte[] readCompressedUnsignedShortsIntoBytes() throws IOException {
 
 		byte[] b = readCompressedBytes();

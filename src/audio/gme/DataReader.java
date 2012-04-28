@@ -10,9 +10,9 @@ import java.net.*;
 class DataReader
 {
 	// Opens InputStream to file stored in various ways
-	static InputStream openHttp( String path ) throws Exception
+	static InputStream openHttp( URL path ) throws Exception
 	{
-		return new URL( path ).openConnection().getInputStream();
+		return path.openStream();
 	}
 
 	static InputStream openFile( String path ) throws Exception

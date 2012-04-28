@@ -1,11 +1,11 @@
-Before dez: Map, CHR, Vsp loading/saving
-Início dez: Music (vgm, mod)
-06/dez: Music (mp3)
-09/dez: Verge Engine code
-11/dez: JGame integration, Controls
-12/dez: Sprite code, etc
-16/dez: Startup code
-22/dez: Zone, Layer, Map, etc
+Before dec: Map, CHR, Vsp loading/saving
+Início dec: Music (vgm, mod)
+06/dec: Music (mp3)
+09/dec: Verge Engine code
+11/dec: JGame integration, Controls
+12/dec: Sprite code, etc
+16/dec: Startup code
+22/dec: Zone, Layer, Map, etc
 ===== 15 HOURS ====
 09/jan:(+1) Vsp data, Map load/render (in screen)
 10/jan:(+1) Map scaling (slow)
@@ -31,20 +31,20 @@ Início dez: Music (vgm, mod)
 30/jan(+1): Ak (adapting code). Loading functions from current_map.
 31/jan(+2): Entity public functions (setx,sety,incx,incy). Ak semi-working. Config file from URL.
 ==== 39 HOURS ====
-01/fev(+2): Alex Kidd working. VImage transparent. CHR, Vsp, Map and Music working via URL. 
-02/fev(+2): Window Resizing working. Mod Music looping. 
-03/fev(+1): PS Item lib / Item class
-05/fev(+2): TvIn, TvOut, ScaleSprite. SText function (split words, rows).
-06/fev(+1): Fadein, Fadeout (alpha).
-14/fev(+1): PS internationalization (ps talk)
-15/fev(+2): Wav/Mid player, internationalization, (ps talk)
-16/fev(+1): BufferStrategy. Pseudo-Back/Movescript working. Correct fadein/out.
-17/fev(+2): Volatile Image. (Ps talk, items, menus, monsters, etc)
-18/fev(+1): Create MenuStack (GUI) and ported Stext function. Removed VolatileImage again.
-19/fev(+1): MenuStack (Prompt, prompt circle, waitopt)
-20/fev(+3): Map.java working (reflection). WaitOpt return option selected. 
+01/feb(+2): Alex Kidd working. VImage transparent. CHR, Vsp, Map and Music working via URL. 
+02/feb(+2): Window Resizing working. Mod Music looping. 
+03/feb(+1): PS Item lib / Item class
+05/feb(+2): TvIn, TvOut, ScaleSprite. SText function (split words, rows).
+06/feb(+1): Fadein, Fadeout (alpha).
+14/feb(+1): PS internationalization (ps talk)
+15/feb(+2): Wav/Mid player, internationalization, (ps talk)
+16/feb(+1): BufferStrategy. Pseudo-Back/Movescript working. Correct fadein/out.
+17/feb(+2): Volatile Image. (Ps talk, items, menus, monsters, etc)
+18/feb(+1): Create MenuStack (GUI) and ported Stext function. Removed VolatileImage again.
+19/feb(+1): MenuStack (Prompt, prompt circle, waitopt)
+20/feb(+3): Map.java working (reflection). WaitOpt return option selected. 
 		    Playsound method (playing .wav (menu)), Camineet/Palma.java
-21/fev(+1): Misc changes, MapUtil (rotate matrix, two in one, one in two) 
+21/feb(+1): Misc changes, MapUtil (rotate matrix, two in one, one in two) 
 ==== 59 HOURS ====
 01/mar(+1): Volatile Image: studying and experimenting
 02/mar(+1): Volatile Image again: this way working fast (GUICanvas only, scaling done there also)
@@ -79,37 +79,54 @@ Início dez: Music (vgm, mod)
 31/mar(+3): Sully Conversion (menus, shack, village, dungeon, castle, menu_shop). 
 			Refactor callfunction ("a.b.function" instead of "a.b", "function").
 ==== 108 HOURS ====
-02/abr(.5):	Sully Conversion (fixed menu function calling. removed GetInt() code)
-04/abr(.5): Sully Conversion (paused when showing banner)
-11/abr(+1): Sully Conversion (fixed MenuControl2Arrow, getInt() replacement)
-12/abr(+1): Sully Conversion (globalluc change working, fixed data_load methods, misc)
-15/abr(+1): Sully Conversion (data_load various fixes, all working now)
-16/abr(+3): Sully Conversion (fixed menus: options, equip, stats). Solved ATK/DEF bug.
+02/apr(.5):	Sully Conversion (fixed menu function calling. removed GetInt() code)
+04/apr(.5): Sully Conversion (paused when showing banner)
+11/apr(+1): Sully Conversion (fixed MenuControl2Arrow, getInt() replacement)
+12/apr(+1): Sully Conversion (globalluc change working, fixed data_load methods, misc)
+15/apr(+1): Sully Conversion (data_load various fixes, all working now)
+16/apr(+3): Sully Conversion (fixed menus: options, equip, stats). Solved ATK/DEF bug.
  			Lab map. Village. Added unpress(9) to fix movement bug after warping
-17/abr(+3): Sully Conversion (menu save/load, Shack, Dungeon, solved Shop menu bug)
-18/abr(+3): Sully Conversion (Castle, testing all quest 'till end, solving bugs)
+17/apr(+3): Sully Conversion (menu save/load, Shack, Dungeon, solved Shop menu bug)
+18/apr(+3): Sully Conversion (Castle, testing all quest 'till end, solving bugs)
 			Solved saving bug with simple string. Nosound impl.
-19/abr(+2): Sully Conversion (solved entitymove bug, entity wrapping bug, testing)
+19/apr(+2): Sully Conversion (solved entitymove bug, entity wrapping bug, testing)
 			Ak Conversion (moto/surf height depending on speed, title screen, AWT font)
-20/abr(+2): Ak Conversion (map, level name, moto/surf breaking and reverse, clean up)		
-21/abr(+2): Ak Conversion (fixed some bugs, added seahorse). Create CHR from file. 			
+20/apr(+2): Ak Conversion (map, level name, moto/surf breaking and reverse, clean up)		
+21/apr(+4): Ak Conversion (fixed some bugs, added seahorse). Create CHR from file.
+			Project divisions. Executable Jar Exporting (case-sensitive bugs!) 			
+22/apr(+4)	Jar Conversion: Wav/Mp3 sound working with URL. VGM player working with URL. 
+			Wav/Mp3 sound volume (JLayer project separation and adaptation)
+			Sully Conversion to JAR: changed all case-sensitive images, and some chrs.
+			Implemented case-sensitive robustness in load(url). Fixed EntStart() bug.
+23/apr(+4)	Config file externally to the JAR. Playmusic reading from URL.
+			MikMod JAR issue with RandomAccessFile solved with temporary file.
+			Solved Sully loading files issue (but not saving). General clean-up, TODO, documenting...  			 
+26/apr(+3)	Ak (adjusting a lot of maps, world map, bracelet implementation, moto shop implementation)	
+27/apr(+4)	System functions: Toggle Sound On/Off (F5), Fullscreen (F6), Frame Delay (F7 - F8).
+			Sully Conversion (Flashback scene in Oldville). Solved PCX bug (odd width). 
+			Music playing/stop synchronized (to avoid playing multiple musics at the same time). 
+			Ak (final adjusting, map coordinates, heli shop, disabled cheats. Fixed GME bug (pause function)
+			
+- Github
 
-
-- Entities' movement get screwed after talking to them
 
 TODO
+- Sully Load-Save in suplementar folder (see http://stackoverflow.com/questions/320542/how-to-get-the-path-of-a-running-jar-file)
+- Sully: Try to save a file in the classpath './', in order to solve .sav problem (externally to the Jar)
+- Sully: FIX CustomColorFilter when running Sarah Flashback in Oldville
+- FIX: Entities' movement get screwed after talking to them
+- Add logging capabilities (instead of system.out/err)
+- Implement music volume
+- Implement WrapBlit, TWrapBlit
 - Verify ColorFilter, Implement Rotate, Flip, etc (See Graphics2d Rotate, Scale, etc)
 - Implement AlphaBlit (http://verge-rpg.com/docs/the-verge-3-manual/graphics-functions/alphablit/)
-- Implement wrapblit, twrapblit, and other TODO functions in Script
+- Implement TODO functions in Script
+- Change JMikmod implementation to read files from FileInputStream, instead of RandomAccessFile, because RAFs aren't suitable to JAR files.
 - Check if Script unused functions work properly
-- Change files into resources (check: music, sound)
 - Check bug when saving obs in a map
-- Add logging capabilities (instead of system.out/err)
-- Check TODOs, remove temporary code (like MapUtil)
+- Check VGM loops (right now they aren't looping)
 - VGMs doesn't play, just VGZ.
-- Make it a .jar
 - Document code with Javadoc (get from V3 Manual) 
-- Include LICENSE and CREDITS
 
 CONSIDER TODOs
 - Socket implementation
@@ -118,8 +135,7 @@ CONSIDER TODOs
 - Window functions implementation
 - Music/Map/CHR/Vsp caching
 - Joysticks
-- Check VGM loops
-- Investigate why wander entities change facing (OK, it occurs also in V3/Sully)
+- Investigate why wander entities change facing while walking (OK, it occurs also in V3/Sully)
 
 
 LONG-TERM TODOs
@@ -127,6 +143,9 @@ LONG-TERM TODOs
 - OO Idea: Image functions in VImage (ex: rectfill, circle etc), Font functions in VFont, etc
 - Create VC parser (parser or JIT Compiler?)
 - Create LUA parser (parser or JIT Compiler?)
+- See 3D API with fixed-z (~2D) to enable Video optimization
+- See Generic way to implement graphics API (in order to extend it to Android, IPad, etc)
+
 
 
 Test:
@@ -157,6 +176,9 @@ http://www.javafaq.nu/java-example-code-782.html
 http://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
 http://www.java-gaming.org/index.php/topic,23978.0
 
+Toggle full screen / window screen
+http://gpsnippets.blogspot.com.br/2007/08/toggle-fullscreen-mode.html
+
 Image and Drawing functions
 http://www.exampledepot.com/egs/java.awt.image/DrawOnImage.html
 http://java.sun.com/products/jfc/tsc/articles/swing2d/index.html (Translucent)
@@ -186,15 +208,45 @@ http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/
 http://www.roseindia.net/java/example/java/swing/internationalization.shtml
 (PDF) http://carfield.com.hk/document/java/tutorial/i18n.pdf
 
+JavaZoom JLayer MP3 library (modified slightly to control the volume)
+http://www.javazoom.net/javalayer/javalayer.html
+
+ALWAYS REMEMBER: 
+Jar files are case-sensitive (be sure to check when looking for resources inside it: sounds, maps, vsps, images, etc) 
+
+Writing files in a JAR: Ideas for a Future development
+http://en.allexperts.com/q/Java-1046/Writing-file-streams-directly.htm
+http://answers.yahoo.com/question/index?qid=20091006132706AA07YJA
+http://stackoverflow.com/questions/4056682/how-can-my-java-program-store-files-inside-of-its-jar-file
 
 
-log
-Converting Sully was very useful to fix a lot of errors, misconceptions and buggy code in my JVerge engine conversion. Now it's way more stable. 
-But I've performed a direct conversion - that was faster than rewriting the Sully code to the Java paradigm.
-I kind of regret converting Sully to JVerge this way, because my initial goal was to show that the main tech demo would work properly with the Java engine, but now it is an example of a mindless bad programming practice: lots of static and public methods and properties, lots of static imports, and a general disoriented object programming. 
-For a better example of a OO approach, I've implemented some classes and methods in my PS demo.
 
-Notes on Sully Conversion
+JVERGE: what is it?
+
+JVerge is an attempt to bring all the Verge engine into Java. All the C-dependent code was removed and changed by a Java counterpart. 
+That means all video/sound/music/keyboard/mouse code. The VC library code was adapted as needed (rect/circle/triangle/blit/etc), and some functions wasn't implemented, specially the File, Socket, Movie playback and Window functions.
+JVerge has some new features: wrapable maps, as described in another topic, and the ability to play VGM/VGZ files (from Sega Master System, Genesis and other consoles).
+JVerge does NOT parse VC or LUA scripts. It's more like a Java API, so you write code in Java and use JVerge functionality.  
+Java is multiplataform, so I hope JVerge runs ok in any Windows, Mac, Linux and other systems with a Java Virtual Machine (JVM). In the future, maybe it could be possible to adapt it to Android and other similar platforms.
+
+I have implemented three demos to show JVerge working:
+- Phantasy Star remake: I've converted just a small portion of my original Verge PS remake, because I plan to come back later and actually finish this project. It's a common FF/PS-like game, with a top view and 2D chars walking in the map. It's using a 480x320 resolution, same as Ipad, I think.  
+- Alex Kidd: It's here to show that Verge is not just about RPGs. Alex Kidd was a popular 2D platform game in Sega Master System. I've added my own levels and plan to extend it later. 
+- Sully Chronicles: Well, converting Sully was very useful to fix a lot of errors, misconceptions and buggy code in my JVerge engine conversion. Now the engine is way more stable. But I've performed a direct conversion - that was faster than rewriting the Sully code to the Java paradigm.
+
+I've packed them in .JAR executable jars (just run java -jar X.jar). It's also possible and recommended to developers to use an IDE like Eclipse or Netbeans, place the project there and see the source code running smoothly, understand it better, etc.
+They are also separate projects/GIT repositories. Ak, Ps and Sully are dependent of JVerge, who is dependend of JLayer (an slightly modified version to play MP3's) 
+
+JVERGE: The Future
+
+In a next release, I plan to change the JVerge code into something more OO, like placing the methods inside the domain classes, e.g., printstring inside VFont, rect/circle/blit/etc inside VImage, playmusic inside VMusic, and so on.  
+There are some unimplemented functions, possible bugs, and interesting things to do. 
+If someone is interested in the project, I'd be happy to help extending JVerge to whatever we can think of.
+If nobody cares about it, I'm going to concentrate my efforts in my Phantasy Star remake, and I'd be happy doing so.
+
+NOTES ON SULLY CONVERSION
+My initial goal was to show that the main tech demo would work properly with the Java engine, but now it is an example of a mindless bad programming practice: lots of static and public methods and properties, lots of static imports, and a general disoriented object programming.
+
 - Some variables were converted to boolean. In Java you can't do: "while(count)", if count is an int. Need to change to "while(count !=0)"
 - Add "break" clause after each "case" in the "switch" clause (unlike VC).
 - A lot of methods and properties were changed to static. This is so anti-OO. :-(
@@ -203,13 +255,16 @@ Notes on Sully Conversion
 - Java imports are different from C includes. So in order to call a function of an outer file, that would be normally included in C, I had to add a "path" parameter to the callfunction method.
 - Unlike VC, Java is case-sensitive. A lot of calls were changed because of this.
 - As SetClip is not yet implemented, I've changed a little the textbox behavior to produce the same effects.
-- The "|" text delimiter was changed to "&", because "|" has another meaning to regex String function.
+- The "|" text delimiter was changed to "&", because "|" has another meaning to regex String function. Needed to change this in all Menus and Shops. 
 - I've performed some changes in the simpletype_rpg package, creating the structs (in Java, classes) in the corresponding classes. Not enough to be really OO, though.
 - Reimplemented the data_load with Java File API. Not very hard to convert (just text files). But the token separator was changed to a tab ("\t"), and just ONE tab in the .dat files. 
 - Data_load strcmp was different from expected, so changed !strcmp to strcmp and vice-versa
-- The item "Cap" is just three letter long, so was interpreted as junk, because of MIN_LINE_LENGTH. Changed to LongCap.
-- I've changed some MenuOff() and MenuOn() calls to EntStart() and EntFinish(), because somehow, the player wasn't stopped in the dramatic scenes.
+- The item "Cap" is just three letters long, so was interpreted as junk, because of MIN_LINE_LENGTH. Changed to LongCap.
+- I've changed some MenuOff() and MenuOn() calls to EntStart() and EntFinish(), because somehow, the player wasn't stopped in the dramatic scenes, shops, etc.
 - There were some bugs in the original code, like accessing a -1 index in an array in the AddPlayerI() function. Those bugs become evident in the Java code, as it's now allowed.
 - There were some strange TextBox without the comma (like TextBox(PORTRAIT, "a" "b", "c"); How these were working?!
+- Load/Saving works fine outside the executable Jars (like in Eclipse or just running java directly). But when packing the code in a .JAR, I wasn't able to deal with saving files externally to the JAR, but loading files works fine. I'm thinking about a solution to this problem.  
+- I had a lot of problems with case-sensitive stuff (because JAR files are case-sensitive). 
 - There were some unused variables.
- 
+- I see that there is another version of Sully somewhere, judging by screenshots. Is the code available?
+

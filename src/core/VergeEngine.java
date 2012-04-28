@@ -33,8 +33,6 @@ public class VergeEngine extends Thread {
 	public static int lastspritethink = 0;
 
 	public static boolean die;
-	//rbp	public static int vc_paranoid, vc_arraycheck;
-
 	
 	static GUI gui;
 	
@@ -42,17 +40,14 @@ public class VergeEngine extends Thread {
 		return gui;
 	}
 
-	// RBP
-	private static int time_increment = 2;
-
-	
 	/****************************** data ******************************/
 
-	// rbp
+	// Rafael: new code
 	static Config config = null;
-	protected static String mapname;
-	public static Class systemclass; // rbp
+	private static int time_increment = 2;
+	public static Class<?> systemclass;
 
+	protected static String mapname;
 
 	/****************************** code ******************************/
 
@@ -71,11 +66,6 @@ public class VergeEngine extends Thread {
 		}
 	}
 
-	/*
-	 * RBP static int CDECL cmpent(const void* a, const void* b) { return
-	 * entity[*(byte*)a].gety() - entity[*(byte*)b].gety(); }
-	 */
-
 	public static void RenderEntities() {
 		List<Entity> entidx = new ArrayList<Entity>();
 		int entnum = 0;
@@ -91,11 +81,11 @@ public class VergeEngine extends Thread {
 		Collections.sort(entidx, new EntityComparator());
 		// qsort(entidx, entnum, 1, cmpent);
 		for (int i = 0; i < entnum; i++) {
-			RenderSpritesBelowEntity(i); // rbp entidx.get(i));
+			RenderSpritesBelowEntity(i); // Rafael: entidx.get(i));
 			setlucent(entidx.get(i).lucent);
 			entidx.get(i).draw();
 			setlucent(0);
-			RenderSpritesAboveEntity(i); // rbp entidx.get(i));
+			RenderSpritesAboveEntity(i); // Rafael: entidx.get(i));
 		}
 	}
 
@@ -513,7 +503,7 @@ public class VergeEngine extends Thread {
 				int cur_timer = timer;
 				beforeEntityActivation();
 				Script.callfunction(entity.get(i).script);
-				entity.get(i).clear_waypoints(); // rbp
+				entity.get(i).clear_waypoints(); // Rafael
 				afterEntityActivation();
 				timer = cur_timer;
 				return;
@@ -571,7 +561,6 @@ public class VergeEngine extends Thread {
 
 	static void RenderMap() {
 		if (current_map == null) {
-			//hookretrace(); // rbp
 			return;
 		}
 		
@@ -602,13 +591,13 @@ public class VergeEngine extends Thread {
 				ywin = 0;
 			}
 
-			if (!current_map.horizontalWrapable) { // rbp new code
+			if (!current_map.horizontalWrapable) { // Rafael: new code
 				if (xwin + screen.width >= rmap)
 					xwin = rmap - screen.width;
 				if (xwin < 0)
 					xwin = 0;
 			}
-			if (!current_map.verticalWrapable) { // rbp new code
+			if (!current_map.verticalWrapable) { // Rafael: new code
 				if (ywin + screen.height >= dmap)
 					ywin = dmap - screen.height;
 
@@ -710,38 +699,6 @@ public class VergeEngine extends Thread {
 		}
 	}
 
-	public static void initVergeEngine(String[] args) {
-
-		if (args !=null && args.length != 0) {
-			mapname = args[0];
-		}
-
-		// Verge (startup)
-		config = new Config(systemclass.getResource("./verge.cfg")); // RBP Check if this is safe in other SOs
-
-		// If the program is called without a particular map to execute, run
-		// the default mapname specified in the Config file
-		if (mapname == null || mapname.isEmpty()) {
-			mapname = config.getMapname();
-		}
-
-		// RBP: See http://www.cap-lore.com/code/java/JavaPixels.html
-		// config.v3_xres = config.v3_xres * 2;
-		// config.v3_yres = config.v3_yres * 2;
-
-		screen = new VImage(config.getV3_xres(), config.getV3_yres());
-
-		if (config.isWindowmode()) {
-			gui = new GUI(config.getV3_xres(), config.getV3_yres());
-		} else {
-			gui = new GUI(0, 0);
-		}
-	
-		getGUI().updateCanvasSize();
-		
-		//gameLoop(); // start the game loop
-	}
-	
 	public void run() {
 
 		callfunction("autoexec");
@@ -756,9 +713,8 @@ public class VergeEngine extends Thread {
 				//TimedProcessEntities();
 				while (!die) {
 					updatecontrols();
-					//TimedProcessEntities();
 					render();
-					if(!die) // rbp
+					if(!die) // redundant?
 						showpage();
 				}
 			}
@@ -777,7 +733,7 @@ public class VergeEngine extends Thread {
 		done = false;
 		die = false;
 		current_map = new Map(mapname);
-		// RBP CleanupCHRs();
+		// CleanupCHRs();
 		timer = 0;
 
 		lastentitythink = systemtime;
@@ -789,67 +745,75 @@ public class VergeEngine extends Thread {
 
 		//time_increment = 1;
 		systemtime += time_increment;
-		// if (engine_paused) // RBP Used only in debug
+		// if (engine_paused) // Rafael: Used only in debug
 		// return;
 		timer += time_increment;
 		vctimer += time_increment;
 		hooktimer += time_increment;
 	}
 
-	
-	
-// DEPRECATED CODE	
-	public static double fps = 45;
-	public static double maxframeskip = 4.0; /* max # of frames to skip  */
-	public static long target_time = System.currentTimeMillis()+(long)(1000.0/fps);
-
-	// Deprecated
-	public static void old_PaintToScreen() { // rbp
-		
-		if(screen==null) {
-			System.err.println("Showpage failed. Screen is null");
-			return;
-		}
-
-		int frames_skipped = 0;
-		long cur_time = System.currentTimeMillis();
-		if (cur_time < target_time+(long)(500.0/VergeEngine.fps)) {
-			// we lag behind less than 1/2 frame -> do full frame.
-			// This empirically produces the smoothest animation
-			
-			//getGUI().getCanvas().setCanvas_screen(screen.getImage());
-			//getGUI().getCanvas().repaint();
-			DefaultTimer(); // rbp
-			frames_skipped=0;
-			if (cur_time+3 < target_time) {
-				//we even have some time left -> sleep it away
-				try {
-					Thread.sleep(target_time-cur_time);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+	// For controlling System functions (Toggling fullscreen, sound, changing frame delay, etc)	
+	public static void checkFunctionKeys() {
+		if(lastchangetime  < systemtime + 10) {
+			lastchangetime = systemtime;
+			if(getKey(KeyF5)) {
+				clearKey(KeyF5);
+				config.setNosound(!config.isNosound());
+				stopmusic();
+			}
+			if(getKey(KeyF6)) {
+				System.out.println("Changing screen window mode = " + !config.isWindowmode());
+				config.setWindowmode(!config.isWindowmode());
+				clearKey(KeyF6);
+				if(	config.isWindowmode()) {
+					getGUI().setDimensions(getGUI(), config.getV3_xres(), config.getV3_yres());
 				}
-			} else {
-				// we don't, just yield to give input handler and
-				// painter some time
-				Thread.yield();
+				else {
+					getGUI().setDimensions(getGUI(), 0, 0);
+				}
 			}
-			target_time += (1000.0/VergeEngine.fps);
-
-		} else {
-			// we lag behind a little -> frame skip
-			// if we skip too many frames in succession, draw a frame
-			if ((++frames_skipped) > VergeEngine.maxframeskip) {
-				
-				//getGUI().getCanvas().setCanvas_screen(screen.getImage());
-				//getGUI().getCanvas().repaint();
-				DefaultTimer(); // rbp
-				frames_skipped=0;
-				target_time=cur_time + (long)(1000.0/VergeEngine.fps);
-			} else {
-				target_time += (long)(1000.0/VergeEngine.fps);
+			if(getKey(KeyF7)) {
+				clearKey(KeyF7);
+				VergeEngine.getGUI();
+				GUI.incFrameDelay(5);
 			}
-			// yield to give input handler some time
-			Thread.yield();
+			if(getKey(KeyF8)) {
+				clearKey(KeyF8);
+				GUI.incFrameDelay(-5);
+			}
 		}
 	}
+	
+	
+	public static void initVergeEngine(String[] args) {
+
+		if (args !=null && args.length != 0) {
+			mapname = args[0];
+		}
+
+		// Verge (startup)
+		config = new Config(load("verge.cfg"));
+
+		// If the program is called without a particular map to execute, run
+		// the default mapname specified in the Config file
+		if (mapname == null || mapname.isEmpty()) {
+			mapname = config.getMapname();
+			log("Mapname from config file: " + mapname);
+		}
+
+		// [Rafael, the Esper]: See http://www.cap-lore.com/code/java/JavaPixels.html
+		// config.v3_xres = config.v3_xres * 2;
+		// config.v3_yres = config.v3_yres * 2;
+
+		screen = new VImage(config.getV3_xres(), config.getV3_yres());
+
+		if (config.isWindowmode()) {
+			gui = new GUI(config.getV3_xres(), config.getV3_yres());
+		} else {
+			gui = new GUI(0, 0);
+		}
+	
+		getGUI().updateCanvasSize();
+	}
+	
 }

@@ -328,7 +328,7 @@ public int main(String nargv[])
     JavaX_Driver cl_drv_javax = new JavaX_Driver(this);
     MDriver.MD_RegisterDriver(cl_drv_javax);
 
-// RBP
+// [Rafael, the Esper]
 MPlayer.mp_loop=true;
 quiet = true;
 

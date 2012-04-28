@@ -93,7 +93,7 @@ public class Entity {
 		gety();
 	}
 	
-	//RBP
+	//[Rafael, the Esper]
 	public void setx(int x) {
 		//this.setxy(x* 65536, this.y);
 		this.x = x * 65536;
@@ -124,7 +124,7 @@ public class Entity {
 	}
 	
 	
-	// END RBP
+	// END [Rafael, the Esper]
 
 	public int getwaypointx() { 
 		//if(current_map.horizontalWrapable && this.waypointx > (current_map.getWidth()+32)<<4)
@@ -176,7 +176,7 @@ public class Entity {
 		setspeed(100);
 		speedct = 0;
 		chrname = chrfn;
-		if(chrfn!=null) // rbp
+		if(chrfn!=null) // [Rafael, the Esper]
 			chr = new CHR(chrfn); // RequestCHR(chrfn);
 		visible = true;
 		active = true;
@@ -200,18 +200,9 @@ public class Entity {
 	}
 	
 	public Entity() {
-		// TODO Auto-generated constructor stub
+
 	}	
 	
-	/*void setface(int d) { 
-	  // bounds-check this since it's easy to set an invalid value in vc (janus)
-	  if ((d > 0) && (d <= 4)) {
-	    face = d; 
-	  } else {
-	    err("setface(%d), facing values must be within the range [1, 4]", d);
-	  }
-	}*/
-
 	void setxy(int x1, int y1) {
 		setoriginalx(x1 * 65536);
 		setoriginaly(y1 * 65536);
@@ -353,7 +344,7 @@ public class Entity {
 				case SOUTH: if (ObstructDirTick(SOUTH)) return; break;
 				case WEST: if (ObstructDirTick(WEST)) return; break;
 				case EAST: if (ObstructDirTick(EAST)) return; break;
-				default: System.err.println("move_tick() - bad face value!!");
+				default: // Rafael: Do nothing. error("move_tick() - bad face value!!");
 			}
 		}
 		framect++;
@@ -603,15 +594,15 @@ public class Entity {
 	    if(moveofs == 0) {
 	        movemult = 16;
 	    } else if (moveofs >= movestr.length()) {
-	    	movecode = 0; framect = 0; // rbp
+	    	movecode = 0; framect = 0; // [Rafael, the Esper]
 	    }
 	    
 	    
 	    
-	    if(movestr==null || movestr.trim().isEmpty() || moveofs >= movestr.length()) // last if by rbp
+	    if(movestr==null || movestr.trim().isEmpty() || moveofs >= movestr.length()) // last if by [Rafael, the Esper]
 	    	return;
 	    
-		while (moveofs < movestr.length() && ( // rbp
+		while (moveofs < movestr.length() && ( // [Rafael, the Esper]
 				(movestr.charAt(moveofs) >= '0' && movestr.charAt(moveofs) <= '9') || movestr.charAt(moveofs) == ' ' || movestr.charAt(moveofs) == '-'))
 			moveofs++;
 
@@ -648,7 +639,7 @@ public class Entity {
 					done = true;
 			}
 		}
-// RBP FIXME 
+// [Rafael, the Esper] FIXME 
 		if(!(moveofs < movestr.length()))
 			return;
 		
@@ -700,7 +691,7 @@ public class Entity {
 	}
 
 	public int get_int(String s, int offset) {
-		int digit_size = 0; //rbp
+		int digit_size = 0; //[Rafael, the Esper]
 		if(Character.isDigit(s.charAt(offset))) { 
 			digit_size++; 
 			if(offset+1 < s.length() && Character.isDigit(s.charAt(offset+1))) {
@@ -720,7 +711,7 @@ public class Entity {
 	
 	public void set_chr(String fname)
 	{
-	    chr = new CHR(fname); // rbp RequestCHR(fname);
+	    chr = new CHR(fname); // [Rafael, the Esper] RequestCHR(fname);
 		specframe = 0;
 		framect = 0;
 		frame = 0;
@@ -753,7 +744,7 @@ public class Entity {
 		int zx = getx() - xwin,
 			zy = gety() - ywin;
 
-		// Adapted by rbp
+		// Adapted by [Rafael, the Esper]
 		if(current_map != null && current_map.horizontalWrapable)
 			zx = zx + ((current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
 		if(current_map != null && current_map.verticalWrapable)	

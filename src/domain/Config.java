@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -32,10 +33,10 @@ public class Config {
 	private int v3_xres=320, v3_yres=240, v3_bpp;
 	private int v3_window_xres=0, v3_window_yres = 0;
 	// Overkill (2010-04-29): Aspect ratio enforcing.
-	//rbp ScaleFormat v3_scale_win = SCALE_FORMAT_ASPECT, v3_scale_full = SCALE_FORMAT_STRETCH;
+	//[Rafael, the Esper] ScaleFormat v3_scale_win = SCALE_FORMAT_ASPECT, v3_scale_full = SCALE_FORMAT_STRETCH;
 
 	private boolean windowmode=true;
-	private boolean nosound=true;
+	private boolean nosound=false;
 	private int soundengine = 0;
 	private boolean cheats=false;
 	private String mapname;
@@ -51,34 +52,33 @@ public class Config {
 
 	public Config(URL configFilePath) {
 		
-		File f = null;
+		// Tries to load the file externally to the jar, in the classpath (ex: .)
+		// http://stackoverflow.com/questions/3627426/loading-a-file-relative-to-the-executing-jar-file
+		InputStream resourceAsStream = Config.class.getResourceAsStream("/verge.cfg");
+		if(resourceAsStream != null) {
+			System.out.println("Found local Config file (verge.cfg).");
+			this.LoadConfig(resourceAsStream);
+			return;
+		}
+		
+		System.out.println("Reading standard config file (JAR!/" + configFilePath + ").");
+		InputStream openStream;
 		try {
-			f = new File(configFilePath.toURI());
-		} catch (URISyntaxException e) {
+			openStream = configFilePath.openStream();
+			this.LoadConfig(openStream);
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if(f.exists()) {
-			this.LoadConfig(f);
-		}
-		/*else {
-			this.LoadProperties(configFile);
-		}*/
 	}
 	
-	private void LoadProperties(URL configFile) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	void LoadConfig(File configFile)
+	void LoadConfig(InputStream configStream)
 	{
-		System.out.println("LoadConfig: " + configFile);
 		try {
-			BufferedReader fin = new BufferedReader(new FileReader(configFile));
+			BufferedReader fin = new BufferedReader(new InputStreamReader(configStream));
 			
 			String strD = "";
 			while ((strD = fin.readLine()) != null) {
-				strD = strD.trim().toLowerCase();
+				strD = strD.trim();
 				
 				if(strD.equals("")) // empty line
 					continue;
@@ -86,33 +86,30 @@ public class Config {
 				if(strD.startsWith("#")) // comment
 					continue;
 				
-				if(strD.startsWith("xres")) {
+				if(strD.toLowerCase().startsWith("xres")) {
 					this.v3_xres = Integer.parseInt(strD.substring(4).trim());
 				}
-				if(strD.startsWith("yres")) {
+				if(strD.toLowerCase().startsWith("yres")) {
 					this.v3_yres = Integer.parseInt(strD.substring(4).trim());
 				}
-				if(strD.startsWith("windowmode")) {
+				if(strD.toLowerCase().startsWith("windowmode")) {
 					int i = Integer.parseInt(strD.substring("windowmode".length()).trim());
-					this.windowmode = i == 1 ? true : false;
+					this.setWindowmode(i == 1 ? true : false);
 				}
-				if(strD.startsWith("startmap")) {
+				if(strD.toLowerCase().startsWith("startmap")) {
 					this.mapname = strD.substring("startmap".length()).trim();
 				}
-				if(strD.startsWith("lua")) {
+				if(strD.toLowerCase().startsWith("lua")) {
 					int i = Integer.parseInt(strD.substring(4).trim());
 					this.use_lua = i == 1 ? true : false;
 				}
-				if(strD.startsWith("nosound")) {
+				if(strD.toLowerCase().startsWith("nosound")) {
 					int i = Integer.parseInt(strD.substring("nosound".length()).trim());
-					this.setNosound(i == 0 ? true : false);
+					this.setNosound(i == 0 ? false : true);
 				}	
 				
 			}
 			
-		} catch (FileNotFoundException e) {
-			System.err.println("Config:: File not found: " + configFile);
-			e.printStackTrace();
 		} catch (IOException e) {
 			System.err.println("Config:: IOException: " + e.getMessage());
 			e.printStackTrace();
@@ -186,16 +183,16 @@ public class Config {
 			MountVFile(cfg_GetKeyValue("mount3"));
 */
 		
-		//rbp void platform_ProcessConfig();
+		//[Rafael, the Esper] void platform_ProcessConfig();
 		//platform_ProcessConfig();
 
 		//#ifndef ALLOW_SCRIPT_COMPILATION
-		//rbp releasemode = true;
-		//rbp editcode = false;
+		//[Rafael, the Esper] releasemode = true;
+		//[Rafael, the Esper] editcode = false;
 		//#endif
 
 		//#ifndef ENABLE_LUA
-		//rbp if(use_lua) err("User asked for lua, but build does not have lua enabled!");
+		//[Rafael, the Esper] if(use_lua) err("User asked for lua, but build does not have lua enabled!");
 		//#endif
 	}
 
@@ -218,6 +215,10 @@ public class Config {
 
 	public void setNosound(boolean nosound) {
 		this.nosound = nosound;
+	}
+
+	public void setWindowmode(boolean windowmode) {
+		this.windowmode = windowmode;
 	}
 	
 }

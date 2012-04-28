@@ -31,21 +31,6 @@ public class VFont {
 	int fwidth[] = new int[100];
 	boolean incolor;
 
-	public static void main(String args[]) {
-		
-		String fname = "font3_vw.gif";
-		//URL url = new URL("file:///" + VergeEngine.path + "\\" + fname);
-		URL url = null;
-		try {
-			url = new URL("file:///D:\\RBP\\PESSOAL\\VERGE\\FONT" + "\\" + fname);
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		new VFont(url);
-	}
-
 	public VFont(URL url, int xsize, int ysize)
 	{
 		width = xsize;
@@ -96,7 +81,7 @@ public class VFont {
 			}
 
 		for (int i=0; i<100; i++)
-			fwidth[i] = xsize; // + 1 (commented by RBP)
+			fwidth[i] = xsize; // + 1 (commented by [Rafael, the Esper])
 
 	}
 	
@@ -253,7 +238,7 @@ public class VFont {
 		incolor = false;
 	}
 
-	public int Pixels(String str) // TODO RBP: End is used for...?
+	public int Pixels(String str)
 	{
 		int xsize = 0;
 		boolean ic = incolor;

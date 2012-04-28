@@ -61,13 +61,13 @@ public class Sprite {
 			}
 		}
 
-		// rbp ?? sprites.push_back(sprite());
+		// [Rafael, the Esper] ?? sprites.push_back(sprite());
 		return sprites.size() - 1;
 	}
 
 	public static void RenderSprite(int i)
 	{
-			/*rbp int zx, zy;
+			/*[Rafael, the Esper] int zx, zy;
 			if (sprites.get(i).image == null) return;
 			if (sprites.get(i).wait > 0) return;
 			zx = sprites.get(i).x;
@@ -132,7 +132,7 @@ public class Sprite {
 
 	public static void RenderSpritesBelowEntity(int ent)
 	{
-		if(sprites == null) //rbp
+		if(sprites == null) //[Rafael, the Esper]
 			return;
 		for (int i=0; i<sprites.size(); i++)
 		{
@@ -147,7 +147,7 @@ public class Sprite {
 
 	public static void RenderSpritesAboveEntity(int ent)
 	{
-		if(sprites == null) //rbp
+		if(sprites == null) //[Rafael, the Esper]
 			return;
 		for (int i=0; i<sprites.size(); i++)
 		{

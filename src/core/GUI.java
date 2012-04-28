@@ -8,6 +8,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.ImageCapabilities;
 import java.awt.Toolkit;
 import java.awt.BufferCapabilities.FlipContents;
@@ -34,23 +36,12 @@ public class GUI extends JFrame implements ComponentListener {
 	private static float alpha = 1f;
 
 	static long cycleTime;
-	private static final int FRAME_DELAY = 20; // 20ms. implies 50fps (1000/20) = 50
+	private static int frameDelay = 20; // 20ms. implies 50fps (1000/20) = 50
 
 	
 	public GUI(int w, int h) {
 		// build and display your GUI
 
-		if (w==0) {
-			Dimension scrsize = Toolkit.getDefaultToolkit().getScreenSize();
-			winwidth = scrsize.width;
-			winheight = scrsize.height;
-			win_decoration=false;
-		} else {
-			winwidth = w;
-			winheight = h;
-			win_decoration=true;
-		}
-		
 		addComponentListener(this);
 		VergeEngine.gui = this;
 		
@@ -62,12 +53,41 @@ public class GUI extends JFrame implements ComponentListener {
 		canvas.addKeyListener(control);
 
 		this.add(canvas);
+
+		setDimensions(this, w, h);
+		
+		this.addWindowListener(control);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		cycleTime = System.currentTimeMillis();
+			
+		System.out.println("GUI Initialized.");
+		gameThread = new VergeEngine();
+		gameThread.setPriority(Thread.MIN_PRIORITY);
+		gameThread.start(); // start Game processing.
+	}
+	
+	void setDimensions(GUI gui, int w, int h) {
+		if (w==0) {
+			Dimension scrsize = Toolkit.getDefaultToolkit().getScreenSize();
+			winwidth = scrsize.width;
+			winheight = scrsize.height;
+			win_decoration=false;
+		} else {
+			winwidth = w;
+			winheight = h;
+			win_decoration=true;
+		}
 		
 		/* create window to `emulate' an applet's frame */
 		//super.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
+		setVisible(false);
+		dispose();
+		
 		if (!win_decoration) {
 			this.setUndecorated(true);
 			this.setSize(winwidth, winheight);
+			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(gui);			
+			
 		} else {
 			// setting the size of the canvas or applet has no effect
 			// we need to add the height of the title bar to the height
@@ -76,20 +96,22 @@ public class GUI extends JFrame implements ComponentListener {
 			// 48 enables us to have the whole window with title bar on-screen
 			// 8 is the empirically determined width in win and linux
 			
-			//RBP Does not work
+			//[Rafael, the Esper] Does not work
 			//Insets insets = super.getInsets();
 			//super.setSize(winwidth+insets.left+insets.right, winheight+insets.top+insets.bottom);
 			//super.setSize(winwidth, winheight);
+			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(null);
+			this.setUndecorated(false);
 			this.setVisible(true);
-			System.out.println(super.getInsets());
-
+			System.out.println("Winwidth: " + winwidth + ", Winheight: " + winheight + " I: " + super.getInsets());
+			
 			this.setSize(winwidth+super.getInsets().left+super.getInsets().right,
 					winheight+super.getInsets().top+super.getInsets().bottom);
 			System.out.println(super.getBounds());
 		}
-		this.addWindowListener(control);
+
 		this.setVisible(true);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 		canvas.requestFocus();
 		
 		/*try {
@@ -101,14 +123,10 @@ public class GUI extends JFrame implements ComponentListener {
 
 		canvas.createBufferStrategy(2);
 		strategy = getGUI().canvas.getBufferStrategy();			
-		cycleTime = System.currentTimeMillis();
-			
-		System.out.println("GUI Initialized.");
-		gameThread = new VergeEngine();
-		gameThread.setPriority(Thread.MIN_PRIORITY);
-		gameThread.start(); // start Game processing.
+		
+		
 	}
-	
+
 	public static void paintFrame() {
 		updateGUI();
 		synchFramerate();
@@ -134,7 +152,7 @@ public class GUI extends JFrame implements ComponentListener {
 	}
 	
 	public static void synchFramerate() {
-		cycleTime = cycleTime + FRAME_DELAY;
+		cycleTime = cycleTime + frameDelay;
 		long difference = cycleTime - System.currentTimeMillis();
 		try {
 			Thread.sleep(Math.max(0, difference));
@@ -175,25 +193,24 @@ public class GUI extends JFrame implements ComponentListener {
 
 	
 	@Override
-	public void componentHidden(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void componentHidden(ComponentEvent arg0) {	}
 
 	@Override
-	public void componentMoved(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void componentMoved(ComponentEvent arg0) {	}
 
 	@Override
-	public void componentShown(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void componentShown(ComponentEvent arg0) {	}
 
 	public void setAlpha(float f) {
 		this.alpha = f;		
+	}
+	
+	public static void incFrameDelay(int i) {
+		frameDelay = frameDelay + i;
+		if(frameDelay < 5)
+			frameDelay = 5;
+		else if(frameDelay > 100)
+			frameDelay = 100;
 	}
 
 }

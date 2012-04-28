@@ -10,6 +10,7 @@ To build gme.jar:
 import java.applet.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URL;
 import java.util.*;
 
 class PlayerList extends VGMPlayer
@@ -47,7 +48,7 @@ class PlayerList extends VGMPlayer
 	
 	private static final class Entry
 	{
-		String url;
+		URL url;
 		String path;
 		int track;
 		String title;
@@ -64,13 +65,13 @@ class PlayerList extends VGMPlayer
 		startTrack( e.track - 1, e.time );
 	}
 	
-	public void add( String url, String path, int track, String title, int time, boolean playNow ) throws Exception
+	public void add( URL url, String path, int track, String title, int time, boolean playNow ) throws Exception
 	{
 		if ( title.length() == 0 )
 		{
 			title = path;
 			if ( title.length() == 0 )
-				title = url;
+				title = url.getFile();
 			
 			title = title.substring( title.lastIndexOf( '/' ) + 1 );
 		}
@@ -136,7 +137,7 @@ public final class gme extends Applet implements ActionListener
 	// Plays file at given URL (HTTP only). If it's an archive (.zip)
 	// then path specifies the file within the archive. Track ranges
 	// from 1 to number of tracks in file.
-	public void playFile( String url, String path, int track, String title, int time )
+	public void playFile( URL url, String path, int track, String title, int time )
 	{
 		try
 		{
@@ -145,12 +146,12 @@ public final class gme extends Applet implements ActionListener
 		catch ( Exception e ) { e.printStackTrace(); }
 	}
 	
-	public void playFile( String url, String path, int track, String title )
+	public void playFile( URL url, String path, int track, String title )
 	{
 		playFile( url, path, track, title, 150 );
 	}
 	
-	public void playFile( String url, String path, int track )
+	public void playFile( URL url, String path, int track )
 	{
 		playFile( url, path, track, "" );
 	}
@@ -206,14 +207,14 @@ public final class gme extends Applet implements ActionListener
 		return (p != null ? p : defaultValue);
 	}
 	
-	// Rbp
-	public void playSimple(String musicUrl, double volume) {
+	// [Rafael, the Esper]
+	public void playSimple(URL musicUrl, double volume) {
 		try
 		{
 			// Setup player and sample rate
 			player = new PlayerWithUpdate( 44100 );
 			player.setVolume(volume); // 1.0 max
-			backgroundPlayback = false;
+			backgroundPlayback = true;
 			createGUI();
 			
 			playFile(musicUrl, "", 1);
@@ -236,13 +237,11 @@ public final class gme extends Applet implements ActionListener
 				createGUI();
 			
 			// Optionally start playing file immediately
-			String url = getParameter( "PLAYURL" );
-			playFile("file:///C:\\Rbp\\pessoal\\verge\\vgm\\PS IV Vgm\\02 Motavia Town.vgm", "", 1);
-			//playFile("file:///C:\\Rbp\\pessoal\\verge\\vgm\\PSIVVgm.zip", "17 Rika.vgm", 1);
+			URL url = new URL(getParameter( "PLAYURL" ));
 			
-			//if ( url != null )
-				//playFile( url, getStringParameter( "PLAYPATH", "" ),
-					//	getIntParameter( "PLAYTRACK", 1 ) );
+			if ( url != null )
+				playFile( url, getStringParameter( "PLAYPATH", "" ),
+					getIntParameter( "PLAYTRACK", 1 ) );
 		}
 		catch ( Exception e ) { e.printStackTrace(); }
 	}

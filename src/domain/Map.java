@@ -3,18 +3,15 @@ package domain;
 import static core.VergeEngine.*;
 import static core.Script.*;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.URL;
 
 import core.Script;
-import core.VergeEngine;
 
 import persist.ExtendedDataInputStream;
 import persist.ExtendedDataOutputStream;
@@ -51,8 +48,8 @@ public class Map {
 
 	public Vsp tileset;
 
-	public boolean horizontalWrapable = false;  // rbp
-	public boolean verticalWrapable = false;  // rbp
+	public boolean horizontalWrapable = false;  // [Rafael, the Esper]
+	public boolean verticalWrapable = false;  // [Rafael, the Esper]
 	
 	
 	public String toString() {
@@ -67,14 +64,18 @@ public class Map {
 	
 	public Map(URL url) {
 		try {
+			if(url==null)
+				throw new IOException();
+			
 			this.filename =  url.getFile().substring( url.getFile().lastIndexOf('/')+1);
-		
+				
 			this.load(url.openStream());
 			//FileInputStream fis = new FileInputStream(path + "\\" + filename);
 			//this.load(fis);
 			
 			// Load the vsp (map URL minus the map file plus the vsp file)
-			this.tileset = new Vsp(url.getFile().substring(0, url.getFile().lastIndexOf('/')+1) + this.vspname);
+			//this.tileset = new Vsp(url.getFile().substring(0, url.getFile().lastIndexOf('/')+1) + this.vspname);
+			this.tileset = new Vsp(Script.load(this.vspname));
 			
 			// Diassociated with loading the map
 			startMap();
@@ -103,7 +104,7 @@ public class Map {
 			// Begin to read
 			String mapSignature = f.readFixedString(6);
 			if (!mapSignature.equals(MAP_SIGNATURE)) {
-				throw new IOException("Mapa não possui assinatura V3MAP: " + mapSignature);
+				throw new IOException("Map doesn't contain V3MAP signature: " + mapSignature);
 			}
 
 			int mapVersion = f.readSignedIntegerLittleEndian();
@@ -223,10 +224,9 @@ public class Map {
 			raf.close();
 		}
 		catch(FileNotFoundException fnfe) {
-			System.out.println("FileNotFoundException : " + strFilePath);
+			System.err.println("Map::FileNotFoundException : " + strFilePath);
 			fnfe.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -315,7 +315,7 @@ public class Map {
 			// f.seek(vc);
 			f.writeSignedIntegerLittleEndian(0);
 
-			System.err.println("RBPSAVE: " + f.size());
+			System.err.println("[Rafael, the Esper]SAVE: " + f.size());
 			f.close();
 
 			return end;
@@ -327,11 +327,11 @@ public class Map {
 	}
 	
 
-	// RBP: Code diassociated with load
+	// Rafael: Code diassociated with map loading
 	void startMap() {
-		// TODO Uncomment all below
 		
-		playmusic(musicname);
+		if(!musicname.trim().isEmpty())
+			playmusic(Script.load(musicname));
 		
 		current_map = this;
 		//se.LoadMapScript(f, mapfname);
@@ -343,19 +343,14 @@ public class Map {
 			e.index = Script.numentities++;
 			entity.add(e);
 			
-			//current_map.entities[VergeEngine.entities].index = VergeEngine.entities;
-			//entity.add(e); //rbpnew Entity(x, y, chr);
-			//entity[VergeEngine.entities].index = VergeEngine.entities++;			
-			//AllocateEntity(e.x, e.y, e.chrname);
 		}
 
-		//rbp code Check this
+		//TODO Check if this is needed
 		//if(this.tileset.numobs == 0)
 			//this.tileset.numobs = 1;
 		
 		if(startupscript != null && !startupscript.trim().equals(""))
 			callfunction(startupscript);
-		
 
 	}
 	
@@ -376,7 +371,7 @@ public class Map {
 		return true;
 	}
 
-	public boolean obstructpixel(int x, int y) { // modified by rbp
+	public boolean obstructpixel(int x, int y) { // modified by [Rafael, the Esper]
 		if (!horizontalWrapable && (x < 0 || (x >> 4) >= getWidth()))
 				return true;
 		if (!verticalWrapable && (y < 0 || (y >> 4) >= getHeight()))
@@ -421,10 +416,10 @@ public class Map {
 					first = false;
 					continue;
 				}
-				//RBP Teste setlucent(90);
+				//[Rafael, the Esper] Teste setlucent(90);
 				//System.out.println("Layer " + layer + " " + currentLucent);
 				BlitLayer(true, layer, tx, ty, x, y, dest);
-				//System.out.println("RBP: " + currentLucent);
+				//System.out.println("[Rafael, the Esper]: " + currentLucent);
 				//System.exit(0);
 				//setlucent(0);
 			}
@@ -449,11 +444,11 @@ public class Map {
 	}
 
 	void BlitLayer(boolean transparent, int l, int tx, int ty, int xwin, int ywin, VImage dest) {
-		if(l >= layers.length) return; //rbp 
+		if(l >= layers.length) return; //[Rafael, the Esper] 
 		
 		Layer layer = layers[l];
 //System.out.println("Tx " + tx + " Ty " + ty + " Xwin: " + xwin + "; Ywin: " + ywin);
-		if (layer == null) // rbp
+		if (layer == null) // [Rafael, the Esper]
 			return;
 
 		// we add offsets here because if the parallax changes while the
@@ -474,7 +469,7 @@ public class Map {
 		for (int y = 0; y < ty; y++) {
 			for (int x = 0; x < tx; x++) {
 				int c = 0;
-				if(horizontalWrapable && verticalWrapable)  // Changed by RBP
+				if(horizontalWrapable && verticalWrapable)  // Changed by [Rafael, the Esper]
 					c = layer.GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y+getHeight())%(getHeight()));
 				else if(!horizontalWrapable && verticalWrapable)
 					c = layer.GetTile((xtc + x), (ytc + y+getHeight())%(getHeight()));
@@ -493,7 +488,7 @@ public class Map {
 			}
 		}
 		if (dest == screen) {
-			// TODO RBP RenderLayerSprites(l);
+			// TODO Uncomment RenderLayerSprites(l);
 		}
 
 		if (transparent)
