@@ -22,15 +22,17 @@ Linux:	y
 
 package audio.jmikmod.MikMod.Drivers;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import persist.SimulatedRandomAccessFile;
+import audio.jmikmod.MikMod.clDRIVER;
+import audio.jmikmod.MikMod.clMain;
 
 public class Raw_Driver extends clDRIVER
 {
     public final int RAWBUFFERSIZE = 8192;
 
-    protected RandomAccessFile rawout;
+    protected SimulatedRandomAccessFile rawout;
 
     byte RAW_DMABUF[]; //[RAWBUFFERSIZE];
     
@@ -61,7 +63,7 @@ public int Init()
 {
         //if(!(rawout=fopen("music.raw","wb"))){
     try {
-        if ((rawout = new RandomAccessFile("music.raw", "rw")) == null) {
+        if ((rawout = new SimulatedRandomAccessFile("music.raw")) == null) {
 		m_.mmIO.myerr="Couldn't open output file 'music.raw'";
 		return 0;
 	}
@@ -108,7 +110,7 @@ public void Update()
     }
 }
 
-public short SampleLoad(RandomAccessFile fp,int length,int reppos,int repend,int flags)
+public short SampleLoad(SimulatedRandomAccessFile fp,int length,int reppos,int repend,int flags)
 {
 	return m_.Virtch.VC_SampleLoad(fp,length,reppos,repend,flags);
 }

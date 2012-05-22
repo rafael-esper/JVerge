@@ -1,6 +1,6 @@
 package audio.jmikmod.MikMod;
 
-import java.io.*;
+import persist.SimulatedRandomAccessFile;
 
 public class clDRIVER extends Object
 {
@@ -16,7 +16,7 @@ public class clDRIVER extends Object
         }
         public clDRIVER(clMain theMain) {m_ = theMain; Name= new String("Generic Driver Class") ; Version = new String("Generic Driver Class v1.0 - by Shlomi Fish"); }
 	public boolean IsPresent() {return false;}
-	public short   SampleLoad(RandomAccessFile fp,int size,int reppos,int repend,int flags) {return 0;}
+	public short   SampleLoad(SimulatedRandomAccessFile fp,int size,int reppos,int repend,int flags) {return 0;}
 	public void    SampleUnLoad(short handle) {}
 	public int     Init() {return 0;}
 	public void    Exit() {}

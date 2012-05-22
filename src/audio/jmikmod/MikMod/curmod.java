@@ -1,10 +1,12 @@
 package audio.jmikmod.MikMod;
 
+import java.net.URL;
+
 public class curmod extends Object
 {
 	public String version;
 	public String driver;
-	public String filename;
+	public URL filename;
 	public String file_output;
 	public String name_type;
 	public String status;

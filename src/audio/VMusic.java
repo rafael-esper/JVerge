@@ -78,7 +78,7 @@ public class VMusic implements Runnable {
 				// Rafael: JAR files can't be read with RandomAccessFile. So we
 				// need to copy the music file to a temporary file, in order to 
 				// MikMod app read it like a RandomAccessFile.
-				if(play.getProtocol().equals("jar")) {
+				/*if(play.getProtocol().equals("jar")) {
 					File tempFile = File.createTempFile("temp" + (int)(Math.random()*10), extension);
 					FileOutputStream fos = new FileOutputStream(tempFile);
 					InputStream openStream = play.openStream();
@@ -97,9 +97,10 @@ public class VMusic implements Runnable {
 					
 					modPlayer.my_argv = new String[]{" -r ", absolutePath};
 				}
-				else {
-					modPlayer.my_argv = new String[]{" -r ", play.getFile()};
-				}
+				else {*/
+					modPlayer.my_argv = new String[]{" -r ", " auto"};//, play.getFile()};
+					modPlayer.url = play;
+				//}
 			} catch (Exception e) {
 				e.printStackTrace();
 			} 

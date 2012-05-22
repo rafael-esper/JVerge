@@ -127,13 +127,13 @@ public class VergeEngine extends Thread {
 	int __obstructionHappened = 0;
 
 	public static boolean ObstructAt(int x, int y) {
-		if (current_map.obstructpixel(x, y)) {
+		if (current_map.getobspixel(x, y)) {
 
 			if (isEntityCollisionCapturing()) {
 				event_tx = x / 16;
 				event_ty = y / 16;
 				event_entity = __grue_actor_index;
-				event_zone = current_map.zone(x / 16, y / 16);
+				event_zone = current_map.getzone(x / 16, y / 16);
 				event_entity_hit = -1;
 				onEntityCollision();
 			}
@@ -509,7 +509,7 @@ public class VergeEngine extends Thread {
 				return;
 			}
 
-			int cz = current_map.zone(ex / 16, ey / 16);
+			int cz = current_map.getzone(ex / 16, ey / 16);
 			if (cz > 0 && current_map.zones[cz].script.length() > 0
 					&& current_map.zones[cz].method > 0) {
 				int cur_timer = timer;
@@ -625,12 +625,19 @@ public class VergeEngine extends Thread {
 				ywin = 0;
 			break;
 		}
-		current_map.render(xwin, ywin, screen);
+		
+		// Doesn't work if systemtime is not updated! // RBP Map rendering skip to accelerate drawing
+		if(framecount>=2) {
+			current_map.render(xwin, ywin, screen);
+			framecount=0;
+		}
+		framecount++;
 	}
+	static int framecount = 0;
 
 	static void CheckZone() {
 		int cur_timer = timer;
-		int cz = current_map.zone(px, py);
+		int cz = current_map.getzone(px, py);
 		// the following line is probably now correct, since .percent is in
 		// [0,255]
 		// and so the max rnd() will produce is 254, which will still always

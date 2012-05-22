@@ -31,9 +31,9 @@ will be 2^MM_FRAGSIZE
 
 package audio.jmikmod.MikMod.Drivers;
 
-import java.io.*;
-
-import audio.jmikmod.MikMod.*;
+import persist.SimulatedRandomAccessFile;
+import audio.jmikmod.MikMod.clDRIVER;
+import audio.jmikmod.MikMod.clMain;
 
 public class Native_Driver extends clDRIVER
 {
@@ -66,7 +66,7 @@ public Native_Driver(clMain theMain)
     Version = new String("Native-API Sound Driver v1.0 - by Shlomi Fish");
 }
 
-public short SampleLoad(RandomAccessFile fp,int size,int reppos,int repend,int flags)
+public short SampleLoad(SimulatedRandomAccessFile fp,int size,int reppos,int repend,int flags)
 {
 	return m_.Virtch.VC_SampleLoad(fp,size,reppos,repend,flags);
 }

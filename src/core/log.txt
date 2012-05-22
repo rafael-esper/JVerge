@@ -107,24 +107,50 @@ Início dec: Music (vgm, mod)
 			Music playing/stop synchronized (to avoid playing multiple musics at the same time). 
 			Ak (final adjusting, map coordinates, heli shop, disabled cheats. Fixed GME bug (pause function)
 28/apr(+1)	Github first release.
+=====145 HOURS ===========  -> FIRST RELEASE
+01/mai(+2)	Showing FPS. PS Generation map. Follow entity flickering when crossing wrapable maps.
+02/mai(+5)	CHR save. TGrabRegion. FlipImage. CHR processing (from PS generation, 60 chars).
+03/mai(+2)	VSP save. VSP from Image code (remove duplicates)
+05/mai(+3)	Moved VFont/VImage static to domain instance methods. Refactor Sully/PS/AK. 	
+07/mai(+2)	PSG Camineet Map editing. Create layer from Image (PNG from Tiled).
+08/mai(+1)	Lucent layers working (just changed to blit/tblit). Finished PSG Camineet map.
+09/mai(.5)	Checked obs bug when saving map (apparently fixed). Menu positions adjustments.
+10/mai(+3)	Change JMikmod implementation to read files from InputStream (URL), instead of 
+			RandomAccessFile, because RAFs aren't suitable to JAR files (implemented SimulatedRAF)	
+11/mai(+3)	Map conversion to OO. Reduced .vsp Generation file. Camineet script to Portuguese.
+13/mai(+3)	PSG Palma (residential area, conversion of original tiles from palmax3 map). Fixed fadein/out.
+14/mai(+1)	PS Scripts (english, portuguese, initial french and german). Tiled to V3 (using v3tiled)
+15/mai(+1)	PS Scripts (alternative English PS)
+16/mai(+2)	PS Scripts (alternative English PS). Palma PSG editing (V3Tiled).
+17/mai(+1)	PS Scripts (alternative English PS). Palma PSG editing (V3Tiled).
+18/mai(+2) 	PS Scripts (alternative English PS/finished).
 
+=====??? HOURS ===========  -> SECOND RELEASE
+
+
+IMMEDIATE TODO (SECOND RELEASE)
+- Add windows menus (like Fusion)
+- Make it more OO (less static methods, no public properties, no static imports)
+- Implement music volume
+- Music/Map/CHR/Vsp caching
+- Try to optimize video drawing
+- Investigate following entity spawning far from the player (related to wrappable maps)
+- Investigate why wander entities change facing while walking (OK, it occurs also in V3/Sully)
+- Check VGM loops (right now they aren't looping)
+- VGMs doesn't play, just VGZ.
 
 TODO
 - Sully Load-Save in suplementar folder (see http://stackoverflow.com/questions/320542/how-to-get-the-path-of-a-running-jar-file)
 - Sully: Try to save a file in the classpath './', in order to solve .sav problem (externally to the Jar)
 - Sully: FIX CustomColorFilter when running Sarah Flashback in Oldville
+- Sully: FIX Sparkles
 - FIX: Entities' movement get screwed after talking to them
 - Add logging capabilities (instead of system.out/err)
-- Implement music volume
 - Implement WrapBlit, TWrapBlit
 - Verify ColorFilter, Implement Rotate, Flip, etc (See Graphics2d Rotate, Scale, etc)
 - Implement AlphaBlit (http://verge-rpg.com/docs/the-verge-3-manual/graphics-functions/alphablit/)
 - Implement TODO functions in Script
-- Change JMikmod implementation to read files from FileInputStream, instead of RandomAccessFile, because RAFs aren't suitable to JAR files.
 - Check if Script unused functions work properly
-- Check bug when saving obs in a map
-- Check VGM loops (right now they aren't looping)
-- VGMs doesn't play, just VGZ.
 - Document code with Javadoc (get from V3 Manual) 
 
 CONSIDER TODOs
@@ -132,14 +158,9 @@ CONSIDER TODOs
 - Movie playback implementation
 - File functions implementation
 - Window functions implementation
-- Music/Map/CHR/Vsp caching
 - Joysticks
-- Investigate why wander entities change facing while walking (OK, it occurs also in V3/Sully)
-
 
 LONG-TERM TODOs
-- Make it more OO (less static methods, no public properties, no static imports)
-- OO Idea: Image functions in VImage (ex: rectfill, circle etc), Font functions in VFont, etc
 - Create VC parser (parser or JIT Compiler?)
 - Create LUA parser (parser or JIT Compiler?)
 - See 3D API with fixed-z (~2D) to enable Video optimization
@@ -160,6 +181,9 @@ Test:
 
 Very good tutorial about blurring, sharpening, etc (Java)
 http://www.jhlabs.com/ip/blurring.html
+
+FPS counter implementation
+http://stackoverflow.com/questions/6890127/how-to-display-frames-per-second-in-an-java-applet-in-eclipse
 
 PCX: See
 http://www.java2s.com/Open-Source/Java/ERP-CRM-Financial/JFire-1.0.1/org/nightlabs/io/pcx/Catalogpcx.htm
@@ -257,7 +281,7 @@ My initial goal was to show that the main tech demo would work properly with the
 - A lot of methods and properties were changed to static. This is so anti-OO. :-(
 - There is no script code being interpreted, it's just Java code. So the map() function can't just stop the remaining code to run. 
 - In order to implement the Sully introduction (that can be escaped anytime with Esc), I've opted to create a Java thread and use the ugly and deprecated method stop. I could have done this in a more elegant way, but the code would be changed a lot more.  
-- Java imports are different from C includes. So in order to call a function of an outer file, that would be normally included in C, I had to add a "path" parameter to the callfunction method.
+- Java imports are different from C includes. So in order to call a function of an outer file, that would be normally included in C, I had to add the full path (like "a.b.function) to the callfunction method.
 - Unlike VC, Java is case-sensitive. A lot of calls were changed because of this.
 - As SetClip is not yet implemented, I've changed a little the textbox behavior to produce the same effects.
 - The "|" text delimiter was changed to "&", because "|" has another meaning to regex String function. Needed to change this in all Menus and Shops. 
@@ -266,7 +290,7 @@ My initial goal was to show that the main tech demo would work properly with the
 - Data_load strcmp was different from expected, so changed !strcmp to strcmp and vice-versa
 - The item "Cap" is just three letters long, so was interpreted as junk, because of MIN_LINE_LENGTH. Changed to LongCap.
 - I've changed some MenuOff() and MenuOn() calls to EntStart() and EntFinish(), because somehow, the player wasn't stopped in the dramatic scenes, shops, etc.
-- There were some bugs in the original code, like accessing a -1 index in an array in the AddPlayerI() function. Those bugs become evident in the Java code, as it's now allowed.
+- There were some bugs in the original code, like accessing a -1 index in an array in the AddPlayerI() function. Those bugs become evident in the Java code, as it's not allowed.
 - There were some strange TextBox without the comma (like TextBox(PORTRAIT, "a" "b", "c"); How these were working?!
 - Load/Saving works fine outside the executable Jars (like in Eclipse or just running java directly). But when packing the code in a .JAR, I wasn't able to deal with saving files externally to the JAR, but loading files works fine. I'm thinking about a solution to this problem.  
 - I had a lot of problems with case-sensitive stuff (because JAR files are case-sensitive). 

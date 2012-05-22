@@ -1,6 +1,6 @@
 package audio.jmikmod.MikMod;
 
-import java.io.*;
+import persist.SimulatedRandomAccessFile;
 
 public class clMDriverBase extends Object
 {
@@ -22,6 +22,6 @@ public class clMDriverBase extends Object
         
         public clMDriverBase() {}
         public clMDriverBase(clMainBase theMain) {m_ = theMain;}
-        public short MD_SampleLoad(RandomAccessFile fp,int size,int reppos,int repend,int flags) { return 1;}
+        public short MD_SampleLoad(SimulatedRandomAccessFile fp,int size,int reppos,int repend,int flags) { return 1;}
 		public void MD_SampleUnLoad(short handle) {}
 };

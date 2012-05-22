@@ -17,9 +17,10 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
 
 
 class M15_MSAMPINFO{       /* sample header as it appears in a module */

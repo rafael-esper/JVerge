@@ -13,9 +13,9 @@ All systems - All compilers
 
 package audio.jmikmod.MikMod.Drivers;
 
-import java.io.*;
-
-import audio.jmikmod.MikMod.*;
+import persist.SimulatedRandomAccessFile;
+import audio.jmikmod.MikMod.clDRIVER;
+import audio.jmikmod.MikMod.clMain;
 
 public class NS_Driver extends clDRIVER
 {
@@ -35,7 +35,7 @@ public boolean IsPresent()
 	return true;
 }
 
-public short SampleLoad(RandomAccessFile fp,int s,int a,int b,int f)
+public short SampleLoad(SimulatedRandomAccessFile fp,int s,int a,int b,int f)
 {
 	return 1;
 }

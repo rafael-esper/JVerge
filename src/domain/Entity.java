@@ -16,7 +16,7 @@ public class Entity {
 	public final static int NE					= 6;
 	public final static int SW					= 7;
 	public final static int SE					= 8;
-	public final static int FOLLOWDISTANCE		= 16;
+	public static int FOLLOWDISTANCE			= 16;
 
 	public final static int ENT_AUTOFACE		= 1;
 	public final static int ENT_OBSTRUCTS		= 2;
@@ -308,8 +308,10 @@ public class Entity {
 		}
 		setoriginalx(follow.pathx[FOLLOWDISTANCE-1]);
 		setoriginaly(follow.pathy[FOLLOWDISTANCE-1]);
+
 		set_waypoint(getx(), gety());
-	    movecode = 0;
+
+		movecode = 0;
 		obstruction = false;
 		obstructable = false;
 	    // clear delay info from wandering
@@ -350,7 +352,7 @@ public class Entity {
 		framect++;
 
 		// update pathxy for following
-		for (int i=FOLLOWDISTANCE-2; i>=0; i--) {
+		for (int i=pathx.length-2; i>=0; i--) {
 			pathx[i+1] = pathx[i];
 			pathy[i+1] = pathy[i];
 			pathf[i+1] = pathf[i];
@@ -505,12 +507,12 @@ public class Entity {
 		boolean ub=false, db=false, lb=false, rb=false;
 		int ex = getx()/16;
 		int ey = gety()/16;
-		int myzone = current_map.zone(ex, ey);
+		int myzone = current_map.getzone(ex, ey);
 
-		if (ObstructDir(EAST) || current_map.zone(ex+1, ey) != myzone) rb=true;
-		if (ObstructDir(WEST) || current_map.zone(ex-1, ey) != myzone) lb=true;
-		if (ObstructDir(SOUTH) || current_map.zone(ex, ey+1) != myzone) db=true;
-		if (ObstructDir(NORTH) || current_map.zone(ex, ey-1) != myzone) ub=true;
+		if (ObstructDir(EAST) || current_map.getzone(ex+1, ey) != myzone) rb=true;
+		if (ObstructDir(WEST) || current_map.getzone(ex-1, ey) != myzone) lb=true;
+		if (ObstructDir(SOUTH) || current_map.getzone(ex, ey+1) != myzone) db=true;
+		if (ObstructDir(NORTH) || current_map.getzone(ex, ey-1) != myzone) ub=true;
 
 		if (rb && lb && db && ub) return; // Can't move in any direction
 
@@ -746,10 +748,10 @@ public class Entity {
 
 		// Adapted by [Rafael, the Esper]
 		if(current_map != null && current_map.horizontalWrapable)
-			zx = zx + ((current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
+			zx = (zx + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
 		if(current_map != null && current_map.verticalWrapable)	
-			zy = zy + ((current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
-
+			zy = (zy + (current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
+		
 		//System.out.println(this.chrname + " " + zx + "," + zy + " " + getx() + "," + gety() + " " + xwin + "," + ywin);
 		
 		if (hookrender != null && !hookrender.isEmpty())
@@ -759,7 +761,7 @@ public class Entity {
 			return;
 		}
 
-		if (chr != null)
+		if (chr != null) 
 			chr.render(zx, zy, frame, screen);
 	}
 

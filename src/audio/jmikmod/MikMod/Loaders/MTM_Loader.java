@@ -13,9 +13,10 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
 
 
 class MTMHEADER{
@@ -83,8 +84,6 @@ public MTM_Loader(clMainBase theMain)
 
 public boolean Test()
 {
-        try {
-
         byte id[] = new byte[3];
         //if(!fread(id,3,1,m_.MLoader.modfp)) return 0;
         if (m_.MLoader.modfp.read(id,0,3) != 3) return false;
@@ -92,12 +91,6 @@ public boolean Test()
         if ( ((char)id[0] == 'M') && ((char)id[1] == 'T') && ((char)id[2] == 'M') )
             return true;
         return false;
-
-        }
-        catch (IOException ioe1)
-        {
-            return false;
-        }
 }
 
 

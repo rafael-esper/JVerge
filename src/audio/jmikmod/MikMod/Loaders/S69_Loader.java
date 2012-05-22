@@ -20,9 +20,10 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
 
 
 /* Raw 669 header struct: */
@@ -94,22 +95,16 @@ public S69_Loader(clMainBase theMain)
 
 public boolean Test()
 {
-    try {
-        byte id[] = new byte[2];
-	m_.mmIO._mm_fseek(m_.MLoader.modfp,0,m_.mmIO.SEEK_SET);
-        //if(!fread(id,2,1,m_.MLoader.modfp)) return 0;
-        if (m_.MLoader.modfp.read(id,0,2) != 2) return false;
-        if (((char)id[0] == 'i') && ((char)id[1] == 'f'))
-            return true;
-        if (((char)id[0] == 'J') && ((char)id[1] == 'N'))
-            return true;
+    byte id[] = new byte[2];
+m_.mmIO._mm_fseek(m_.MLoader.modfp,0,m_.mmIO.SEEK_SET);
+	//if(!fread(id,2,1,m_.MLoader.modfp)) return 0;
+	if (m_.MLoader.modfp.read(id,0,2) != 2) return false;
+	if (((char)id[0] == 'i') && ((char)id[1] == 'f'))
+	    return true;
+	if (((char)id[0] == 'J') && ((char)id[1] == 'N'))
+	    return true;
 
-        return false;
-    }
-    catch (IOException ioe1)
-    {
-        return false;
-    }
+	return false;
 }
 
 

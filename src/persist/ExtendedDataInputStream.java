@@ -119,12 +119,12 @@ public class ExtendedDataInputStream extends DataInputStream {
 		
 		int uncompSize = this.readSignedIntegerLittleEndian();
 		int compSize = this.readSignedIntegerLittleEndian();
-		
-        byte input[] = new byte[compSize];
+
+        System.out.println("Reading compressed: " + compSize + " into " + uncompSize);
+		byte input[] = new byte[compSize];
         for(int j=0; j<compSize; j++)
         	input[j] = this.readByte();
         
-        System.out.println("Reading compressed: " + compSize + " into " + uncompSize);
     	Inflater decompresser = new Inflater();
    	 	decompresser.setInput(input, 0, compSize);
    	 	byte[] output = new byte[uncompSize];

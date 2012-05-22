@@ -25,6 +25,7 @@ of an array length.
 
 import java.applet.*;
 import java.awt.*;
+import java.net.URL;
 
 import audio.jmikmod.MikMod.*;
 
@@ -36,6 +37,9 @@ public class MikModApp extends Applet implements Runnable
 
 
 	boolean m_fStandAlone = false;
+
+
+	public URL url;
 
 
         public static String [] my_argv = null;
@@ -115,7 +119,7 @@ public class MikModApp extends Applet implements Runnable
             
             audio.jmikmod.MikMod.clMain theMikMod = new audio.jmikmod.MikMod.clMain();
             
-            theMikMod.main(my_argv);
+            theMikMod.main(my_argv, url);
 
             stop();
 

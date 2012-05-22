@@ -13,9 +13,9 @@ All systems - all compilers
 
 package audio.jmikmod.MikMod.Virtch;
 
-import java.io.*;
-
-import audio.jmikmod.MikMod.*;
+import persist.SimulatedRandomAccessFile;
+import audio.jmikmod.MikMod.VINFO;
+import audio.jmikmod.MikMod.clMain;
 
 public class clVirtch extends Object
 {
@@ -204,7 +204,7 @@ public int LargeRead(byte buffer[],int size)
 
 
 
-public short VC_SampleLoad(RandomAccessFile fp,int length,int reppos,int repend,int flags)
+public short VC_SampleLoad(SimulatedRandomAccessFile fp,int length,int reppos,int repend,int flags)
 {
 	int handle;
 	int t;

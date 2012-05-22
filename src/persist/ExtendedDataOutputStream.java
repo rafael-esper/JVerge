@@ -1,5 +1,8 @@
 package persist;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -90,6 +93,9 @@ public class ExtendedDataOutputStream extends DataOutputStream {
 		for (int i = 0; i < compressedDataLength; i++)
 			compressedOutput[i] = output[i];
 
+		//this.writeInt(Integer.reverseBytes(data.length));
+		//this.writeInt(Integer.reverseBytes(compressedDataLength));
+
 		this.writeSignedIntegerLittleEndian(data.length);
 		this.writeSignedIntegerLittleEndian(compressedDataLength);
 		this.write(compressedOutput);
@@ -119,6 +125,24 @@ public class ExtendedDataOutputStream extends DataOutputStream {
 	int INT_little_endian_TO_big_endian(int i) {
 		return ((i & 0xff) << 24) + ((i & 0xff00) << 8) + ((i & 0xff0000) >> 8)
 				+ ((i >> 24) & 0xff);
+	}
+
+	public byte[] getPixelArrayFromFrames(BufferedImage[] frames,
+			int totalframes, int xsize, int ysize) {
+
+		byte[] ret = new byte[totalframes*xsize*ysize*3];
+		for(int t=0; t<totalframes; t++) {
+	        for(int j = 0; j<ysize; j++) {
+	        	for(int i = 0; i<xsize; i++) {
+		            Color c = new Color(frames[t].getRGB(i,  j));
+	        		ret[t*xsize*ysize*3 + j*xsize*3 + i*3] = (byte) c.getRed();
+		            ret[t*xsize*ysize*3 + j*xsize*3 + i*3 + 1] = (byte) c.getGreen();
+		            ret[t*xsize*ysize*3 + j*xsize*3 + i*3 + 2] = (byte) c.getBlue();
+	        	}
+	        }
+		}
+		
+		return ret;
 	}
 
 }

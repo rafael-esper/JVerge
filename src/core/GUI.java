@@ -6,6 +6,7 @@ import java.awt.BufferCapabilities;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
@@ -122,13 +123,14 @@ public class GUI extends JFrame implements ComponentListener {
 			}*/		
 
 		canvas.createBufferStrategy(2);
-		strategy = getGUI().canvas.getBufferStrategy();			
+		strategy = getGUI().canvas.getBufferStrategy();
 		
 		
 	}
 
 	public static void paintFrame() {
 		updateGUI();
+		updateFPS();
 		synchFramerate();
 	}
 	
@@ -147,6 +149,12 @@ public class GUI extends JFrame implements ComponentListener {
 			g2d.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);*/
 			g.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);			
 		}
+
+		// Show FPS
+		g.setFont(fps_font);
+		g.setColor(Color.WHITE);
+		g.drawString("FPS: " + Float.toString(frameInLastSecond), 10, 20);
+		
 		g.dispose();
 		strategy.show();
 	}
@@ -213,4 +221,18 @@ public class GUI extends JFrame implements ComponentListener {
 			frameDelay = 100;
 	}
 
+	
+	protected final static Font fps_font = new Font("Monospaced", Font.PLAIN, 12);
+	static long nextSecond = System.currentTimeMillis() + 1000;
+	static int frameInLastSecond = 0;
+	static int framesInCurrentSecond = 0;
+	static void updateFPS() {
+		long currentTime = System.currentTimeMillis();
+	    if (currentTime > nextSecond) {
+	        nextSecond += 1000;
+	        frameInLastSecond = framesInCurrentSecond;
+	        framesInCurrentSecond = 0;
+	    }
+	    framesInCurrentSecond++;	
+	}
 }

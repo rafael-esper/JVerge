@@ -13,9 +13,10 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
 
 
 class ULTEVENT{
@@ -90,8 +91,7 @@ public ULT_Loader(clMainBase theMain)
 
 public boolean Test()
 {
-    try {
-	byte id[] = new byte[15];
+    byte id[] = new byte[15];
         byte should_be[] = new byte[20]; //"MAS_UTrack_V00";
         String szShould_be = "MAS_UTrack_V00";
         int a;
@@ -105,11 +105,6 @@ public boolean Test()
                 return false;
         return true;
         //return(!strncmp(id,"MAS_UTrack_V00",14));
-    }
-    catch (IOException ioe1)
-    {
-        return false;
-    }
 }
 
 
@@ -126,8 +121,7 @@ public void Cleanup()
 
 public int ReadUltEvent(ULTEVENT event)
 {
-    try {
-	short flag;
+    short flag;
         byte rep [] = new byte[2];
         rep[0] = 1;
 	flag=m_.mmIO._mm_read_UBYTE(m_.MLoader.modfp);
@@ -148,11 +142,6 @@ public int ReadUltEvent(ULTEVENT event)
 
         //return rep[0];
         return (rep[0]<0) ? ((int)rep[0]+256) : rep[0];
-    }
-    catch (IOException ioe1)
-    {
-        return 0;
-    }
 }
 
 

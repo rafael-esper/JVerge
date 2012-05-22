@@ -13,13 +13,19 @@ All systems - all compilers
 
 package audio.jmikmod.MikMod;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
-import audio.jmikmod.MikMod.Loaders.*;
-import audio.jmikmod.MikMod.MLoader.*;
-import audio.jmikmod.MikMod.MMIO.*;
-import audio.jmikmod.MikMod.MUniTrk.*;
+import persist.SimulatedRandomAccessFile;
+import audio.jmikmod.MikMod.Loaders.M15_Loader;
+import audio.jmikmod.MikMod.Loaders.MOD_Loader;
+import audio.jmikmod.MikMod.Loaders.MTM_Loader;
+import audio.jmikmod.MikMod.Loaders.S3M_Loader;
+import audio.jmikmod.MikMod.Loaders.S69_Loader;
+import audio.jmikmod.MikMod.Loaders.STM_Loader;
+import audio.jmikmod.MikMod.Loaders.ULT_Loader;
+import audio.jmikmod.MikMod.Loaders.UNI_Loader;
+import audio.jmikmod.MikMod.Loaders.XM_Loader;
+import audio.jmikmod.MikMod.MUniTrk.clMUniTrk;
 
 class clMikCvtMDriver extends clMDriverBase
 {
@@ -32,7 +38,7 @@ class clMikCvtMDriver extends clMDriverBase
 	}
     
     
-public short MD_SampleLoad(RandomAccessFile fp, int length, int loopstart, int loopend, int flags)
+public short MD_SampleLoad(SimulatedRandomAccessFile fp, int length, int loopstart, int loopend, int flags)
 {
 	 /* record position of sample */
 	try {
@@ -58,7 +64,7 @@ public short MD_SampleLoad(RandomAccessFile fp, int length, int loopstart, int l
 
 public class clMikCvtMain extends clMainBase
 {
-    public RandomAccessFile fpi, fpo;
+    public SimulatedRandomAccessFile fpi, fpo;
 
     public short numsamples;
     public int samplepos[];
@@ -75,7 +81,7 @@ public class clMikCvtMain extends clMainBase
 	}
 
 
-int CopyData(RandomAccessFile fpi, RandomAccessFile fpo, int len)
+int CopyData(SimulatedRandomAccessFile fpi, SimulatedRandomAccessFile fpo, int len)
 {
 	 int todo;
 
@@ -355,7 +361,7 @@ public int main(String argv[])
 		numsamples = 0;
 
                 //if ((fpi = fopen(argv[t], "rb")) == null) {
-                if ((fpi = new RandomAccessFile(argv[t], "r")) == null) {
+                if ((fpi = new SimulatedRandomAccessFile(argv[t])) == null) {
 			System.out.println("MikCvt Error: Error opening input file");
 			break;
                 }
@@ -367,7 +373,7 @@ public int main(String argv[])
                 System.out.println("Out file: " + outname);
 
                 //if ((fpo = fopen(outname, "wb")) == null) {
-                if ((fpo = new RandomAccessFile(outname, "rw")) == null) {
+                if ((fpo = new SimulatedRandomAccessFile(outname)) == null) {
 			System.out.println("MikCvt Error: Error opening output file");
 			break;
 		}

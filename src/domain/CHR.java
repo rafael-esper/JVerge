@@ -1,15 +1,22 @@
 package domain;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
 
 import core.DefaultPalette;
 import static core.Script.*;
 
 import persist.ExtendedDataInputStream;
+import persist.ExtendedDataOutputStream;
 
 public class CHR {
 
@@ -22,8 +29,8 @@ public class CHR {
 	//private byte[] pixels = new byte[16*16*3]; // frames * width * height * 3 bytes!
 	
 	int fxsize, fysize;					// frame x/y dimensions
-	int hx, hy;							// x/y obstruction hotspot
-	public int hw;							// hotspot width/hieght
+	public int hx, hy;						// x/y obstruction hotspot
+	public int hw;							// hotspot width/height
 	public int hh;
 	int totalframes;					// total # of frames.
     int idle[] = new int[5];			// idle frames
@@ -360,19 +367,19 @@ public class CHR {
 		//}
 	}
 	
+	
+	private String[] animbuf = new String[9];
+	private int[] length = new int[9];
 	private void loadChrVersion5(ExtendedDataInputStream f) throws IOException {
 
 		f.readUnsignedIntegerLittleEndian(); // bitDepth
 		f.readUnsignedIntegerLittleEndian(); // unused, poss. alpha blend
 		
-		//c.transr = (char) 
-		f.readUnsignedByte();
-		//c.transg = (char) 
-		f.readUnsignedByte();
-		//c.transb = (char) 
-		f.readUnsignedByte();
-		//c.transa = (char) 
-		f.readUnsignedByte();
+		// Transparent color
+		f.readUnsignedByte(); // Red
+		f.readUnsignedByte(); // Green
+		f.readUnsignedByte(); // Blue
+		f.readUnsignedByte(); // Alpha
 		
 		this.hx = f.readUnsignedIntegerLittleEndian();
 		this.hy = f.readUnsignedIntegerLittleEndian();
@@ -390,20 +397,21 @@ public class CHR {
 		this.idle[Entity.WEST] = f.readSignedIntegerLittleEndian();
 		this.idle[Entity.EAST] = f.readSignedIntegerLittleEndian();
 		
-		String animbuf;
 		int indexes[] = { 0, 2, 1, 3, 4, 5, 6, 7, 8 };
 		
 		// Creates an array with size equal to the total "wait" time of the animation
 		// Each index in the anims array points to a frame
 		// So a F1W5F2W5 will insert in the array the values 1 1 1 1 1 2 2 2 2 2
 		for(int b=1; b<9; b++) {
-			int length = f.readSignedIntegerLittleEndian(); // animation length
-			animbuf = f.readFixedString(length+1);
-			this.animsize[indexes[b]] = this.GetAnimLength(animbuf);
+			length[b] = f.readSignedIntegerLittleEndian(); // animation length
+			System.out.println(length[b]);
+			animbuf[b] = f.readFixedString(length[b]+1);
+			System.out.println(animbuf[b]);
+			this.animsize[indexes[b]] = this.GetAnimLength(animbuf[b]);
 			if(this.animsize[indexes[b]] == 0)
 				this.animsize[indexes[b]]=1; // [Rafael, the Esper]
 			this.anims[indexes[b]] = new int[this.animsize[indexes[b]]];
-			this.ParseAnimation(indexes[b], animbuf);
+			this.ParseAnimation(indexes[b], animbuf[b]);
 		}
 		
 		// Pixels
@@ -412,12 +420,78 @@ public class CHR {
 		f.readSignedIntegerLittleEndian();
 		byte pixels[] = f.readCompressedUnsignedShortsIntoBytes();
 		
-		// Obtém frames a partir dos vetores (pixels)
+		// Get frames from the pixels array
 		System.out.println("Frames (" + fxsize + ", " + fysize + "): " + totalframes);
 		frames = f.getBufferedImageArrayFromPixels(pixels, totalframes, fxsize, fysize); 
 		
 	}
 
+	private void saveChrVersion5(String filename) {
+
+		System.out.println("CHR::save at " + filename);
+		ExtendedDataOutputStream f = null;
+		try {
+			OutputStream os = new FileOutputStream(filename);
+			f = new ExtendedDataOutputStream(os);
+			
+			f.writeFixedString("CHR", 3);
+			f.writeInt(Integer.reverseBytes(5)); // version
+				
+			f.writeInt(Integer.reverseBytes(24)); // bitDepth		
+			f.writeInt(Integer.reverseBytes(0)); // unused, poss. alpha blend
+			
+			// Transparent color
+			f.writeUnsignedByte(255); // Red
+			f.writeUnsignedByte(0); // Green
+			f.writeUnsignedByte(255); // Blue
+			f.writeUnsignedByte(0); // Alpha
+			
+			f.writeInt(Integer.reverseBytes(this.hx));
+			f.writeInt(Integer.reverseBytes(this.hy));
+			f.writeInt(Integer.reverseBytes(this.hw));
+			f.writeInt(Integer.reverseBytes(this.hh));
+			f.writeInt(Integer.reverseBytes(this.fxsize));
+			f.writeInt(Integer.reverseBytes(this.fysize));
+			f.writeSignedIntegerLittleEndian(this.totalframes);
+			
+			f.writeSignedIntegerLittleEndian(this.idle[Entity.SOUTH]);
+			f.writeSignedIntegerLittleEndian(this.idle[Entity.NORTH]);
+			f.writeSignedIntegerLittleEndian(this.idle[Entity.WEST]);
+			f.writeSignedIntegerLittleEndian(this.idle[Entity.EAST]);
+			
+			for(int b=1; b<9; b++) {
+				f.writeSignedIntegerLittleEndian(this.length[b]); // animation length
+				f.writeFixedString(animbuf[b], length[b]+1); // +1?
+			}
+			
+			f.writeSignedIntegerLittleEndian(0);
+			f.writeSignedIntegerLittleEndian(0);
+			
+			// Pixels
+			byte[] pixels = f.getPixelArrayFromFrames(frames, totalframes, fxsize, fysize);
+			f.writeCompressedBytes(pixels);
+			System.out.println("CHR::save concluded successfully.");
+	
+		}
+		catch(IOException e) {
+			System.err.println("CHR::save " + e.getMessage());
+		}
+		finally {
+			try {
+				f.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}	
+	
+	/// Method to make easier to export CHRs from images
+	public void setAnimBufs(int[] lengths, String[] animbufs) {
+		this.animbuf = animbufs;
+		this.length = lengths;
+	}
+	
+	
 	public void render(int x, int y, int frame, VImage dest)
 	{
 		x -= hx;
@@ -425,13 +499,7 @@ public class CHR {
 		if (frame <0 || frame >= totalframes)
 			System.err.printf("CHR::render(), frame requested is undefined (%d of %d)", frame, totalframes);
 		
-		//[Rafael, the Esper] container.data = (quad *) ((int) rawdata->data + (frame*fxsize*fysize*vid_bytesperpixel));
-		//[Rafael, the Esper] TBlit(x, y, container, dest);
-		dest.g.drawImage(this.frames[frame], x, y, null);
-		
-	//SetLucent(50);
-	//Rect(x+hx, y+hy, x+hx+hw-1, y+hy+hh-1, 0, dest);
-	//SetLucent(0);
+		dest.tblit(x, y, this.frames[frame]);
 	}
 	
 	int GetFrame(int d, int framect)
@@ -535,7 +603,7 @@ public class CHR {
 	/**Rafael:
 	 * New method implemented to allow bypassing .chr files and use an image file instead
 	 */
-	public static CHR createCHRFromImage(int sizex, int sizey, int columns, int totalframes, boolean padding, VImage image) {
+	public static CHR createCHRFromImage(int startx, int starty, int sizex, int sizey, int columns, int totalframes, boolean padding, VImage image) {
 		log("createCHRFromImage (" + sizex + "x" + sizey + ": " + totalframes + " frames.");
 		VImage[] images = new VImage[totalframes];
 		
@@ -544,13 +612,16 @@ public class CHR {
 		if(padding)
 			posy++;
 
+		// First pixel is default transparent color
+		Color transC = new Color(image.image.getRGB(0+(padding?1:0), 0+(padding?1:0)));
+		
 		while(frames < totalframes) {
 			
 			if(padding)
 				posx++;
 				 
 			images[frames] = new VImage(sizex, sizey);
-			grabregion(posx, posy, posx+sizex, posy+sizey, 0, 0, image, images[frames]); 
+			images[frames].tgrabregion(startx+posx, starty+posy, startx+posx+sizex, starty+posy+sizey, 0, 0, transC, image); 
 			column++;
 			posx+=sizex;
 			if(column >= columns) {
@@ -583,5 +654,46 @@ public class CHR {
 		return c;
 	}
 
+	
+	public static void main (String args[]) throws MalformedURLException {
+		//CHR c = new CHR(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\alis.chr"));
+		//c.saveChrVersion5("c:\\temp.chr");
+		CHR c = new CHR(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\chars\\vehicle.chr"));
+		c.hx = 0;
+		c.hy = 0;
+		c.hw = 64;
+		c.hh = 64;
+		c.saveChrVersion5("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\chars\\vehicle.chr");
+		
+	}
+
+	public static void processMultipleCharsFromImage() throws MalformedURLException {
+		//for(int count=190; count<211; count++) {
+			VImage image = new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_006" + ".png"));
+			CHR c = createCHRFromImage(360, 216, 40, 72, 9, 9, false, image);
+			BufferedImage[] newBuffer = new BufferedImage[12];
+			for(int i=0;i<9;i++) {
+				newBuffer[i] = c.frames[i];
+			}
+			newBuffer[9] = VImage.flipimage(40, 72, c.frames[3]); 
+			newBuffer[10] = VImage.flipimage(40, 72, c.frames[4]);
+			newBuffer[11] =	VImage.flipimage(40, 72, c.frames[5]);	
+			c.frames = newBuffer;
+			c.totalframes = 12;
+			
+			c.setAnimBufs(new int[]{0,20,20,20,23,20,23,20,23},
+					new String[]{"", "F0W30F1W10F2W30F1W10", "F6W30F7W10F8W30F7W10", "F3W30F4W10F5W30F4W10", "F9W30F10W10F11W30F10W10",
+					"F3W30F4W10F5W30F4W10", "F9W30F10W10F11W30F10W10", "F3W30F4W10F5W30F4W10", "F9W30F10W10F11W30F10W10"});
+			c.idle = new int[]{0, 7, 1, 4, 10}; 
+	
+			c.hx = 8;
+			c.hy = 48;
+			c.hw = 24;
+			c.hh = 24;
+			
+			c.saveChrVersion5("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\chars\\esper.chr");
+		//}
+
+	}
 	
 }

@@ -12,15 +12,17 @@ Mikmod driver for output to a file called MUSIC.WAV
 
 package audio.jmikmod.MikMod.Drivers;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import persist.SimulatedRandomAccessFile;
+import audio.jmikmod.MikMod.clDRIVER;
+import audio.jmikmod.MikMod.clMain;
 
 public class Wav_Driver extends clDRIVER
 {
     public final int BUFFERSIZE = 32768;
 
-    protected RandomAccessFile wavout;
+    protected SimulatedRandomAccessFile wavout;
     protected int dumpsize;
 
     byte audiobuffer[]; //[BUFFERSIZE];
@@ -77,7 +79,7 @@ public int Init()
 {
         //if(!(rawout=fopen("music.raw","wb"))){
     try {
-        if ((wavout = new RandomAccessFile("music.wav", "rw")) == null) {
+        if ((wavout = new SimulatedRandomAccessFile("music.wav")) == null) {
             m_.mmIO.myerr="Couldn't open output file 'music.wav'";
             return 0;
         }
@@ -134,7 +136,7 @@ public void Update()
     }
 }
 
-public short SampleLoad(RandomAccessFile fp,int length,int reppos,int repend,int flags)
+public short SampleLoad(SimulatedRandomAccessFile fp,int length,int reppos,int repend,int flags)
 {
     return m_.Virtch.VC_SampleLoad(fp,length,reppos,repend,flags);
 }

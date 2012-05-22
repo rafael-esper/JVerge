@@ -16,9 +16,10 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
 
 class MSAMPINFO
 {       /* sample header as it appears in a module */
@@ -154,8 +155,6 @@ public MOD_Loader(clMainBase theMain)
 
 public boolean Test()
 {
-	try {
-
 	int t, i;
 
 	byte id[] = new byte[4];
@@ -176,12 +175,6 @@ public boolean Test()
 	}
 
 	return false;
-	
-	}
-	catch (IOException ioe1)
-	{
-		return false;
-	}
 }
 
 

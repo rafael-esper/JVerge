@@ -66,6 +66,7 @@ public class Config {
 		try {
 			openStream = configFilePath.openStream();
 			this.LoadConfig(openStream);
+			openStream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

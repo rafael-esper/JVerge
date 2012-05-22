@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import core.Script;
@@ -29,19 +30,17 @@ public class Map {
 	public static final int DEFAULT_X = 30;
 	public static final int DEFAULT_Y = 20;
 
-	public String filename;
-	public String mapname = "dummy";
-	public String vspname;
-	public String musicname;
+	private String filename = "";
+	private String mapname = "dummy";
+	private String vspname = "";
+	private String musicname= "";
 	public String renderstring = "R";
-	public String startupscript;
+	private String startupscript = "";
 	public int startX, startY; // Unsigned short
 
-	public Layer[] layers;
-	public byte[] obsLayer; 
-	public int[] zoneLayer; 									// width * height
-																// Unsigned
-																// shorts!
+	private Layer[] layers;
+	private byte[] obsLayer; 
+	private int[] zoneLayer; 									// width * height, Unsigned shorts!
 
 	public Zone[] zones;
 	private Entity[] entities;
@@ -85,15 +84,19 @@ public class Map {
 		}
 	}
 
-	public Map() {
-
+	public Map(URL mapUrl, URL vspUrl) {
+		try {
+			this.load(mapUrl.openStream());
+		} catch (IOException e) {
+			System.err.println("MAP::IOException (" + filename + "), mapurl = " + mapUrl);
+		}
+		this.tileset = new Vsp(vspUrl);
+		
 	}
 
 	/**
 	 * Loads a Map from an InputStream
 	 * 
-	 * @param InputStream
-	 *            is
 	 */
 	private void load(InputStream is) {
 
@@ -208,8 +211,6 @@ public class Map {
 	/**
 	 * Saves a Map to a specified file path
 	 * 
-	 * @param Map m
-	 * @param String strFilePath
 	 */
 	public void save(String strFilePath) {
 
@@ -289,8 +290,8 @@ public class Map {
 
 			f.writeSignedIntegerLittleEndian(m.entities.length);
 			for (Entity e : m.entities) {
-				f.writeUnsignedShortLittleEndian(e.getx());
-				f.writeUnsignedShortLittleEndian(e.gety());
+				f.writeUnsignedShortLittleEndian(e.getx()/256);
+				f.writeUnsignedShortLittleEndian(e.gety()/256);
 				f.writeByte(e.face); // 0 or 1
 				f.writeByte(e.obstructable == false ? 0 : 1);
 				f.writeByte(e.obstruction == false ? 0 : 1);
@@ -329,7 +330,7 @@ public class Map {
 
 	// Rafael: Code diassociated with map loading
 	void startMap() {
-		
+
 		if(!musicname.trim().isEmpty())
 			playmusic(Script.load(musicname));
 		
@@ -357,13 +358,13 @@ public class Map {
 	
 	// Use
 
-	public int zone(int x, int y) {
+	public int getzone(int x, int y) {
 		if (x < 0 || y < 0 || x >= getWidth() || y >= getHeight())
 			return 0;
 		return zoneLayer[(y * getWidth()) + x];
 	}
 
-	public boolean obstruct(int x, int y) {
+	public boolean getobs(int x, int y) {
 		if (x < 0 || y < 0 || x >= getWidth() || y >= getHeight())
 			return true;
 		if (obsLayer[(y * getWidth()) + x] == 0)
@@ -371,7 +372,7 @@ public class Map {
 		return true;
 	}
 
-	public boolean obstructpixel(int x, int y) { // modified by [Rafael, the Esper]
+	public boolean getobspixel(int x, int y) { // modified by [Rafael, the Esper]
 		if (!horizontalWrapable && (x < 0 || (x >> 4) >= getWidth()))
 				return true;
 		if (!verticalWrapable && (y < 0 || (y >> 4) >= getHeight()))
@@ -388,6 +389,13 @@ public class Map {
 		int t = obsLayer[((y >> 4) * getWidth()) + (x >> 4)];
 		return tileset.GetObs(t, x&15, y&15);
 	}
+	
+	public int gettile(int x, int y, int i) { 
+		if(i>=this.layers.length) 
+			return 0; 
+		return this.layers[i].GetTile(x,y); 
+	}
+		
 
 	public void render(int x, int y, VImage dest) {
 		boolean first = true;
@@ -418,6 +426,7 @@ public class Map {
 				}
 				//[Rafael, the Esper] Teste setlucent(90);
 				//System.out.println("Layer " + layer + " " + currentLucent);
+				//setlucent(current_map.layers[layer].lucent);
 				BlitLayer(true, layer, tx, ty, x, y, dest);
 				//System.out.println("[Rafael, the Esper]: " + currentLucent);
 				//System.exit(0);
@@ -427,42 +436,45 @@ public class Map {
 
 	}
 
-	public void SetZone(int x, int y, int t) {
+	public void setzone(int x, int y, int z) {
 		if (x < 0 || y < 0 || x >= getWidth() || y >= getHeight())
 			return;
-		if (t >= zones.length)
+		if (z >= zones.length)
 			return;
-		zoneLayer[(y * getWidth()) + x] = t;
+		zoneLayer[(y * getWidth()) + x] = z;
 	}
 
-	public void SetObs(int x, int y, int t) {
+	public void setobs(int x, int y, int t) {
 		if (x < 0 || y < 0 || x >= getWidth() || y >= getHeight())
 			return;
 		if (t >= tileset.numobs && t!=0)
 			return;
 		obsLayer[(y * getWidth()) + x] = (byte) t;
 	}
+	
+	public void settile(int x, int y, int i, int z) { 
+		if(i>=this.layers.length) 
+			return; 
+		else this.layers[i].SetTile(x,y,z); 
+	}
+	
 
 	void BlitLayer(boolean transparent, int l, int tx, int ty, int xwin, int ywin, VImage dest) {
-		if(l >= layers.length) return; //[Rafael, the Esper] 
+		if(l >= layers.length || layers[l] == null) 
+			return; //[Rafael, the Esper] 
 		
-		Layer layer = layers[l];
-//System.out.println("Tx " + tx + " Ty " + ty + " Xwin: " + xwin + "; Ywin: " + ywin);
-		if (layer == null) // [Rafael, the Esper]
-			return;
-
 		// we add offsets here because if the parallax changes while the
 		// xwin and ywin are non-zero, we would jump unless we compensate
-		int oxw = layer.x_offset + (int) ((float) xwin * layer.parallax_x);
-		int oyw = layer.y_offset + (int) ((float) ywin * layer.parallax_y);
+		int oxw = layers[l].x_offset + (int) ((float) xwin * layers[l].parallax_x);
+		int oyw = layers[l].y_offset + (int) ((float) ywin * layers[l].parallax_y);
 		int xofs = -(oxw & 15);
 		int yofs = -(oyw & 15);
 		int xtc = oxw >> 4;
 		int ytc = oyw >> 4;
 
 		if (transparent)
-			if (layer.lucent != 0)
-				setlucent(layer.lucent); // System.out.println("hahaha"); 
+			if (layers[l].lucent != 0)
+				setlucent(layers[l].lucent); 
 
 		tileset.UpdateAnimations();
 
@@ -470,13 +482,13 @@ public class Map {
 			for (int x = 0; x < tx; x++) {
 				int c = 0;
 				if(horizontalWrapable && verticalWrapable)  // Changed by [Rafael, the Esper]
-					c = layer.GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y+getHeight())%(getHeight()));
+					c = layers[l].GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y+getHeight())%(getHeight()));
 				else if(!horizontalWrapable && verticalWrapable)
-					c = layer.GetTile((xtc + x), (ytc + y+getHeight())%(getHeight()));
+					c = layers[l].GetTile((xtc + x), (ytc + y+getHeight())%(getHeight()));
 				else if(horizontalWrapable && !verticalWrapable)
-					c = layer.GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y));
+					c = layers[l].GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y));
 				else if(!horizontalWrapable && !verticalWrapable)
-					c = layer.GetTile(xtc + x, ytc + y);
+					c = layers[l].GetTile(xtc + x, ytc + y);
 				
 				if (transparent) {
 					if (c != 0) {
@@ -487,9 +499,9 @@ public class Map {
 				}
 			}
 		}
-		if (dest == screen) {
+		//if (dest == screen) {
 			// TODO Uncomment RenderLayerSprites(l);
-		}
+		//}
 
 		if (transparent)
 			setlucent(0);
@@ -509,4 +521,134 @@ public class Map {
 		return 0;
 	}
 
+	public static void main(String args[]) throws MalformedURLException {
+		/* Save map to clipboard*/ 
+		Map m = new Map(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\Palma.map"),
+				new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\ps1.vsp"));
+		  current_map = m;
+		  VImage img = new VImage(m.getWidth()*16, m.getHeight()*16);
+		  m.render(0, 0, img);
+		  img.copyImageToClipboard();
+		
+
+/*		Map m = new Map(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\Palma.map"),
+					new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\palma.vsp"));
+
+		m.renderstring = "1,2,E,3";
+	*/	
+		/*for(int j=0;j<m.getHeight();j++)
+			for(int i=0;i<m.getWidth();i++) {
+				
+				if(m.gettile(i, j, 1)>1) {
+					m.settile(i, j, 2, m.gettile(i, j, 1));
+					m.settile(i, j, 1, 0);
+				}
+
+				if(m.gettile(i, j, 1)==1)
+					m.settile(i, j, 1,0);
+				
+				if(m.gettile(i, j, 0)==2140) // grass
+					m.settile(i, j, 0, 148 + (i%4) + ((j%4) * 32));
+				else if(m.gettile(i, j, 0)==2141) // wood
+					m.settile(i, j, 0, 493 + (i%4) + ((j%4) * 32));
+				else if(m.gettile(i, j, 0)==2173) // sand
+					m.settile(i, j, 0, 516 + (i%2) + ((j%2) * 32));
+				else if(m.gettile(i, j, 0)==2205) // high grass
+					m.settile(i, j, 0, 282 + (i%2) + ((j%2) * 32));
+				else if(m.gettile(i, j, 0)==2175) // rock
+					m.settile(i, j, 0, 2 + (i%4) + ((j%2) * 32));
+				else if(m.gettile(i, j, 0)==2172 || m.gettile(i, j, 0)==2204) // water
+					m.settile(i, j, 0, 2136 + (i%4) + ((j%4) * 32));
+				else if(m.gettile(i, j, 0)==2174) // lava
+					m.settile(i, j, 0, 196 + (i%2) + ((j%2) * 32));
+				else if(m.gettile(i, j, 0)==2206) { // mountain base 1
+					m.settile(i, j, 1, 1964 + (i%3) + ((j%3) * 32));
+					m.settile(i, j, 0, 148 + (i%4) + ((j%4) * 32));}
+				else if(m.gettile(i, j, 0)==2207) { // mountain base 2
+					m.settile(i, j, 1, 1967 + (i%3) + ((j%3) * 32));
+					m.settile(i, j, 0, 148 + (i%4) + ((j%4) * 32));}
+				else if(m.gettile(i, j, 0)==2142) { // mountain 1
+					m.settile(i, j, 2, 1868 + (i%3) + ((j%3) * 32));
+					m.settile(i, j, 0, 148 + (i%4) + ((j%4) * 32));}
+				else if(m.gettile(i, j, 0)==2143) { // mountain 2
+					m.settile(i, j, 2, 1871 + (i%3) + ((j%3) * 32));
+					m.settile(i, j, 0, 148 + (i%4) + ((j%4) * 32));}
+			}*/
+			
+		
+		
+		/*m.layers = new Layer[2];
+		m.layers[0] = createLayerFromImage(new URL("file:///C:\\a\\palma1.png"), m.tileset);
+		m.layers[1] = createLayerFromImage(new URL("file:///C:\\a\\palma2.png"), m.tileset);
+		//m.layers[2] = createLayerFromImage(new URL("file:///C:\\a\\camineet3.png"), m.tileset);
+		m.renderstring = "1,E,2";
+		m.vspname = "palma.vsp";
+		if(m.startupscript == null)
+			m.startupscript = "";
+		if(m.filename == null)
+			m.filename = "";
+
+		if(m.zoneLayer==null)
+			m.zoneLayer = new int[m.getHeight() * m.getWidth()];
+		if(m.obsLayer==null)
+			m.obsLayer = new byte[m.getHeight() * m.getWidth()];
+		*/
+		
+		m.save("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\Palma.map");
+		
+	}
+
+	private static Layer createLayerFromImage(URL url, Vsp vsp) {
+
+		Layer l = new Layer();
+		VImage source = new VImage(url);
+		l.width = source.width / 16;
+		l.height = source.height / 16;
+		
+		l.tiledata = new int[l.width * l.height];
+		
+		for(int posy=0;posy < l.height; posy++) {
+			for(int posx=0;posx < l.width; posx++) {	
+				System.out.println("Testing (" + posy + ", " + posx + ")");
+				for(int i=0; i<vsp.getNumtiles(); i++) {
+				//	if(i==0) {System.err.println(vsp.tiles[i].getRGB(0, 0));System.exit(0);}
+					int repeated = 0;
+					for(int py=0;py<16;py++) {
+						for(int px=0;px<16;px++) {
+							if(vsp.getTiles()[i].getRGB(px,  py) == source.image.getRGB(posx*16+px, posy*16+py)
+							|| vsp.getTiles()[i].getRGB(px,  py) == source.image.getRGB(posx*16+px, posy*16+py) + 16711935	
+									) {
+								repeated++;
+							}
+							else
+							{
+								px=20;py=20;
+							}
+						}
+					}
+				
+					if(repeated >= 200) {
+						System.out.println("Found tile " + i);
+						l.tiledata[(posy*l.width)+posx] = i;
+						break;
+					}
+					else
+						l.tiledata[(posy*l.width)+posx] = 0;
+				}
+			}
+		}
+		
+
+		return l;
+	}
+
+	public String getFilename() {
+		return this.filename;
+	}
+
+	public String getMapname() {
+		return this.mapname;
+	}
+	
+	
 }

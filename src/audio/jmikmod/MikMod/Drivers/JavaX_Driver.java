@@ -1,9 +1,14 @@
 package audio.jmikmod.MikMod.Drivers;
 
-import java.io.*;
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 
-import audio.jmikmod.MikMod.*;
+import persist.SimulatedRandomAccessFile;
+import audio.jmikmod.MikMod.clDRIVER;
+import audio.jmikmod.MikMod.clMain;
 
 /***************************************************************************
  * JavaX Driver - implemented in 2002 by Tobias Braun (tb@640k.de)         *
@@ -86,7 +91,7 @@ public class JavaX_Driver extends clDRIVER {
 	}
 
 	public short SampleLoad(
-		RandomAccessFile fp,
+		SimulatedRandomAccessFile fp,
 		int length,
 		int reppos,
 		int repend,

@@ -2,8 +2,9 @@ package domain;
 
 import static core.Script.*;
 
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /// The VERGE 3 Project is originally by Ben Eirich and is made available via
@@ -47,16 +48,16 @@ public class VFont {
 		VImage workingimage = new VImage(url);
 
 		// Analyze image and guess cell dimensions.
-		int bgcolor = readpixel(0, 0, workingimage);   // This is the image bg color;
+		int bgcolor = workingimage.readpixel(0, 0);   // This is the image bg color;
 		for (w=1; w<workingimage.width; w++)
 		{
-			int z = readpixel(w, 1, workingimage);
+			int z = workingimage.readpixel(w, 1);
 			if (z == bgcolor)
 				break;
 		}
 		for (h=1; h<workingimage.height; h++)
 		{
-			int z = readpixel(1, h, workingimage);
+			int z = workingimage.readpixel(1, h);
 			if (z == bgcolor)
 				break;
 		}
@@ -76,8 +77,8 @@ public class VFont {
 		for (int yl = 0; yl<5 * subsets; yl++)
 			for (int xl = 0; xl<20; xl++) {
 				rawdata[imageindex] = new VImage(xsize, ysize);
-				grabregion(1+(xl*(xsize+1)), 1+(yl*(ysize+1)), width+1+(xl*(xsize+1)), height+1+(yl*(ysize+1)),
-					0, 0, workingimage, rawdata[imageindex++]);
+				rawdata[imageindex++].grabregion(1+(xl*(xsize+1)), 1+(yl*(ysize+1)), width+1+(xl*(xsize+1)), height+1+(yl*(ysize+1)),
+					0, 0, workingimage);
 			}
 
 		for (int i=0; i<100; i++)
@@ -89,7 +90,7 @@ public class VFont {
 	{
 		//container.data = ((int) rawdata.data + ((cell)*width*height*vid_bytesperpixel));
 		for (int y=0; y<rawdata[cell].height; y++)
-			if (readpixel(column, y, rawdata[cell]) != tcolor)
+			if (rawdata[cell].readpixel(column, y) != tcolor)
 				return false;
 		return true;
 	}
@@ -97,7 +98,7 @@ public class VFont {
 	public void EnableVariableWidth()
 	{
 		fwidth[0] = width * 60 / 100;
-		int tcolor = readpixel(0, 0, rawdata[0]);
+		int tcolor = rawdata[0].readpixel(0, 0);
 		for (int i=1; i<100; i++)
 		{
 			fwidth[i] = -1;
@@ -125,7 +126,7 @@ public class VFont {
 		if (c<32 || c>=128) 
 			return;  
 		
-		tblit(x, y, rawdata[c-32].image, dest.getImage());
+		dest.tblit(x, y, rawdata[c-32].image);
 		//dest.g.drawImage(rawdata[c-32].image, x, y, null);
 		//TBlit(x, y, container, dest);
 	}
@@ -269,4 +270,57 @@ public class VFont {
 		incolor = ic; // reset the incolor flag
 		return xsize;
 	}
+	
+	//VI.i. Font Functions
+	public void enablevariablewidth() {
+		this.EnableVariableWidth();
+	}
+	public int fontheight() {
+		//if (this==null) return 7;
+		return this.height;
+	}
+	public void printcenter(int x, int y, VImage d, String text) { 
+		this.PrintCenter(text, x, y, d);
+	}
+	
+	public void printright(int x, int y, VImage d, String text) { 
+		this.PrintRight(text, x, y, d);
+	}
+	
+	public void printstring(int x, int y, VImage dest, String text) {
+		this.PrintString(text, x, y, dest);
+	}
+	
+	public int textwidth(String text) {
+		return this.Pixels(text);
+	}
+
+	// Overkill: 2005-12-28
+	// Helper function for WrapText.
+	int textwidth(String text, int pos, int len) {
+		return this.Pixels(text.substring(pos, pos+len));
+	}
+	
+	// Rafael: changed the implementation
+	// Split list of words into rows 
+	public List<String> wraptext(String wt_s, int wt_linelen) {
+		List<String> words = splitTextIntoWords(wt_s);
+		List<String> rows = new ArrayList<String>();
+		int i = 0;
+		String str;
+		while (i < words.size()) {
+			str = words.get(i);
+		    while (i < words.size()-1 && this.textwidth(str) + this.textwidth(words.get(i+1)) <= wt_linelen) {
+		       str = str.concat(" " + words.get(i+1));
+		       i += 1;
+			}
+		    rows.add(str); //System.out.println(str);
+		    str = "";i+=1;
+		}
+		return rows;
+
+	}
+	
+	
+	
 }

@@ -15,9 +15,10 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
 
 
 class STMNOTE{
@@ -97,30 +98,24 @@ public STM_Loader(clMainBase theMain)
 
 public boolean Test()
 {
-    try {
-        byte str[] = new byte[9], filetype[] = new byte[1], should_be[] = new byte[10];
-        (new String("!SCREAM!")).getBytes(0,8, should_be, 0);
-        should_be[8] = (byte)0;
-        int a;
-        
-        m_.mmIO._mm_fseek(m_.MLoader.modfp,21,m_.mmIO.SEEK_SET);
-        //fread(str,1,9,m_.MLoader.modfp);
-        m_.MLoader.modfp.read(str,0,9);
-        //fread(&filetype,1,1,m_.MLoader.modfp);
-        m_.MLoader.modfp.read(filetype,0,1);
-        for(a=0;a<8;a++)
-            if (str[a] != should_be[a])
-                break;
-        //if(!memcmp(str,"!SCREAM!",8) || (filetype[0]!=2)) /* STM Module = filetype 2 */
-        if ((a != 8) || (filetype[0] != 2)) /* STM Module = filetype 2 */
-              return false;
-        
-        return true;
-    }
-    catch (IOException ioe1)
-    {
-        return false;
-    }
+    byte str[] = new byte[9], filetype[] = new byte[1], should_be[] = new byte[10];
+	(new String("!SCREAM!")).getBytes(0,8, should_be, 0);
+	should_be[8] = (byte)0;
+	int a;
+	
+	m_.mmIO._mm_fseek(m_.MLoader.modfp,21,m_.mmIO.SEEK_SET);
+	//fread(str,1,9,m_.MLoader.modfp);
+	m_.MLoader.modfp.read(str,0,9);
+	//fread(&filetype,1,1,m_.MLoader.modfp);
+	m_.MLoader.modfp.read(filetype,0,1);
+	for(a=0;a<8;a++)
+	    if (str[a] != should_be[a])
+	        break;
+	//if(!memcmp(str,"!SCREAM!",8) || (filetype[0]!=2)) /* STM Module = filetype 2 */
+	if ((a != 8) || (filetype[0] != 2)) /* STM Module = filetype 2 */
+	      return false;
+	
+	return true;
 }
 
 

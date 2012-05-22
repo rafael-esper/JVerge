@@ -13,9 +13,10 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
 
 
 public class UNI_Loader extends clLOADER
@@ -32,8 +33,6 @@ public UNI_Loader(clMainBase theMain)
 
 public boolean Test()
 {
-        try {
-
         byte id[] = new byte[4];
         //if(!fread(id,4,1,m_.MLoader.modfp)) return 0;
         if (m_.MLoader.modfp.read(id,0,4) != 4) return false;
@@ -43,12 +42,6 @@ public boolean Test()
             return true;
 
         return false;
-
-        }
-        catch (IOException ioe1)
-        {
-            return false;
-        }
 }
 
 
@@ -65,8 +58,6 @@ public void Cleanup()
 
 public String StrRead()
 {
-        try {
-
         byte [] s;
         int len;
         String ret;
@@ -83,19 +74,11 @@ public String StrRead()
         ret = new String(s, 0, 0, len);
         s = null;
         return ret;
-
-        }
-        catch (IOException ioe1)
-        {
-            return null;
-        }
 }
 
 
 public short [] TrkRead()
 {
-        try {
-
         byte [] t;
         short [] wordTrk;
         int i;
@@ -115,12 +98,6 @@ public short [] TrkRead()
         t = null;
         
         return wordTrk;
-
-        }
-        catch (IOException ioe1)
-        {
-            return null;
-        }
 }
 
 

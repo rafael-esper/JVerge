@@ -3,20 +3,25 @@ package domain;
 import static core.Script.*;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import persist.ExtendedDataInputStream;
+import persist.ExtendedDataOutputStream;
 import core.Script;
 
 public class Vsp {
 
 	public static final int  VID_BYTESPERPIXEL	=	3;
-	
 	public static final int  VSP_SIGNATURE	=	5264214;
 	public static final int  VSP_VERSION	=		6;
 	
@@ -29,23 +34,21 @@ public class Vsp {
 	
 	// .vsp format: 	https://github.com/Bananattack/v3tiled/wiki/.vsp-file
 	
-	public int signature = VSP_SIGNATURE;
-	public int version = VSP_VERSION;
-	public int tileSize = 16;
-	public int format = 1;
-	public int compression = 1;
-
-	public int numtiles = 0;
+	private int signature = VSP_SIGNATURE;
+	private int version = VSP_VERSION;
+	private int tileSize = 16;
+	private int format = 1;
+	private int compression = 1;
+	private int numtiles = 0;
 	
-	public byte[] vspdata = new byte[numtiles*16*16*3]; // tileCount * width * height * 3 bytes!
-	public Animation[] anims = new Animation[0];
-	public byte[] obsPixels = new byte[numtiles*16*16]; // tileCount * width * height * 1 bytes!
+	private Animation[] anims = new Animation[0];
+	private byte[] obsPixels = new byte[16*16]; // width * height * 1 bytes!
 	int numobs;
 	
 	int vadelay[], tileidx[], flipped[];
 	
 	// [Rafael, the Esper]
-	public BufferedImage [] tiles;
+	private BufferedImage [] tiles;
 	
 	public Vsp() {
 		
@@ -54,7 +57,7 @@ public class Vsp {
 	public Vsp(URL urlpath) {
 		try {
 			this.load(urlpath.openStream());
-			
+
 		} catch (FileNotFoundException fnfe) {
 			error("VSP::FileNotFoundException : " + urlpath);
 		} catch (IOException e) {
@@ -76,8 +79,9 @@ public class Vsp {
 			this.numtiles = f.readSignedIntegerLittleEndian();
 			this.compression = f.readSignedIntegerLittleEndian();
 			
-			System.out.println(this.signature + ";"+this.version+";"+this.numtiles+";"+this.compression);
-			this.vspdata =  f.readCompressedUnsignedShortsIntoBytes(); // f.readCompressedUnsignedShorts();
+			System.out.println(this.signature + ";"+this.version+";"+this.getNumtiles()+";"+this.compression);
+			
+			byte[] vspdata = f.readCompressedUnsignedShortsIntoBytes(); // tileCount * width * height * 3 bytes!
 				
 	        int numAnim = f.readSignedIntegerLittleEndian();	// anim.length
 	        this.anims = new Vsp.Animation[numAnim];	
@@ -111,13 +115,13 @@ public class Vsp {
 			f.close();
 			
 			// initialize tile anim stuff
-			tileidx = new int[numtiles];
-			flipped = new int[numtiles];
+			tileidx = new int[getNumtiles()];
+			flipped = new int[getNumtiles()];
 			vadelay = new int[numAnim];
 			int i;
 			for (i=0; i<numAnim; i++)
 				vadelay[i]=0;
-			for (i=0; i<numtiles; i++)
+			for (i=0; i<getNumtiles(); i++)
 			{
 				flipped[i] = 0;
 				tileidx[i] = i;
@@ -126,8 +130,8 @@ public class Vsp {
 			
 			
 			// Obtém tiles a partir dos vetores (vspdata)
-			System.out.println("Numtiles: " + numtiles + "(" + vspdata.length + " bytes)");
-			tiles = f.getBufferedImageArrayFromPixels(vspdata, numtiles, 16, 16);
+			System.out.println("Numtiles: " + getNumtiles() + "(" + vspdata.length + " bytes)");
+			this.tiles = f.getBufferedImageArrayFromPixels(vspdata, getNumtiles(), 16, 16);
 			//for(int x=0; x<tiles.length; x++)
 				//Script.graycolorfilter(tiles[x]);
 			
@@ -138,8 +142,230 @@ public class Vsp {
 
 	}
 	
+	private void save(String filename) {
+
+		System.out.println("VSP::save at " + filename);
+		ExtendedDataOutputStream f = null;
+		try {
+			OutputStream os = new FileOutputStream(filename);
+			f = new ExtendedDataOutputStream(os);
+			
+			
+			f.writeSignedIntegerLittleEndian(this.signature);
+			f.writeSignedIntegerLittleEndian(this.version);
+			f.writeSignedIntegerLittleEndian(this.tileSize);
+			f.writeSignedIntegerLittleEndian(this.format);
+			f.writeSignedIntegerLittleEndian(this.getNumtiles());
+			f.writeSignedIntegerLittleEndian(this.compression);
+			
+			System.out.println(this.signature + ";"+this.version+";"+this.getNumtiles()+";"+this.compression);
+			byte[] pixels = f.getPixelArrayFromFrames(tiles, tiles.length, this.tileSize, this.tileSize);
+			f.writeCompressedBytes(pixels);
+
+			f.writeSignedIntegerLittleEndian(this.anims.length);
+	        
+	        for(int i=0; i<this.anims.length; i++) {
+	        	Animation a = anims[i];
+	        	f.writeFixedString(a.name, 256);
+	        	f.writeSignedIntegerLittleEndian(a.start);
+	        	f.writeSignedIntegerLittleEndian(a.finish);
+	        	f.writeSignedIntegerLittleEndian(a.delay);
+	        	f.writeSignedIntegerLittleEndian(a.mode);
+	        }			
+
+	        f.writeSignedIntegerLittleEndian(this.numobs);
+	        
+			f.writeCompressedBytes(this.obsPixels);
+	
+		}
+		catch(IOException e) {
+			System.err.println("VSP::save " + e.getMessage());
+		}
+		finally {
+			try {
+				f.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}	
+
+	public void exportToClipboard(int tiles_per_row) {
+		
+		int row_size = tiles_per_row*16;
+		VImage clipboard = new VImage(row_size, (this.getNumtiles()/tiles_per_row+1) * 16);
+		Font font = new Font("Serif", Font.PLAIN, 7);
+		
+		for(int i=0; i<this.getNumtiles(); i++) {
+			clipboard.blit((i*16)%row_size, i/tiles_per_row*16, getTiles()[i]);
+			//if(i%tiles_per_row == 0)
+				//clipboard.printstring(0, i/tiles_per_row*16+7, font, Integer.toString(i/tiles_per_row)); 
+		}
+		clipboard.copyImageToClipboard();
+
+	}
 	
 	
+	public static void main(String args[]) throws MalformedURLException {
+
+		Vsp v = new Vsp(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\psg.vsp"));
+		v.exportToClipboard(32);
+		/*
+		int tiles_per_row = 32;
+		
+		boolean marcados[] = new boolean[v.getNumtiles()];
+		int newNumTiles = v.getNumtiles();
+		for(int t1=0; t1<v.getNumtiles()/tiles_per_row; t1++) {
+			
+			for(int t2=t1+1; t2<v.getNumtiles()/tiles_per_row; t2++) {
+
+				System.out.println("Comparando linha " + t1 + " com " + t2);
+				
+				int equal = 0;
+				for(int idx=0; idx<tiles_per_row; idx++) {
+					System.out.println("\tTile " + idx);
+
+					int tile1 = 534;//t1*tiles_per_row + idx;
+					int tile2 = 3606;//t2*tiles_per_row + idx;
+					if(v.getTiles()[tile1].getRGB(11, 12) != v.getTiles()[tile2].getRGB(11, 12)) {
+						System.out.println(v.getTiles()[tile1].getRGB(11, 12) +"\t"+ v.getTiles()[tile2].getRGB(11, 12));
+						break;
+					}
+					else
+					{
+						equal++;
+					}
+				}
+				if(equal == tiles_per_row) {
+					System.out.println("Row " + t1 + " EQUAL to row " + t2);
+					newNumTiles-=tiles_per_row;
+					for(int p=t2;p<t2+tiles_per_row;p++)
+						marcados[p] = true;
+				}
+				
+			}
+			
+		}
+		
+		BufferedImage[] newTiles = new BufferedImage[newNumTiles];
+		int pos = 0;
+		for(int x=0; x<v.getNumtiles(); x++) {
+			if(pos < newNumTiles && !marcados[x]) {
+				newTiles[pos] = v.getTiles()[x];
+				pos++;
+			}
+		}*/
+		//v.numtiles = newNumTiles;
+		//v.tiles = newTiles;
+		//v.save("C:\\PSG.VSP");
+		
+		//Vsp v = new Vsp(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\ps1.vsp"));
+		//v.save("c:\\temp.vsp");
+		//Vsp v1 = new Vsp(new URL("file:///C:\\TEMP.VSP"));
+		
+		/*createVspFromImages(new VImage[]{
+				new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_015.png")),
+				new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_016.png")),
+				new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_017.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_019.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_020.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_021.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_023.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_024.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_025.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_027.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_028.png")),
+				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_029.png"))
+				
+				
+				
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_171.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_172.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_173.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_175.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_176.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_177.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_178.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_180.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_181.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_182.png")),
+								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_170.png")),
+		});*/
+		
+	}
+	
+	static void createVspFromImages(VImage[] images) {
+		
+		// First pixel is default transparent color
+		//Color transC = new Color(images[0].image.getRGB(0, 0));
+		
+		ArrayList<VImage> allTiles = new ArrayList<VImage>();
+				
+		for(int img=0; img<images.length; img++) {
+		
+			int posx=0, posy=0;	
+			int sizex = images[img].width;
+			int sizey = images[img].height;
+			System.out.println("Analysing image " + img);
+			for(int j=0; j<sizey/16;j++) {
+				for(int i=0; i<sizex/16;i++) {
+					VImage newTile = new VImage(16, 16);
+					newTile.grabregion(posx, posy, posx+16, posy+16, 0, 0, images[img].image);					
+					posx+=16;
+
+					// Checks for repeated tile 
+					/*int repeated = 0;
+					for(BufferedImage bi: allTiles) {
+						for(int py=0;py<16;py++)
+							for(int px=0;px<16;px++)
+								if(bi.getRGB(px,  py) == newTile.getRGB(px, py)) {
+									repeated++;
+								}
+								else
+									{px=20;py=20;}
+					}
+					if(repeated < 256)*/
+						allTiles.add(newTile);
+					/*else
+						allTiles.add(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB));
+					repeated = 0;*/
+				}
+				posy+=16;
+				posx=0;
+			}				
+			
+			
+		}
+		
+		VImage clipboard = new VImage(512, (allTiles.size()/32+1) * 16);
+		Font font = new Font("Serif", Font.PLAIN, 7);
+		
+		Vsp v = new Vsp();
+		v.tiles = new BufferedImage[allTiles.size()];
+		System.out.println("Got " + allTiles.size() + " tiles");
+		for(int i=0; i<allTiles.size(); i++) {
+			v.getTiles()[i] = allTiles.get(i).image;
+			clipboard.blit((i*16)%512, i/32*16, v.getTiles()[i]);
+			clipboard.printstring((i*16)%512, i/32*16+16, font, Integer.toString(i)); 
+		}
+		clipboard.copyImageToClipboard();
+		
+		v.numtiles = v.tiles.length;
+		v.obsPixels = new byte[512];
+		for(int i=0; i<512; i++) {
+			v.obsPixels[i] = (byte) ((i >= 256) ? 1: 0);
+		}
+		v.save("C:\\TEMP.VSP");
+	}
+	
+	public int getNumtiles() {
+		return numtiles;
+	}
+
+	public BufferedImage [] getTiles() {
+		return tiles;
+	}
+
 	
 	boolean GetObs(int t, int x, int y)
 	{
@@ -159,15 +385,13 @@ public class Vsp {
 	}
 	public void Blit(int x, int y, int index, VImage dest)
 	{
-		//if (index >= numtiles) err("VSP::BlitTile(), tile %d exceeds %d", index, numtiles);
-		if (index >= numtiles) return;
-		index = tileidx[index]; // Get the actual pointer to a tile, can change due to VSP animation
-		if (index >= numtiles) return;
-		if (index >= numtiles) System.err.printf("VSP::BlitTile(), tile %d exceeds %d", index, numtiles);
-		//[Rafael, the Esper] char tile = (char)vspdata.data + (index<<8) * VID_BYTESPERPIXEL;
-		//[Rafael, the Esper] BlitTile(x, y, tile, dest);
-		dest.g.drawImage(current_map.tileset.tiles[index], x, y, Color.BLACK, null);
-		//getJGEngine().buf_gfx.drawImage(current_map.tileset.tiles[index], x, y, getJGEngine());
+		// tileidx[index] = the actual pointer to a tile, can change due to VSP animation
+		if (index >= getNumtiles() || tileidx[index] >= getNumtiles()) {
+			System.err.printf("VSP::BlitTile(), tile %d exceeds %d", index, getNumtiles());
+			return;
+		}
+		dest.blit(x, y, current_map.tileset.getTiles()[tileidx[index]]);
+		//dest.g.drawImage(current_map.tileset.tiles[index], x, y, Color.BLACK, null);
 		
 	}
 
@@ -179,14 +403,12 @@ public class Vsp {
 			mytimer++;
 		}
 		//if (index >= numtiles) err("VSP::BlitTile(), tile %d exceeds %d", index, numtiles);
-		if (index >= numtiles) return;
-		index = tileidx[index];
-		if (index >= numtiles) return;
-		if (index >= numtiles) System.err.printf("VSP::BlitTile(), tile %d exceeds %d", index, numtiles);
-		//[Rafael, the Esper] char tile = (char)vspdata.data + (index<<8) * VID_BYTESPERPIXEL;
-		//[Rafael, the Esper] TBlitTile(x, y, tile, dest);
-		dest.g.drawImage(current_map.tileset.tiles[index], x, y, null);
-		//getJGEngine().buf_gfx.drawImage(current_map.tileset.tiles[index], x, y, getJGEngine());
+		if (index >= getNumtiles() || tileidx[index] >= getNumtiles()) {
+			System.err.printf("VSP::TBlitTile(), tile %d exceeds %d", index, getNumtiles());
+			return;
+		}
+		dest.tblit(x, y, current_map.tileset.getTiles()[tileidx[index]]);
+		//dest.g.drawImage(current_map.tileset.tiles[index], x, y, null);
 	}
 
 	void BlitObs(int x, int y, int index, VImage dest)
@@ -249,14 +471,14 @@ public class Vsp {
 	void ValidateAnimations()
 	{
 		for (int i=0; i<anims.length; i++)
-			if (anims[i].start<0 || anims[i].start>=numtiles || anims[i].finish<0 || anims[i].finish>=numtiles)
+			if (anims[i].start<0 || anims[i].start>=getNumtiles() || anims[i].finish<0 || anims[i].finish>=getNumtiles())
 				System.err.printf("VSP::ValidateAnimations() - animation %d references out of index tiles", i);
 	}
 	
 	
-	
-	
-	
+
+
+
 	public class Animation {
 		
 		public String name = "";

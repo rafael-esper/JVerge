@@ -14,6 +14,10 @@ All systems - all compilers
 package audio.jmikmod.MikMod.MLoader;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import persist.SimulatedRandomAccessFile;
 
 import audio.jmikmod.MikMod.*;
 
@@ -29,7 +33,7 @@ public class clMLoader extends Object
 
 
 
-	public RandomAccessFile modfp;
+	public SimulatedRandomAccessFile modfp;
 	public UNIMOD of;
 
 	//clLOADER *firstloader; //=NULL;
@@ -311,7 +315,7 @@ public boolean ML_LoadHeader()
 
 	if(t == -1){
 		m_.mmIO.myerr="Unknown module format";
-		m_.mmIO.myerr_file=m_.cur_mod.filename;
+		m_.mmIO.myerr_file=m_.cur_mod.filename.getFile();
 		return false;
 	}
 
@@ -403,7 +407,7 @@ public void ML_Free(UNIMOD mf)
 
 
 
-public UNIMOD ML_LoadFP(RandomAccessFile fp)
+public UNIMOD ML_LoadFP(SimulatedRandomAccessFile fp)
 {
 	int t;
 	UNIMOD mf;
@@ -487,20 +491,25 @@ public UNIMOD ML_LoadFP(RandomAccessFile fp)
 	return mf;
 }
 
-public UNIMOD ML_LoadFN(String filename)
+public UNIMOD ML_LoadFN(URL filename)
 {
-	RandomAccessFile fp;
+	SimulatedRandomAccessFile fp = null;
 	UNIMOD mf;
 
         //if((fp=fopen((const char*)*filename,"rb"))==NULL){
         try
         {
         
-        if ( (fp = new RandomAccessFile(filename, "r")) == null) {
-		m_.mmIO.myerr="Error opening file";
-		m_.mmIO.myerr_file=filename;
-		return null;
-	}
+        try {
+			if ( (fp = new SimulatedRandomAccessFile(filename)) == null) {
+			m_.mmIO.myerr="Error opening file";
+			m_.mmIO.myerr_file=filename.getFile();
+			return null;
+}
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	/* display "loading" message */
 	m_.Display.display_version();
@@ -516,7 +525,8 @@ public UNIMOD ML_LoadFN(String filename)
         }
         catch (IOException ioe1)
         {
-            return null;
+            ioe1.printStackTrace();
+        	return null;
         }
 }
 

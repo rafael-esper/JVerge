@@ -13,9 +13,11 @@ All systems - all compilers (hopefully)
 
 package audio.jmikmod.MikMod.Loaders;
 
-import java.io.*;
+import java.io.IOException;
 
-import audio.jmikmod.MikMod.*;
+import audio.jmikmod.MikMod.clLOADER;
+import audio.jmikmod.MikMod.clMainBase;
+import persist.SimulatedRandomAccessFile;
 
 
 
@@ -139,26 +141,20 @@ public XM_Loader(clMainBase theMain)
 
 public boolean Test()
 {
-    try {
-        byte id[] = new byte[17], should_be[] = new byte[20];
+    byte id[] = new byte[17], should_be[] = new byte[20];
 
-        String szShould="Extended Module: ";
-        szShould.getBytes(0,17,should_be,0);
-        int a;
-        //if(!fread(id,17,1,m_.MLoader.modfp)) return 0;
-        //if (!m_.MLoader.modfp.read(id,0,17)) return 0;
-        if (m_.MLoader.modfp.read(id,0,17) != 17) return false;
-        for (a=0; a<17;a++)
-        {
-            if (id[a] != should_be[a])
-                return false;
-        }
-        return true;
-    }
-    catch (IOException ioe1)
-    {
-        return false;
-    }
+	String szShould="Extended Module: ";
+	szShould.getBytes(0,17,should_be,0);
+	int a;
+	//if(!fread(id,17,1,m_.MLoader.modfp)) return 0;
+	//if (!m_.MLoader.modfp.read(id,0,17)) return 0;
+	if (m_.MLoader.modfp.read(id,0,17) != 17) return false;
+	for (a=0; a<17;a++)
+	{
+	    if (id[a] != should_be[a])
+	        return false;
+	}
+	return true;
 }
 
 
@@ -195,9 +191,7 @@ public void Cleanup()
 
 public void XM_ReadNote(XMNOTE n)
 {
-    try
-    {
-	short cmp;
+    short cmp;
         //memset(n,0,sizeof(XMNOTE));
         n.note = n.ins = n.vol = n.eff = n.dat = 0;
 
@@ -228,10 +222,6 @@ public void XM_ReadNote(XMNOTE n)
             n.eff = 255;
         if (n.dat == -1)
             n.dat = 255;
-    }
-    catch (IOException ioe1)
-    {
-    }
 }
 
 

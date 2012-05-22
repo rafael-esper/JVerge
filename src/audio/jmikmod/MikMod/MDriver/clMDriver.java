@@ -15,6 +15,8 @@ package audio.jmikmod.MikMod.MDriver;
 
 import java.io.*;
 
+import persist.SimulatedRandomAccessFile;
+
 import audio.jmikmod.MikMod.*;
 
 
@@ -35,7 +37,7 @@ public class clMDriver extends clMDriverBase
 	public short md_bpm;
 	
 
-	protected RandomAccessFile sl_fp;
+	protected SimulatedRandomAccessFile sl_fp;
 	protected short sl_old;
 	protected short sl_infmt;
 	protected short sl_outfmt;
@@ -87,7 +89,7 @@ public void tickhandler()
 
 
 
-public void SL_Init(RandomAccessFile fp,short infmt,short outfmt)
+public void SL_Init(SimulatedRandomAccessFile fp,short infmt,short outfmt)
 {
 	sl_old=0;
 	sl_fp=fp;
@@ -138,13 +140,7 @@ public void SL_Load(byte [] buffer,int offset, int length)
                         }  */
 
                         byte byte_buffer[] = new byte [stodo];
-                        //fread(byte_buffer,1,stodo,sl_fp);
-                        try {
-                            sl_fp.read(byte_buffer,0,stodo);
-                        }
-                        catch (IOException ioe1)
-                        {
-                        }
+                        sl_fp.read(byte_buffer,0,stodo);
                         for(t=0;t<stodo;t++)
                         {
                             sl_buffer[t] = (short)((byte_buffer[t]<<8));
@@ -213,7 +209,7 @@ public void MD_RegisterDriver(clDRIVER drv)
 }
 
 
-public short MD_SampleLoad(RandomAccessFile fp,int size,int reppos,int repend,int flags)
+public short MD_SampleLoad(SimulatedRandomAccessFile fp,int size,int reppos,int repend,int flags)
 {
 	short result=drivers[num_drivers-md_device].SampleLoad(fp,size,reppos,repend,flags);
 	SL_Exit();

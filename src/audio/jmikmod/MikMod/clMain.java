@@ -21,6 +21,7 @@ package audio.jmikmod.MikMod;
 
 import java.io.*;
 import java.lang.*;
+import java.net.URL;
 
 import audio.jmikmod.MikMod.*;
 import audio.jmikmod.MikMod.Display.*;
@@ -238,7 +239,7 @@ an array of string a-la-style of C's "char * argv[]" parameter: argv[0] is
 an arbitary program name, as in C.
 
  */
-public int main(String nargv[])
+public int main(String nargv[], URL url)
 {
 
         int nargc = nargv.length;
@@ -488,7 +489,7 @@ quiet = true;
 
         cur_mod.version = new String();
         cur_mod.driver = new String();
-        cur_mod.filename = new String();
+        cur_mod.filename = null; //new String();
         cur_mod.file_output = new String();
         cur_mod.name_type = new String();
         cur_mod.status = new String();
@@ -503,13 +504,13 @@ quiet = true;
 		MDriver.MD_PatternChange();
 
                 cur_mod.deleted=false;
-                cur_mod.filename = new String(nargv[optind]);
+                cur_mod.filename = url; //new String(nargv[optind]);
 
 		/* load the module */
 
                 {
-                    String strFilename = new String(nargv[optind]);
-                    mf=MLoader.ML_LoadFN(strFilename);
+                    //String strFilename = new String(nargv[optind]);
+                    mf=MLoader.ML_LoadFN(cur_mod.filename);
                 }
 
 		/* didn't work . exit with errormsg. */
