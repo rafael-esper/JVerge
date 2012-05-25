@@ -24,8 +24,8 @@ import java.util.Calendar;
 import java.util.Random;
 
 import audio.VMusic;
-import audio.VSound;
 
+import domain.VSound;
 import domain.VImage;
 import domain.Entity;
 import domain.Map;
@@ -110,7 +110,6 @@ public class Script {
 	public static int __grue_actor_index;
 	
 	private static VMusic musicplayer; // [Rafael, the Esper] 
-	private static VSound soundplayer; // [Rafael, the Esper]
 	
 	public static int invc;
 
@@ -484,19 +483,18 @@ public class Script {
 	static int GetSongVolume(int handle) { return GetSongVol(handle); }
 	static int LoadSong(String fn) { return LoadSong(fn); }
 	static int LoadSound(String fn) { return (int)LoadSample(fn); }*/
-	public static void playsound(URL fn) {
-		playsound(fn, 100);
+	public static void playsound(VSound sound) {
+		playsound(sound, 100);
 	}
-	public static void playsound(URL fn, int volume) {
-		if(fn==null || VergeEngine.config.isNosound())
+	public static void playsound(VSound sound, int volume) {
+		if(sound==null || VergeEngine.config.isNosound())
 			return;
 
 		if (volume < 0)
 			volume = 0;
 		else if (volume > 100)
 			volume = 100;
-		soundplayer = new VSound();
-		soundplayer.start(fn, volume);
+		sound.start(volume);
 	}
 
 	public static void playmusic(URL fn) { 

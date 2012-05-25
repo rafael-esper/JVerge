@@ -627,13 +627,13 @@ public class VergeEngine extends Thread {
 		}
 		
 		// Doesn't work if systemtime is not updated! // RBP Map rendering skip to accelerate drawing
-		if(framecount>=2) {
+		//if(framecount>=2) {
 			current_map.render(xwin, ywin, screen);
-			framecount=0;
-		}
-		framecount++;
+			//framecount=0;
+		//}
+		//framecount++;
 	}
-	static int framecount = 0;
+	//static int framecount = 0;
 
 	static void CheckZone() {
 		int cur_timer = timer;

@@ -124,6 +124,8 @@ Início dec: Music (vgm, mod)
 16/mai(+2)	PS Scripts (alternative English PS). Palma PSG editing (V3Tiled).
 17/mai(+1)	PS Scripts (alternative English PS). Palma PSG editing (V3Tiled).
 18/mai(+2) 	PS Scripts (alternative English PS/finished).
+21/mai(+2)	PS Scripts (Sheet with all languages, standard)
+22/mai(+1)	Palma PSG Editing. Submission to Github (Ak, Sully and JVerge)
 
 =====??? HOURS ===========  -> SECOND RELEASE
 
