@@ -87,7 +87,11 @@ public class GUI extends JFrame implements ComponentListener {
 		if (!win_decoration) {
 			this.setUndecorated(true);
 			this.setSize(winwidth, winheight);
-			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(gui);			
+			//try {
+				GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(gui);
+			//} finally {
+			//	GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(null);
+			//}
 			
 		} else {
 			// setting the size of the canvas or applet has no effect
@@ -134,7 +138,6 @@ public class GUI extends JFrame implements ComponentListener {
 		synchFramerate();
 	}
 	
-	 
 	public static void updateGUI() {
 		Graphics g = strategy.getDrawGraphics();
 		if(alpha != 1f) {

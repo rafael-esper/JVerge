@@ -4,6 +4,9 @@ import static core.Script.*;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -390,8 +393,14 @@ public class Vsp {
 			System.err.printf("VSP::BlitTile(), tile %d exceeds %d", index, getNumtiles());
 			return;
 		}
+		//if(systemtime%3!=0) 
 		dest.blit(x, y, current_map.tileset.getTiles()[tileidx[index]]);
 		//dest.g.drawImage(current_map.tileset.tiles[index], x, y, Color.BLACK, null);
+		// Faster, but doesn't support animations
+		/*Graphics2D g2 = (Graphics2D) dest.g;
+		g2.setPaint(new TexturePaint(current_map.tileset.tiles[index], new Rectangle(x,y,16,16)));
+		g2.fillRect(x,y,16,16);*/
+		
 		
 	}
 

@@ -366,12 +366,6 @@ public class Script {
 		  hookretrace(""); */ 
 	}
 	
-	public static void render() {
-		TimedProcessEntities(); 
-		VergeEngine.RenderMap();
-	}
-	
-
 	//VI.e. Entity Functions
 	public static void changeCHR(int e, String c) {
 		if (e<0 || e >= numentities) return;
@@ -425,7 +419,7 @@ public class Script {
 
 		while(myself.movecode != 0 )
 		{
-			render();
+			screen.render();
 			showpage();
 		}
 
@@ -1262,7 +1256,7 @@ public class Script {
 		unpress(9);
 		for(int i=0; i<=delay; i++) {
 			if(rendermap) 
-				render();
+				screen.render();
 			//set the opacity
 			getGUI().setAlpha((float) 1-((float)i/delay));
 		    showpage();
@@ -1273,7 +1267,7 @@ public class Script {
 		unpress(9);
 		for(int i=0; i<=delay; i++) {
 			if(rendermap) 
-				render();
+				screen.render();
 			//setlucent(i/delay);
 			//set the opacity
 			getGUI().setAlpha((float)i/delay);

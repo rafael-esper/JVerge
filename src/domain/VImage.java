@@ -11,6 +11,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.Toolkit;
+import java.awt.Transparency;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -27,6 +28,8 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import core.VergeEngine;
+
 import persist.PCXReader;
 
 import static core.Script.*;
@@ -41,11 +44,11 @@ public class VImage implements Transferable {
 	public VImage(int x, int y) {
 		this.width = x;
 		this.height = y;
-		//GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		//GraphicsDevice gs = ge.getDefaultScreenDevice();
-		//GraphicsConfiguration gc = gs.getDefaultConfiguration();
-		//image = gc.createCompatibleImage(x, y);
-		image = new BufferedImage(x, y, BufferedImage.TYPE_INT_ARGB);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice gs = ge.getDefaultScreenDevice();
+		GraphicsConfiguration gc = gs.getDefaultConfiguration();
+		image = gc.createCompatibleImage(x, y, Transparency.TRANSLUCENT);
+		//image = new BufferedImage(x, y, BufferedImage.TYPE_INT_ARGB);
 		g = image.getGraphics();
 	}
 	
@@ -176,6 +179,13 @@ public class VImage implements Transferable {
 
 		// TODO Create function drawRoundRect, similar to Graphics
 
+		// Render the map and the entities to this VImage
+	    public void render() {
+			VergeEngine.TimedProcessEntities(); 
+			VergeEngine.RenderMap(this);
+		}
+    
+	    
 		//VI.f. Graphics Functions
 		/*static void AdditiveBlit(int x, int y, int src, int dst) {
 			image *s = ImageForHandle(src);

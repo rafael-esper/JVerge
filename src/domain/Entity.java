@@ -32,9 +32,6 @@ public class Entity {
 	public CHR chr; 
 	
 	private int x, y; // Unsigned short
-	//public byte direction=0; //, isObstructable=1, isObstruction=1, autoface=1;
-	public byte activationMode = 0; // Unused
-	public int expandFlag = 0; // Unused
 	public String chrname = ""; // filename
 	
 	public boolean visible = true, active = true, autoface = true;
@@ -719,7 +716,7 @@ public class Entity {
 		frame = 0;
 	}
 
-	public void draw()
+	public void draw(VImage dest)
 	{
 		if (!visible) return;
 
@@ -762,7 +759,7 @@ public class Entity {
 		}
 
 		if (chr != null) 
-			chr.render(zx, zy, frame, screen);
+			chr.render(zx, zy, frame, dest);
 	}
 
 	public void SetWanderZone()

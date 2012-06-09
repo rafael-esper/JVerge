@@ -66,11 +66,11 @@ public class VergeEngine extends Thread {
 		}
 	}
 
-	public static void RenderEntities() {
+	public static void RenderEntities(VImage dest) {
 		List<Entity> entidx = new ArrayList<Entity>();
 		int entnum = 0;
 
-		// Build a list of entities that are onscreen/visible.
+		// Build a list of entities that are visible.
 		// FIXME: Make it actually only be entities that are onscreen
 		for (int i = 0; i < numentities; i++) {
 			entidx.add(entity.get(i));
@@ -83,7 +83,7 @@ public class VergeEngine extends Thread {
 		for (int i = 0; i < entnum; i++) {
 			RenderSpritesBelowEntity(i); // Rafael: entidx.get(i));
 			setlucent(entidx.get(i).lucent);
-			entidx.get(i).draw();
+			entidx.get(i).draw(dest);
 			setlucent(0);
 			RenderSpritesAboveEntity(i); // Rafael: entidx.get(i));
 		}
@@ -525,7 +525,7 @@ public class VergeEngine extends Thread {
 		}
 	}
 
-	static void MapScroller() {
+	static void MapScroller(VImage dest) {
 		inscroller = true;
 		int oldx = xwin;
 		int oldy = ywin;
@@ -545,7 +545,7 @@ public class VergeEngine extends Thread {
 			if (getKey(KeyRight))
 				xwin++;
 			Controls.UpdateControls();
-			RenderMap();
+			RenderMap(dest);
 			showpage();
 		}
 
@@ -559,23 +559,23 @@ public class VergeEngine extends Thread {
 		inscroller = false;
 	}
 
-	static void RenderMap() {
+	public static void RenderMap(VImage dest) {
 		if (current_map == null) {
 			return;
 		}
 		
 		if (!inscroller && getLastKeyChar() == 41)
-			MapScroller();
+			MapScroller(dest);
 
 		int rmap = (current_map.getWidth() * 16);
 		int dmap = (current_map.getHeight() * 16);
 
 		switch (cameratracking) {
 		case 0:
-			if (xwin + screen.width >= rmap)
-				xwin = rmap - screen.width;
-			if (ywin + screen.height >= dmap)
-				ywin = dmap - screen.height;
+			if (xwin + dest.width >= rmap)
+				xwin = rmap - dest.width;
+			if (ywin + dest.height >= dmap)
+				ywin = dmap - dest.height;
 			if (xwin < 0)
 				xwin = 0;
 			if (ywin < 0)
@@ -583,23 +583,22 @@ public class VergeEngine extends Thread {
 			break;
 		case 1:
 			if (myself != null) {
-				xwin = (myself.getx() + myself.chr.hw / 2) - (screen.width / 2);
-				ywin = (myself.gety() + myself.chr.hh / 2)
-						- (screen.height / 2);
+				xwin = (myself.getx() + myself.chr.hw / 2) - (dest.width / 2);
+				ywin = (myself.gety() + myself.chr.hh / 2) - (dest.height / 2);
 			} else {
 				xwin = 0;
 				ywin = 0;
 			}
 
 			if (!current_map.horizontalWrapable) { // Rafael: new code
-				if (xwin + screen.width >= rmap)
-					xwin = rmap - screen.width;
+				if (xwin + dest.width >= rmap)
+					xwin = rmap - dest.width;
 				if (xwin < 0)
 					xwin = 0;
 			}
 			if (!current_map.verticalWrapable) { // Rafael: new code
-				if (ywin + screen.height >= dmap)
-					ywin = dmap - screen.height;
+				if (ywin + dest.height >= dmap)
+					ywin = dmap - dest.height;
 
 				if (ywin < 0)
 					ywin = 0;
@@ -611,14 +610,14 @@ public class VergeEngine extends Thread {
 				ywin = 0;
 			} else {
 				xwin = (entity.get(cameratracker).getx() + 8)
-						- (screen.width / 2);
+						- (dest.width / 2);
 				ywin = (entity.get(cameratracker).gety() + 8)
-						- (screen.height / 2);
+						- (dest.height / 2);
 			}
-			if (xwin + screen.width >= rmap)
-				xwin = rmap - screen.width;
-			if (ywin + screen.height >= dmap)
-				ywin = dmap - screen.height;
+			if (xwin + dest.width >= rmap)
+				xwin = rmap - dest.width;
+			if (ywin + dest.height >= dmap)
+				ywin = dmap - dest.height;
 			if (xwin < 0)
 				xwin = 0;
 			if (ywin < 0)
@@ -628,7 +627,7 @@ public class VergeEngine extends Thread {
 		
 		// Doesn't work if systemtime is not updated! // RBP Map rendering skip to accelerate drawing
 		//if(framecount>=2) {
-			current_map.render(xwin, ywin, screen);
+		current_map.render(xwin, ywin, dest);
 			//framecount=0;
 		//}
 		//framecount++;
@@ -720,7 +719,7 @@ public class VergeEngine extends Thread {
 				//TimedProcessEntities();
 				while (!die) {
 					updatecontrols();
-					render();
+					screen.render();
 					if(!die) // redundant?
 						showpage();
 				}

@@ -3,6 +3,7 @@ package domain;
 import static core.VergeEngine.*;
 import static core.Script.*;
 
+import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -410,7 +411,7 @@ public class Map {
 			}
 
 			if (token == 'E') {
-				RenderEntities();
+				RenderEntities(dest);
 				continue;
 			}
 			if (token == 'R') {
@@ -421,16 +422,11 @@ public class Map {
 				int layer = Integer.parseInt(Character.toString(token))-1;
 				if (first) {
 					BlitLayer(false, layer, tx, ty, x, y, dest);
+					//dest.rectfill(0,0,dest.width,dest.height,java.awt.Color.GRAY);
 					first = false;
 					continue;
 				}
-				//[Rafael, the Esper] Teste setlucent(90);
-				//System.out.println("Layer " + layer + " " + currentLucent);
-				//setlucent(current_map.layers[layer].lucent);
 				BlitLayer(true, layer, tx, ty, x, y, dest);
-				//System.out.println("[Rafael, the Esper]: " + currentLucent);
-				//System.exit(0);
-				//setlucent(0);
 			}
 		}
 
