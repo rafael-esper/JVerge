@@ -1,0 +1,46 @@
+<project name="JVerge" default="fullbuild" basedir=".">
+    <description>Java based Verge Engine</description>
+
+    <tstamp/>
+    <property name="build.version" value="0.1-${DSTAMP}" />
+    <property name="java-source-version" value="1.6" />  <!-- Enforce compiler compliance level: Java 1.6+ -->
+    <property name="java-target-version" value="1.6" />  <!-- Deployment enviroment JRE:  Java 1.6+ -->
+
+    <!-- Set up various paths -->
+    <property name="build" location="./build" />
+    <property name="src" location="./src" />
+    <property name="lib" location="./lib" />
+    <property name="classes" location="${build}/classes" />
+
+
+    <path id="build.class.path">
+        <pathelement path="${classes}" />
+        <fileset dir="${lib}">
+            <include name="*.jar" />
+            <include name="*.zip" />
+        </fileset>
+        <pathelement path="${java.class.path}" />
+    </path>
+
+    <target name="fullbuild" depends="clean,compile,package" description="Clean build the JAR file"/>
+
+    <target name="compile" depends="init" description="Compile all Java files">
+        <echo message="Compiling all custom Java files" />
+        <javac srcdir="${src}" destdir="${classes}" fork="true" memoryInitialSize="128m" memoryMaximumSize="256m" classpathref="build.class.path" debug="true"  source="${java-source-version}" target="${java-target-version}"/>
+    </target>
+
+    <target name="package" depends="compile" description="Package custom jar file." >
+        <jar jarfile="${build}/jverge-${build.version}.jar" basedir="${classes}" />
+        <delete dir="${classes}" />
+    </target>
+
+    <target name="clean" description="empty build directory">
+        <delete dir="${build}" />
+        <mkdir dir="${build}" />
+    </target>
+
+    <target name="init">
+        <mkdir dir="${classes}" />
+    </target>
+
+</project>

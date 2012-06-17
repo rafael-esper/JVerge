@@ -14,6 +14,7 @@ import static domain.Entity.SOUTH;
 import static domain.Entity.SW;
 import static domain.Entity.WEST;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,12 +61,6 @@ public class VergeEngine extends Thread {
 		return numentities++;
 	}
 
-	protected static class EntityComparator implements Comparator<Entity> {
-		public int compare(Entity ent1, Entity ent2) {
-			return ent1.gety() - ent2.gety();
-		}
-	}
-
 	public static void RenderEntities(VImage dest) {
 		List<Entity> entidx = new ArrayList<Entity>();
 		int entnum = 0;
@@ -78,7 +73,11 @@ public class VergeEngine extends Thread {
 		}
 
 		// Ysort that list, then draw.
-		Collections.sort(entidx, new EntityComparator());
+		Collections.sort(entidx, new Comparator<Entity>(){
+            public int compare(Entity ent1, Entity ent2) {
+                return ent1.gety() - ent2.gety();
+            }
+        });
 		// qsort(entidx, entnum, 1, cmpent);
 		for (int i = 0; i < entnum; i++) {
 			RenderSpritesBelowEntity(i); // Rafael: entidx.get(i));
