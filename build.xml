@@ -1,0 +1,62 @@
+<project name="JVerge" default="fullbuild" basedir=".">
+    <description>Java based Verge Engine</description>
+
+    <tstamp/>
+    <property name="build.version" value="0.1-${DSTAMP}" />
+    <property name="java-source-version" value="1.6" />  <!-- Enforce compiler compliance level: Java 1.6+ -->
+    <property name="java-target-version" value="1.6" />  <!-- Deployment enviroment JRE:  Java 1.6+ -->
+
+    <!-- Set up various paths -->
+    <property name="build" location="./build" />
+    <property name="src" location="./src" />
+    <property name="lib" location="./lib" />
+    <property name="classes" location="${build}/classes" />
+
+
+    <path id="build.class.path">
+        <pathelement path="${classes}" />
+        <fileset dir="${lib}">
+            <include name="*.jar" />
+            <include name="*.zip" />
+        </fileset>
+        <fileset dir="${build}">
+            <include name="*.jar"/>
+            <include name="*.zip"/>
+        </fileset>
+        <pathelement location="${lib}/findbugs/lib/findbugs-ant.jar" />
+    </path>
+
+    <target name="fullbuild" depends="compile,package" description="Clean build the JAR file"/>
+
+    <target name="compile" depends="init" description="Compile all Java files">
+        <echo message="Compiling all custom Java files" />
+        <javac srcdir="${src}" destdir="${classes}" fork="true" memoryInitialSize="128m" memoryMaximumSize="256m" classpathref="build.class.path" debug="true"  source="${java-source-version}" target="${java-target-version}"/>
+    </target>
+
+    <target name="package" depends="compile" description="Package custom jar file." >
+        <jar jarfile="${build}/jverge.jar" basedir="${classes}" />
+        <delete dir="${classes}" />
+    </target>
+
+    <target name="init">
+        <delete dir="${build}" />
+        <mkdir dir="${build}" />
+        <mkdir dir="${classes}" />
+    </target>
+
+    <target name="runCodeAnalysis" depends="fullbuild" description="Running static code analysis against maven.jar">
+        <echo message="Running static code analysis against ${build}/jverge.jar. This may take a few minutes." />
+        <!-- See http://findbugs.sourceforge.net/manual/anttask.html -->
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="build.class.path"/>
+        <findbugs home="${lib}/findbugs"
+                  jvmargs="-Xms256m -Xmx512m"
+                  output="html"
+                  outputFile="${build}/findbugs.html"
+                  warningsProperty="findbugsFailure">
+            <sourcePath path="${src}" />
+            <class location="${build}/jverge.jar" />
+        </findbugs>
+        <echo message="Static code analysis completed. See ${build}/findbugs.html for results." />
+    </target>
+
+</project>

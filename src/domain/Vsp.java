@@ -132,7 +132,7 @@ public class Vsp {
 			mytimer = systemtime;
 			
 			
-			// Obtém tiles a partir dos vetores (vspdata)
+			// Obtm tiles a partir dos vetores (vspdata)
 			System.out.println("Numtiles: " + getNumtiles() + "(" + vspdata.length + " bytes)");
 			this.tiles = f.getBufferedImageArrayFromPixels(vspdata, getNumtiles(), 16, 16);
 			//for(int x=0; x<tiles.length; x++)

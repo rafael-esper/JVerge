@@ -44,8 +44,7 @@ public class VergeEngine extends Thread {
 
 	// Rafael: new code
 	static Config config = null;
-	private static int time_increment = 2;
-	public static Class<?> systemclass;
+    public static Class<?> systemclass;
 
 	protected static String mapname;
 
@@ -60,12 +59,6 @@ public class VergeEngine extends Thread {
 		return numentities++;
 	}
 
-	protected static class EntityComparator implements Comparator<Entity> {
-		public int compare(Entity ent1, Entity ent2) {
-			return ent1.gety() - ent2.gety();
-		}
-	}
-
 	public static void RenderEntities(VImage dest) {
 		List<Entity> entidx = new ArrayList<Entity>();
 		int entnum = 0;
@@ -78,7 +71,11 @@ public class VergeEngine extends Thread {
 		}
 
 		// Ysort that list, then draw.
-		Collections.sort(entidx, new EntityComparator());
+		Collections.sort(entidx, new Comparator<Entity>(){
+            public int compare(Entity ent1, Entity ent2) {
+                return ent1.gety() - ent2.gety();
+            }
+        });
 		// qsort(entidx, entnum, 1, cmpent);
 		for (int i = 0; i < entnum; i++) {
 			RenderSpritesBelowEntity(i); // Rafael: entidx.get(i));
@@ -124,9 +121,7 @@ public class VergeEngine extends Thread {
 		return !_trigger_onEntityCollide.isEmpty();
 	}
 
-	int __obstructionHappened = 0;
-
-	public static boolean ObstructAt(int x, int y) {
+    public static boolean ObstructAt(int x, int y) {
 		if (current_map.getobspixel(x, y)) {
 
 			if (isEntityCollisionCapturing()) {
@@ -720,8 +715,7 @@ public class VergeEngine extends Thread {
 				while (!die) {
 					updatecontrols();
 					screen.render();
-					if(!die) // redundant?
-						showpage();
+                    showpage();
 				}
 			}
 		}
@@ -750,7 +744,8 @@ public class VergeEngine extends Thread {
 	protected static void DefaultTimer() {
 
 		//time_increment = 1;
-		systemtime += time_increment;
+        int time_increment = 2;
+        systemtime += time_increment;
 		// if (engine_paused) // Rafael: Used only in debug
 		// return;
 		timer += time_increment;
