@@ -14,7 +14,6 @@ import static domain.Entity.SOUTH;
 import static domain.Entity.SW;
 import static domain.Entity.WEST;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,8 +44,7 @@ public class VergeEngine extends Thread {
 
 	// Rafael: new code
 	static Config config = null;
-	private static int time_increment = 2;
-	public static Class<?> systemclass;
+    public static Class<?> systemclass;
 
 	protected static String mapname;
 
@@ -123,9 +121,7 @@ public class VergeEngine extends Thread {
 		return !_trigger_onEntityCollide.isEmpty();
 	}
 
-	int __obstructionHappened = 0;
-
-	public static boolean ObstructAt(int x, int y) {
+    public static boolean ObstructAt(int x, int y) {
 		if (current_map.getobspixel(x, y)) {
 
 			if (isEntityCollisionCapturing()) {
@@ -719,8 +715,7 @@ public class VergeEngine extends Thread {
 				while (!die) {
 					updatecontrols();
 					screen.render();
-					if(!die) // redundant?
-						showpage();
+                    showpage();
 				}
 			}
 		}
@@ -749,7 +744,8 @@ public class VergeEngine extends Thread {
 	protected static void DefaultTimer() {
 
 		//time_increment = 1;
-		systemtime += time_increment;
+        int time_increment = 2;
+        systemtime += time_increment;
 		// if (engine_paused) // Rafael: Used only in debug
 		// return;
 		timer += time_increment;
