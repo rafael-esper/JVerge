@@ -37,7 +37,7 @@ import static core.Script.*;
 public class VImage implements Transferable {
 
 	public BufferedImage image;
-	public Graphics g;
+	public Graphics2D g;
 	
 	public int width, height;
 	
@@ -49,7 +49,7 @@ public class VImage implements Transferable {
 		GraphicsConfiguration gc = gs.getDefaultConfiguration();
 		image = gc.createCompatibleImage(x, y, Transparency.TRANSLUCENT);
 		//image = new BufferedImage(x, y, BufferedImage.TYPE_INT_ARGB);
-		g = image.getGraphics();
+		g = (Graphics2D)image.getGraphics();
 	}
 	
 	 public VImage(URL url) {
@@ -76,7 +76,7 @@ public class VImage implements Transferable {
 		  Image img = makeColorTransparent(image, new Color(255, 0, 255));
 		  this.image = imageToBufferedImage(img);		  
 		  
-		  g = image.getGraphics();
+		  g = (Graphics2D)image.getGraphics();
 	 }
 	 
 	 /*public VImage(URL url, boolean transparent) {
@@ -102,17 +102,17 @@ public class VImage implements Transferable {
 		return this.height;
 	}
 
-	
-	   private static BufferedImage imageToBufferedImage(Image image) {
-
-	        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-	        Graphics2D g2 = bufferedImage.createGraphics();
-	        g2.drawImage(image, 0, 0, null);
-	        g2.dispose();
-
-	        return bufferedImage;
-
-	    }
+	// See http://wiki.java.net/bin/view/Games/LoadingSpritesWithImageIO
+   private static BufferedImage imageToBufferedImage(Image image) {
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice ().getDefaultConfiguration();
+        BufferedImage dst = gc.createCompatibleImage(image.getWidth(null), image.getHeight(null), Transparency.TRANSLUCENT);
+        Graphics2D g2d = dst.createGraphics();
+        g2d.setComposite(AlphaComposite.Src);
+        // Copy image
+        g2d.drawImage(image,0,0,null);
+        g2d.dispose();
+        return dst;
+    }
 
 	   //http://stackoverflow.com/questions/665406/how-to-make-a-color-transparent-in-a-bufferedimage-and-save-as-png 
 	   public static Image makeColorTransparent(BufferedImage im, final Color color) {

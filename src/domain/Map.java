@@ -4,6 +4,8 @@ import static core.VergeEngine.*;
 import static core.Script.*;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -421,12 +423,15 @@ public class Map {
 			if (Character.isDigit(token)) {
 				int layer = Integer.parseInt(Character.toString(token))-1;
 				if (first) {
-					BlitLayer(false, layer, tx, ty, x, y, dest);
-					//dest.rectfill(0,0,dest.width,dest.height,java.awt.Color.GRAY);
+					
+					// Rafael: For an unknown reason, it's better to draw the first layer as a
+					// transparent one than the original code drawing it non-transparent (2x FPS)
+					//dest.rectfill(0,0,dest.width,dest.height,java.awt.Color.BLACK);
+					blitLayer(true, layer, tx, ty, x, y, dest);
 					first = false;
 					continue;
 				}
-				BlitLayer(true, layer, tx, ty, x, y, dest);
+				blitLayer(true, layer, tx, ty, x, y, dest);
 			}
 		}
 
@@ -449,13 +454,20 @@ public class Map {
 	}
 	
 	public void settile(int x, int y, int i, int z) { 
-		if(i>=this.layers.length) 
-			return; 
-		else this.layers[i].SetTile(x,y,z); 
+		if(i>=this.layers.length) {
+			return;
+		}
+		else {
+			this.layers[i].SetTile(x,y,z); 
+		}
+		resetCacheArray();
 	}
 	
-
-	void BlitLayer(boolean transparent, int l, int tx, int ty, int xwin, int ywin, VImage dest) {
+	static int[] xcache = getCacheArray(1);
+	static int[] ycache = getCacheArray(1);
+	static VImage[] imgcache = new VImage[1];
+	
+	void blitLayer(boolean transparent, int l, int tx, int ty, int xwin, int ywin, VImage dest) {
 		if(l >= layers.length || layers[l] == null) 
 			return; //[Rafael, the Esper] 
 		
@@ -472,35 +484,79 @@ public class Map {
 			if (layers[l].lucent != 0)
 				setlucent(layers[l].lucent); 
 
-		tileset.UpdateAnimations();
+		if(tileset.UpdateAnimations()) {
+			resetCacheArray();
+		}
 
-		for (int y = 0; y < ty; y++) {
-			for (int x = 0; x < tx; x++) {
-				int c = 0;
-				if(horizontalWrapable && verticalWrapable)  // Changed by [Rafael, the Esper]
-					c = layers[l].GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y+getHeight())%(getHeight()));
-				else if(!horizontalWrapable && verticalWrapable)
-					c = layers[l].GetTile((xtc + x), (ytc + y+getHeight())%(getHeight()));
-				else if(horizontalWrapable && !verticalWrapable)
-					c = layers[l].GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y));
-				else if(!horizontalWrapable && !verticalWrapable)
-					c = layers[l].GetTile(xtc + x, ytc + y);
-				
-				if (transparent) {
-					if (c != 0) {
-						tileset.TBlit((x * 16) + xofs, (y * 16) + yofs, c, dest);
+		// Initialize cache arrays
+		if(imgcache.length < layers.length) {
+			xcache = getCacheArray(layers.length);
+			ycache = getCacheArray(layers.length);
+			imgcache = new VImage[layers.length];
+		}
+		
+		if(imgcache[l]==null) {
+			imgcache[l] = new VImage(dest.width+16, dest.height+16);
+		}
+		
+		// Draw layer into the cache
+		if(xtc!=xcache[l] || ytc!=ycache[l]) {
+			if(transparent) {
+				imgcache[l].g.setBackground(new Color(255, 255, 255, 0));
+				imgcache[l].g.clearRect(0, 0, imgcache[l].width, imgcache[l].height);
+			}
+			for (int y = 0; y < ty+1; y++) {
+				for (int x = 0; x < tx+1; x++) {
+					int c = 0;
+					if(horizontalWrapable && verticalWrapable)  // Changed by [Rafael, the Esper]
+						c = layers[l].GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y+getHeight())%(getHeight()));
+					else if(!horizontalWrapable && verticalWrapable)
+						c = layers[l].GetTile((xtc + x), (ytc + y+getHeight())%(getHeight()));
+					else if(horizontalWrapable && !verticalWrapable)
+						c = layers[l].GetTile((xtc + x+getWidth())%(getWidth()), (ytc + y));
+					else if(!horizontalWrapable && !verticalWrapable)
+						c = layers[l].GetTile(xtc + x, ytc + y);
+					
+					if (transparent) {
+						if (c != 0 || l==0) {
+							tileset.TBlit((x * 16), (y * 16), c, imgcache[l]);
+							//tileset.TBlit((x * 16) + xofs, (y * 16) + yofs, c, dest);
+						}
+					} else {
+							tileset.Blit((x * 16), (y * 16), c, imgcache[l]);
+							//tileset.Blit((x * 16) + xofs, (y * 16) + yofs, c, dest);
 					}
-				} else {
-					tileset.Blit((x * 16) + xofs, (y * 16) + yofs, c, dest);
 				}
 			}
 		}
+
+		// New code to allow blitting the whole image, instead of tile per tile
+		if(transparent)
+			dest.tblit(xofs, yofs, imgcache[l]);
+		else
+			dest.blit(xofs, yofs, imgcache[l]);
+		xcache[l] = xtc;
+		ycache[l] = ytc;
+
+		
 		//if (dest == screen) {
 			// TODO Uncomment RenderLayerSprites(l);
 		//}
 
 		if (transparent)
 			setlucent(0);
+	}
+
+	private static int[] getCacheArray(int size) {
+		int[] ret = new int[size];
+		for(int i=0; i<ret.length; i++)
+			ret[i] = -1;
+		return ret;
+	}
+	private static void resetCacheArray() {
+		xcache = getCacheArray(1);
+		ycache = getCacheArray(1);
+		imgcache = new VImage[1];
 	}
 
 	public int getWidth() {
@@ -519,13 +575,15 @@ public class Map {
 
 	public static void main(String args[]) throws MalformedURLException {
 		/* Save map to clipboard*/ 
-		Map m = new Map(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\Palma.map"),
-				new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\ps1.vsp"));
+		Map m = new Map(new URL("file:///C:\\Temp\\Palma.map"),
+				new URL("file:///C:\\Temp\\ps1.vsp"));
 		  current_map = m;
 		  VImage img = new VImage(m.getWidth()*16, m.getHeight()*16);
 		  m.render(0, 0, img);
 		  img.copyImageToClipboard();
 		
+		  
+		  
 
 /*		Map m = new Map(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\Palma.map"),
 					new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\palma.vsp"));
@@ -590,7 +648,7 @@ public class Map {
 			m.obsLayer = new byte[m.getHeight() * m.getWidth()];
 		*/
 		
-		m.save("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\Palma.map");
+		//m.save("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\Palma.map");
 		
 	}
 

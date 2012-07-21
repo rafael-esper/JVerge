@@ -173,7 +173,8 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 				updateMouse(e,false,false,true); 
 			}
 			public void mouseMoved(MouseEvent e) {
-				updateMouse(e,false,false,true); 
+				updateMouse(e,false,false,true);
+				//VergeEngine.getGUI().menuBar.setVisible(VergeEngine.getGUI().menuBar.isVisible() || (e.getY() < 50 && VergeEngine.getGUI().isUndecorated()));
 			}
 			public void focusGained(FocusEvent e) {
 				has_focus=true;

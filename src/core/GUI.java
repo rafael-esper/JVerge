@@ -1,29 +1,36 @@
 package core;
 
-import java.awt.AWTException;
 import java.awt.AlphaComposite;
-import java.awt.BufferCapabilities;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.ImageCapabilities;
 import java.awt.Toolkit;
-import java.awt.BufferCapabilities.FlipContents;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 
 import static core.VergeEngine.*;
+import static core.Controls.KeyF6;
+import static core.Controls.clearKey;
 import static core.Script.*;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 
-public class GUI extends JFrame implements ComponentListener {
+public class GUI extends JFrame implements ActionListener, ItemListener, ComponentListener {
 	
 	Canvas canvas = new Canvas();
 	Controls control = new Controls();
@@ -38,7 +45,16 @@ public class GUI extends JFrame implements ComponentListener {
 
 	static long cycleTime;
 	private static int frameDelay = 20; // 20ms. implies 50fps (1000/20) = 50
+	private static boolean showFPS = true;
 
+	JMenuBar menuBar;
+	private JCheckBoxMenuItem cbMenuItemSound;
+	private JCheckBoxMenuItem cbMenuItemScreen;
+	private JCheckBoxMenuItem cbMenuItemshowFPS;
+	private JMenuItem menuItemIncreaseFPS;
+	private JMenuItem menuItemDecreaseFPS;
+
+	
 	
 	public GUI(int w, int h) {
 		// build and display your GUI
@@ -52,11 +68,43 @@ public class GUI extends JFrame implements ComponentListener {
 		canvas.addMouseMotionListener(control);
 		canvas.addFocusListener(control);
 		canvas.addKeyListener(control);
+		
+		// Menus
+		menuBar = new JMenuBar();
+		JMenu menu = new JMenu("Settings"); 
+		menuBar.add(menu);
+		
+		cbMenuItemSound = new JCheckBoxMenuItem("Enable Sound", true);
+		cbMenuItemSound.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, ActionEvent.CTRL_MASK));
+		cbMenuItemSound.addItemListener(this);
+		menu.add(cbMenuItemSound);
+		
+		cbMenuItemScreen = new JCheckBoxMenuItem("Full Screen mode", false);
+		cbMenuItemScreen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F6, ActionEvent.CTRL_MASK));
+		cbMenuItemScreen.addItemListener(this);
+		menu.add(cbMenuItemScreen);
+
+		cbMenuItemshowFPS = new JCheckBoxMenuItem("Show FPS", true);
+		cbMenuItemshowFPS.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F7, ActionEvent.CTRL_MASK));
+		cbMenuItemshowFPS.addItemListener(this);
+		menu.add(cbMenuItemshowFPS);
+		
+		menuItemDecreaseFPS = new JMenuItem("Decrease FPS");
+		menuItemDecreaseFPS.setActionCommand("decreaseFPS");
+		menuItemDecreaseFPS.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F9, ActionEvent.CTRL_MASK));
+		menuItemDecreaseFPS.addActionListener(this);
+		menu.add(menuItemDecreaseFPS);
+
+		menuItemIncreaseFPS = new JMenuItem("Increase FPS");
+		menuItemIncreaseFPS.setActionCommand("increaseFPS");
+		menuItemIncreaseFPS.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F10, ActionEvent.CTRL_MASK));
+		menuItemIncreaseFPS.addActionListener(this);
+		menu.add(menuItemIncreaseFPS);
+		
+		this.setJMenuBar(menuBar);
 
 		this.add(canvas);
-
 		setDimensions(this, w, h);
-		
 		this.addWindowListener(control);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		cycleTime = System.currentTimeMillis();
@@ -68,32 +116,32 @@ public class GUI extends JFrame implements ComponentListener {
 	}
 	
 	void setDimensions(GUI gui, int w, int h) {
-		if (w==0) {
+
+		setVisible(false);
+		dispose();
+
+		if (w==0) { // Full screen
 			Dimension scrsize = Toolkit.getDefaultToolkit().getScreenSize();
 			winwidth = scrsize.width;
 			winheight = scrsize.height;
 			win_decoration=false;
-		} else {
-			winwidth = w;
-			winheight = h;
-			win_decoration=true;
-		}
-		
-		/* create window to `emulate' an applet's frame */
-		//super.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
-		setVisible(false);
-		dispose();
-		
-		if (!win_decoration) {
+			menuBar.setPreferredSize(new java.awt.Dimension());
+			
 			this.setUndecorated(true);
+			this.setResizable(false);
 			this.setSize(winwidth, winheight);
 			//try {
-				GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(gui);
+			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(gui);
 			//} finally {
 			//	GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(null);
 			//}
 			
-		} else {
+		} else { // Window mode
+			winwidth = w;
+			winheight = h;
+			win_decoration=true;
+			menuBar.setPreferredSize(null);
+
 			// setting the size of the canvas or applet has no effect
 			// we need to add the height of the title bar to the height
 			// We use the insets now. Originally, we used:
@@ -107,11 +155,11 @@ public class GUI extends JFrame implements ComponentListener {
 			//super.setSize(winwidth, winheight);
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(null);
 			this.setUndecorated(false);
+			this.setResizable(true);
 			this.setVisible(true);
 			System.out.println("Winwidth: " + winwidth + ", Winheight: " + winheight + " I: " + super.getInsets());
-			
 			this.setSize(winwidth+super.getInsets().left+super.getInsets().right,
-					winheight+super.getInsets().top+super.getInsets().bottom);
+					winheight+super.getInsets().top+super.getInsets().bottom+menuBar.getHeight());
 			System.out.println(super.getBounds());
 		}
 
@@ -128,38 +176,47 @@ public class GUI extends JFrame implements ComponentListener {
 
 		canvas.createBufferStrategy(2);
 		strategy = getGUI().canvas.getBufferStrategy();
-		
-		
 	}
 
 	public static void paintFrame() {
-		updateGUI();
-		updateFPS();
-		synchFramerate();
-	}
-	
-	public static void updateGUI() {
-		Graphics g = strategy.getDrawGraphics();
-		if(alpha != 1f) {
-			Graphics2D g2d = (Graphics2D) g;
-			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_IN, alpha));
-			g2d.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);
+			updateGUI();
+			updateFPS();
+			synchFramerate();
 		}
-		else {
+		
+	public static void updateGUI() {
+	
+		try {
+			Graphics g = strategy.getDrawGraphics();
+			if(alpha != 1f) {
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_IN, alpha));
+				g2d.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);
+			}
+			else {
+				g.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);			
+			}
+
 			/* Do this to rotate 180 
 			Graphics2D g2d = (Graphics2D) g;
 			g2d.rotate(Math.PI, curwidth/2, curheight/2);
 			g2d.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);*/
-			g.drawImage(screen.getImage(), 0, 0, curwidth, curheight, null);			
+
+			
+			// Show FPS
+			if(showFPS) {
+				g.setFont(fps_font);
+				g.setColor(Color.WHITE);
+				g.drawString("FPS: " + Float.toString(frameInLastSecond), 10, 20);
+			}
+				
+			g.dispose();
+			strategy.show();
+		}
+		catch(Exception e) {
+			System.err.println("Unable to draw screen");
 		}
 
-		// Show FPS
-		g.setFont(fps_font);
-		g.setColor(Color.WHITE);
-		g.drawString("FPS: " + Float.toString(frameInLastSecond), 10, 20);
-		
-		g.dispose();
-		strategy.show();
 	}
 	
 	public static void synchFramerate() {
@@ -237,5 +294,40 @@ public class GUI extends JFrame implements ComponentListener {
 	        framesInCurrentSecond = 0;
 	    }
 	    framesInCurrentSecond++;	
+	}
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		Object source = e.getItemSelectable();
+		
+		if(source==cbMenuItemSound) {
+			config.setNosound(!config.isNosound());
+			stopmusic();
+		} else
+		if(source==cbMenuItemScreen) {
+			config.setWindowmode(!config.isWindowmode());
+			if(	config.isWindowmode()) {
+				getGUI().setDimensions(getGUI(), config.getV3_xres(), config.getV3_yres());
+			}
+			else {
+				getGUI().setDimensions(getGUI(), 0, 0);
+			}
+		} else
+		if(source==cbMenuItemshowFPS) {
+			showFPS = cbMenuItemshowFPS.isSelected();
+		}
+				
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
+		if(e.getActionCommand().equals("increaseFPS")) {
+			GUI.incFrameDelay(-5);
+		} else
+		if(e.getActionCommand().equals("decreaseFPS")) {
+			GUI.incFrameDelay(5);
+		}
 	}
 }

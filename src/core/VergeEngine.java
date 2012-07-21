@@ -44,7 +44,6 @@ public class VergeEngine extends Thread {
 
 	// Rafael: new code
 	static Config config = null;
-	private static int time_increment = 2;
 	public static Class<?> systemclass;
 
 	protected static String mapname;
@@ -530,7 +529,6 @@ public class VergeEngine extends Thread {
 		int oldx = xwin;
 		int oldy = ywin;
 		int oldtimer = timer;
-		int oldvctimer = vctimer;
 		int oldcamera = cameratracking;
 		cameratracking = 0;
 		clearLastKey(); // lastpressed = 0;
@@ -552,7 +550,6 @@ public class VergeEngine extends Thread {
 		clearLastKey(); // lastpressed = 0;
 		clearKey(41); // keys[41] = 0;
 		cameratracking = oldcamera;
-		vctimer = oldvctimer;
 		timer = oldtimer;
 		ywin = oldy;
 		xwin = oldx;
@@ -749,13 +746,11 @@ public class VergeEngine extends Thread {
 
 	protected static void DefaultTimer() {
 
-		//time_increment = 1;
-		systemtime += time_increment;
+		systemtime ++;
 		// if (engine_paused) // Rafael: Used only in debug
 		// return;
-		timer += time_increment;
-		vctimer += time_increment;
-		hooktimer += time_increment;
+		timer ++;
+		hooktimer ++;
 	}
 
 	// For controlling System functions (Toggling fullscreen, sound, changing frame delay, etc)	
@@ -780,7 +775,6 @@ public class VergeEngine extends Thread {
 			}
 			if(getKey(KeyF7)) {
 				clearKey(KeyF7);
-				VergeEngine.getGUI();
 				GUI.incFrameDelay(5);
 			}
 			if(getKey(KeyF8)) {

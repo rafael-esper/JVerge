@@ -131,16 +131,24 @@ Início dec: Music (vgm, mod)
 02/jun(+2)	Xeen Texture processing 
 04/jun(+2)	Video optimization (tileset blit(), setPaint() instead of drawImage()).
 
+09/jul(+1)	Video Optimization (imgcache - whole image blit() on layer 0, instead of tile per tile)
+10/jul(+1)	Video Optimization (extended imgcache to all layers. Made it animation-compatible)
+11/jul(+1)	Video Optimization (bug fixing), transparent layer-0 drawing (faster!) and code clean-up.
+13/jul(+1)	Add Swing-menus functionality to window-mode screen
+14/jul(+1)	Fixed some menu-bugs and screen displaying bug (strategy.show), showFPS flag
+15/jul(+1)	Testing video optimization in other CPUs. Palma PSG editing (V3Tiled).
+
 
 =====??? HOURS ===========  -> SECOND RELEASE
 
 
 IMMEDIATE TODO (SECOND RELEASE)
-- Add windows menus (like Fusion)
+(X) Add windows menus (like Fusion)
+(X) Try to optimize video drawing
 - Make it more OO (less static methods, no public properties, no static imports)
 - Implement music volume
 - Music/Map/CHR/Vsp caching
-- Try to optimize video drawing
+- Investigate why sometimes the transparency stops working (when swapping window/full screen)
 - Investigate following entity spawning far from the player (related to wrappable maps)
 - Investigate why wander entities change facing while walking (OK, it occurs also in V3/Sully)
 - Check VGM loops (right now they aren't looping)

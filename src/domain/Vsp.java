@@ -378,13 +378,15 @@ public class Vsp {
 		return obsPixels[(t*256)+(y*16)+x] == 0 ? false: true;
 	}
 	
-	public void UpdateAnimations()
+	public boolean UpdateAnimations()
 	{
+		boolean animated = false;
 		while (mytimer < systemtime)
 		{
-			AnimateTiles();
+			animated = AnimateTiles();
 			mytimer++;
 		}
+		return animated;
 	}
 	public void Blit(int x, int y, int index, VImage dest)
 	{
@@ -406,11 +408,11 @@ public class Vsp {
 
 	public void TBlit(int x, int y, int index, VImage dest)
 	{
-		while (mytimer < systemtime)
+		/*while (mytimer < systemtime)
 		{
 			AnimateTiles();
 			mytimer++;
-		}
+		}*/
 		//if (index >= numtiles) err("VSP::BlitTile(), tile %d exceeds %d", index, numtiles);
 		if (index >= getNumtiles() || tileidx[index] >= getNumtiles()) {
 			System.err.printf("VSP::TBlitTile(), tile %d exceeds %d", index, getNumtiles());
@@ -460,21 +462,24 @@ public class Vsp {
 		}
 	}
 
-	void AnimateTiles()
+	boolean AnimateTiles()
 	{
+		boolean animated = false;
 		for (int i=0; i<anims.length; i++)
 		{
 			if(anims[i] == null || vadelay==null)		// [Rafael, the Esper]
-				return;
+				return animated;
 			
 			if ((anims[i].delay>0) && (anims[i].delay<vadelay[i]))
 			{
 				vadelay[i]=0;
+				animated = true;
 				for (int l=anims[i].start; l<=anims[i].finish; l++)
 					AnimateTile(i,l);
 			}
 			vadelay[i]++;
 		}
+		return animated;
 	}
 
 	void ValidateAnimations()

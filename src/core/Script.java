@@ -562,7 +562,7 @@ public class Script {
 		Controls.UpdateControls();
 		
 		// Check if the player pressed a special key
-		VergeEngine.checkFunctionKeys();
+		//VergeEngine.checkFunctionKeys();
 		
 		//VEngine.updateGUI();
 		DefaultTimer();//[Rafael, the Esper]
