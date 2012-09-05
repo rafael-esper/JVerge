@@ -30,6 +30,10 @@ import domain.VImage;
 import domain.Entity;
 import domain.Map;
 
+import static core.Script.screen;
+import static core.Script.setlucent;
+import static core.Script.showpage;
+import static core.Script.timer;
 import static core.SinCos.*;
 
 public class Script {
@@ -57,6 +61,9 @@ public class Script {
 	 * When ShowPage() is called the screen bitmap is transfered to the display.
 	 */
 	public static VImage screen;
+	
+	// For partial screen rendering
+	static VImage virtualScreen = null;
 
 	/** read-only timer variable constantly increasing*/
 	public static int systemtime;
@@ -548,19 +555,21 @@ public class Script {
 	public static void setlucent(int p) { 
 		if(p < 0 || p > 100)
 			return;
-		p = 100 - p;
-		currentLucent = p * 255 / 100;
+		currentLucent = (100-p) * 255 / 100;
 		if(getGUI()!=null)
-			getGUI().setAlpha ((float)p / 100);
+			getGUI().setAlpha ((float)(100-p) / 100);
 	}
 
 	static int lastchangetime = 0;
 	
 	public static void showpage() {
+
+		if(virtualScreen!=null) {
+			screen.blit(0, 0, virtualScreen);
+		}
 		//flipblit(0,0,FlipType.FLIP_HORIZONTALLY,screen,screen);
 		//System.out.println("showpage");
 		Controls.UpdateControls();
-		
 		// Check if the player pressed a special key
 		//VergeEngine.checkFunctionKeys();
 		
@@ -1251,30 +1260,43 @@ public class Script {
 	}	
 	*/
 
-	// Handy code by [Rafael, the Esper]
+	public static void setVirtualScreen(VImage dest) {
+		virtualScreen = dest;
+	}
+	public static VImage getVirtualScreen() {
+		return virtualScreen;
+	}
+
+	
 	public static void fadeout(int delay, boolean rendermap) {
 		unpress(9);
-		for(int i=0; i<=delay; i++) {
-			if(rendermap) 
+		timer = 0;	
+		while (timer<delay)
+		{
+			if(rendermap)
 				screen.render();
-			//set the opacity
-			getGUI().setAlpha((float) 1-((float)i/delay));
-		    showpage();
+			setlucent(100 - (timer*100/delay));
+			screen.rectfill(0, 0, screen.getWidth(), screen.getHeight(), Color.BLACK);
+			setlucent(0);	
+			showpage();
 		}
 	}
 	
 	public static void fadein(int delay, boolean rendermap) {
 		unpress(9);
-		for(int i=0; i<=delay; i++) {
-			if(rendermap) 
+		timer = 0;
+		while (timer<delay)
+		{
+			if(rendermap)
 				screen.render();
-			//setlucent(i/delay);
-			//set the opacity
-			getGUI().setAlpha((float)i/delay);
-		    showpage();
+			setlucent(timer*100/delay);
+			screen.rectfill(0, 0, screen.getWidth(), screen.getHeight(), Color.BLACK);
+			setlucent(0);
+			showpage();
 		}
 	}
 	
+	// Handy code by [Rafael, the Esper]
 	public static void fade(int delay, boolean black) { // fade in and out
 		if(black) {
 			fadeout(delay, true);

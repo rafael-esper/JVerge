@@ -104,7 +104,7 @@ public class CHR {
 			f.close();
 			
 		 } catch (IOException e) {
-			 System.out.println("IOException : " + e);
+			 System.err.println("IOException : " + e);
 			 e.printStackTrace();
 		 }
 	}
@@ -115,17 +115,12 @@ public class CHR {
 		this.fxsize = f.readUnsignedShortLittleEndian();
 		this.fysize = f.readUnsignedShortLittleEndian();
 
-		System.out.println(this.fxsize + " " + this.fysize);
-		
 		this.hx = f.readUnsignedShortLittleEndian();
 		this.hy = f.readUnsignedShortLittleEndian();
 		this.hw = f.readUnsignedShortLittleEndian();
 		this.hh = f.readUnsignedShortLittleEndian();
 		
-		System.out.println(this.hx + " " + this.hy);
-		
 		this.totalframes = f.readUnsignedShortLittleEndian();
-		System.out.println(this.totalframes);
 		String animbuf;
 		
 		// Pixels
@@ -185,14 +180,10 @@ public class CHR {
 		this.fxsize = f.readUnsignedShortLittleEndian();
 		this.fysize = f.readUnsignedShortLittleEndian();
 
-		System.out.println(this.fxsize + " " + this.fysize);
-		
 		this.hx = f.readUnsignedShortLittleEndian();
 		this.hy = f.readUnsignedShortLittleEndian();
 		this.hw = f.readUnsignedShortLittleEndian();
 		this.hh = f.readUnsignedShortLittleEndian();
-		
-		System.out.println(this.hx + " " + this.hy);
 		
 		this.idle[Entity.WEST] = f.readUnsignedShortLittleEndian();
 		this.idle[Entity.EAST] = f.readUnsignedShortLittleEndian();
@@ -200,7 +191,6 @@ public class CHR {
 		this.idle[Entity.SOUTH] = f.readUnsignedShortLittleEndian();
 
 		this.totalframes = f.readUnsignedShortLittleEndian();
-		System.out.println(this.totalframes);
 		String animbuf;
 		
 		// Creates an array with size equal to the total "wait" time of the animation
@@ -237,7 +227,7 @@ public class CHR {
 			
 			int pixels[][]=new int[fxsize*fysize][4];
 			for (int x = 0; x < fxsize * fysize; x++)
-			{ //System.out.println(x);
+			{
 				
 				int u = Short.reverseBytes((short) pTemp[t * fxsize * fysize + x]) & 0xffff;
 				pixels[x][0] = ((u >> 11) & 31) << 3; // red
@@ -389,8 +379,8 @@ public class CHR {
 		this.fysize = f.readUnsignedIntegerLittleEndian();
 		this.totalframes = f.readSignedIntegerLittleEndian();
 		
-		System.out.println(this.hw+";"+this.hh+";"+this.hx+";"+this.hy);
-		System.out.println(this.fxsize+";"+this.fysize+";"+this.totalframes);
+		//System.out.println(this.hw+";"+this.hh+";"+this.hx+";"+this.hy);
+		//System.out.println(this.fxsize+";"+this.fysize+";"+this.totalframes);
 
 		this.idle[Entity.SOUTH] = f.readSignedIntegerLittleEndian();
 		this.idle[Entity.NORTH] = f.readSignedIntegerLittleEndian();
@@ -404,9 +394,7 @@ public class CHR {
 		// So a F1W5F2W5 will insert in the array the values 1 1 1 1 1 2 2 2 2 2
 		for(int b=1; b<9; b++) {
 			length[b] = f.readSignedIntegerLittleEndian(); // animation length
-			System.out.println(length[b]);
 			animbuf[b] = f.readFixedString(length[b]+1);
-			System.out.println(animbuf[b]);
 			this.animsize[indexes[b]] = this.GetAnimLength(animbuf[b]);
 			if(this.animsize[indexes[b]] == 0)
 				this.animsize[indexes[b]]=1; // [Rafael, the Esper]
@@ -421,7 +409,7 @@ public class CHR {
 		byte pixels[] = f.readCompressedUnsignedShortsIntoBytes();
 		
 		// Get frames from the pixels array
-		System.out.println("Frames (" + fxsize + ", " + fysize + "): " + totalframes);
+		//System.out.println("Frames (" + fxsize + ", " + fysize + "): " + totalframes);
 		frames = f.getBufferedImageArrayFromPixels(pixels, totalframes, fxsize, fysize); 
 		
 	}

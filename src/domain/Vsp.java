@@ -396,7 +396,7 @@ public class Vsp {
 			return;
 		}
 		//if(systemtime%3!=0) 
-		dest.blit(x, y, current_map.tileset.getTiles()[tileidx[index]]);
+		dest.blit(x, y, current_map.getTileSet().getTiles()[tileidx[index]]);
 		//dest.g.drawImage(current_map.tileset.tiles[index], x, y, Color.BLACK, null);
 		// Faster, but doesn't support animations
 		/*Graphics2D g2 = (Graphics2D) dest.g;
@@ -418,7 +418,7 @@ public class Vsp {
 			System.err.printf("VSP::TBlitTile(), tile %d exceeds %d", index, getNumtiles());
 			return;
 		}
-		dest.tblit(x, y, current_map.tileset.getTiles()[tileidx[index]]);
+		dest.tblit(x, y, current_map.getTileSet().getTiles()[tileidx[index]]);
 		//dest.g.drawImage(current_map.tileset.tiles[index], x, y, null);
 	}
 

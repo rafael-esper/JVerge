@@ -158,8 +158,10 @@ public class GUI extends JFrame implements ActionListener, ItemListener, Compone
 			this.setResizable(true);
 			this.setVisible(true);
 			System.out.println("Winwidth: " + winwidth + ", Winheight: " + winheight + " I: " + super.getInsets());
+			
 			this.setSize(winwidth+super.getInsets().left+super.getInsets().right,
-					winheight+super.getInsets().top+super.getInsets().bottom+menuBar.getHeight());
+					winheight+super.getInsets().top+super.getInsets().bottom+menuBar.getHeight() 
+					+ menuBar.getHeight());
 			System.out.println(super.getBounds());
 		}
 
@@ -179,9 +181,10 @@ public class GUI extends JFrame implements ActionListener, ItemListener, Compone
 	}
 
 	public static void paintFrame() {
+			//GUI.cycleTime = System.currentTimeMillis(); // Keep a steady FPS
 			updateGUI();
-			updateFPS();
 			synchFramerate();
+			updateFPS();
 		}
 		
 	public static void updateGUI() {
@@ -222,12 +225,15 @@ public class GUI extends JFrame implements ActionListener, ItemListener, Compone
 	public static void synchFramerate() {
 		cycleTime = cycleTime + frameDelay;
 		long difference = cycleTime - System.currentTimeMillis();
-		try {
-			Thread.sleep(Math.max(0, difference));
+		if(difference > 0) {
+			try {
+				Thread.sleep(difference);
+			}
+			catch(InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-		catch(InterruptedException e) {
-			e.printStackTrace();
-		}
+
 	}	
 	
 
@@ -253,7 +259,7 @@ public class GUI extends JFrame implements ActionListener, ItemListener, Compone
 	
 	public void updateCanvasSize() {
 		this.curwidth = this.getWidth()-super.getInsets().left-super.getInsets().right;
-		this.curheight = this.getHeight()-super.getInsets().top-super.getInsets().bottom;
+		this.curheight = this.getHeight()-super.getInsets().top-super.getInsets().bottom-menuBar.getHeight();
 		//canvas.updateSize(
 			//	this.getWidth()-super.getInsets().left-super.getInsets().right,
 				//this.getHeight()-super.getInsets().top-super.getInsets().bottom);

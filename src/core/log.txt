@@ -137,6 +137,14 @@ Início dec: Music (vgm, mod)
 13/jul(+1)	Add Swing-menus functionality to window-mode screen
 14/jul(+1)	Fixed some menu-bugs and screen displaying bug (strategy.show), showFPS flag
 15/jul(+1)	Testing video optimization in other CPUs. Palma PSG editing (V3Tiled).
+21/jul(+2)	Marching squares algorithm. 
+22/jul(+2)	Autotiling algorithm.
+23/jul(+2)	util.Autotiling class. Semi-Generic implementation.
+
+27/ago(+1)	Refactoring: Map interface and MapVerge implementation.
+28/ago(+2)	GoldenW project. Goldw full map.
+29/ago(+2)	Camera tracking mode 3 (screen transition) and screen adjustment (position).
+30/ago(+2)	Dynamic maps. Abstract Map refactoring.
 
 
 =====??? HOURS ===========  -> SECOND RELEASE

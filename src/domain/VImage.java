@@ -214,8 +214,8 @@ public class VImage implements Transferable {
 		
 		public void blittile(int x, int y, int t) {
 			if (current_map != null) {
-				current_map.tileset.UpdateAnimations();
-				current_map.tileset.Blit(x, y, t, this);
+				current_map.getTileSet().UpdateAnimations();
+				current_map.getTileSet().Blit(x, y, t, this);
 			}
 		}
 
@@ -529,7 +529,7 @@ public class VImage implements Transferable {
 
 		public void tblittile(int x, int y, int t) {
 			if (current_map!=null) 
-				current_map.tileset.TBlit(x, y, t, this);
+				current_map.getTileSet().TBlit(x, y, t, this);
 		}
 		/*
 		static void TGrabRegion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, int src, int dst) {

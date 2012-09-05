@@ -14,15 +14,22 @@ import static domain.Entity.SOUTH;
 import static domain.Entity.SW;
 import static domain.Entity.WEST;
 
+import java.awt.Color;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import domain.Config;
 import domain.Entity;
 import domain.Map;
+import domain.MapDynamic;
+import domain.MapVerge;
 import domain.VImage;
+import domain.Vsp;
 
 public class VergeEngine extends Thread {
 
@@ -43,7 +50,7 @@ public class VergeEngine extends Thread {
 	/****************************** data ******************************/
 
 	// Rafael: new code
-	static Config config = null;
+	protected static Config config = null;
 	public static Class<?> systemclass;
 
 	protected static String mapname;
@@ -509,8 +516,8 @@ public class VergeEngine extends Thread {
 			}
 
 			int cz = current_map.getzone(ex / 16, ey / 16);
-			if (cz > 0 && current_map.zones[cz].script.length() > 0
-					&& current_map.zones[cz].method > 0) {
+			if (cz > 0 && current_map.getScriptZone(cz).length() > 0
+					&& current_map.getMethodZone(cz) > 0) {
 				int cur_timer = timer;
 
 				event_zone = cz;
@@ -518,7 +525,7 @@ public class VergeEngine extends Thread {
 				event_ty = ey / 16;
 				event_entity = i;
 
-				Script.callfunction(current_map.zones[cz].script);
+				Script.callfunction(current_map.getScriptZone(cz));
 				timer = cur_timer;
 			}
 		}
@@ -556,6 +563,28 @@ public class VergeEngine extends Thread {
 		inscroller = false;
 	}
 
+	private static void complyToLimits(VImage dest, int mapRight, int mapDown) {
+
+		if (!current_map.getHorizontalWrapable()) { // Rafael: new code
+			if (xwin + dest.width >= mapRight)
+				xwin = mapRight - dest.width;
+			if (xwin < 0)
+				xwin = 0;
+		}
+		if (!current_map.getVerticalWrapable()) { // Rafael: new code
+			if (ywin + dest.height >= mapDown)
+				ywin = mapDown - dest.height;
+			if (ywin < 0)
+				ywin = 0;
+		}
+	}
+	
+	
+	public static final int CAMERA_STATIC = 0;
+	public static final int CAMERA_PLAYER = 1;
+	public static final int CAMERA_ENTITY = 2;
+	public static final int CAMERA_TRANSITION = 3;
+	
 	public static void RenderMap(VImage dest) {
 		if (current_map == null) {
 			return;
@@ -568,40 +597,20 @@ public class VergeEngine extends Thread {
 		int dmap = (current_map.getHeight() * 16);
 
 		switch (cameratracking) {
-		case 0:
-			if (xwin + dest.width >= rmap)
-				xwin = rmap - dest.width;
-			if (ywin + dest.height >= dmap)
-				ywin = dmap - dest.height;
-			if (xwin < 0)
-				xwin = 0;
-			if (ywin < 0)
-				ywin = 0;
+		case CAMERA_STATIC:
+			complyToLimits(dest, rmap, dmap);
 			break;
-		case 1:
+		case CAMERA_PLAYER:
 			if (myself != null) {
-				xwin = (myself.getx() + myself.chr.hw / 2) - (dest.width / 2);
-				ywin = (myself.gety() + myself.chr.hh / 2) - (dest.height / 2);
+				xwin = (myself.getx() + myself.chr.hw / 2) - (dest.width / 2) -8;
+				ywin = (myself.gety() + myself.chr.hh / 2) - (dest.height / 2) -24;
 			} else {
 				xwin = 0;
 				ywin = 0;
 			}
-
-			if (!current_map.horizontalWrapable) { // Rafael: new code
-				if (xwin + dest.width >= rmap)
-					xwin = rmap - dest.width;
-				if (xwin < 0)
-					xwin = 0;
-			}
-			if (!current_map.verticalWrapable) { // Rafael: new code
-				if (ywin + dest.height >= dmap)
-					ywin = dmap - dest.height;
-
-				if (ywin < 0)
-					ywin = 0;
-			}
+			complyToLimits(dest, rmap, dmap);
 			break;
-		case 2:
+		case CAMERA_ENTITY:
 			if (cameratracker >= numentities || cameratracker < 0) {
 				xwin = 0;
 				ywin = 0;
@@ -611,15 +620,63 @@ public class VergeEngine extends Thread {
 				ywin = (entity.get(cameratracker).gety() + 8)
 						- (dest.height / 2);
 			}
-			if (xwin + dest.width >= rmap)
-				xwin = rmap - dest.width;
-			if (ywin + dest.height >= dmap)
-				ywin = dmap - dest.height;
-			if (xwin < 0)
-				xwin = 0;
-			if (ywin < 0)
-				ywin = 0;
+			complyToLimits(dest, rmap, dmap);
 			break;
+			
+		case CAMERA_TRANSITION: // Rafael: New camera tracking mode = scrolling transition (Zelda-like)
+
+			if (myself != null) {
+
+				if(myself.getx() - xwin <= -8) { // scroll left
+					setentitiespaused(true);
+					myself.setx((myself.getx()/16)*16);
+					xwin = (xwin/dest.width)*dest.width -4;
+					while(xwin % dest.width != 0) {
+						xwin-=4;
+						current_map.render(xwin, ywin, dest);
+						showpage();
+					}
+					setentitiespaused(false);
+				}
+				if(myself.getx() - xwin >= dest.width) { // scroll right
+					setentitiespaused(true);
+					xwin = (xwin/dest.width)*dest.width +4;
+					while(xwin % dest.width != 0) {
+						xwin+=4;
+						current_map.render(xwin, ywin, dest);
+						showpage();
+					}
+					setentitiespaused(false);
+				}
+				if(myself.gety() - ywin <= -8) { // scroll up
+					setentitiespaused(true);
+					myself.sety((myself.gety()/16)*16);
+					ywin = (ywin/dest.height)*dest.height -4;
+					while(ywin % dest.height != 0) {
+						ywin-=4;
+						current_map.render(xwin, ywin, dest);
+						showpage();
+					}
+					setentitiespaused(false);
+				}
+				if(myself.gety() - ywin >= dest.height) { // scroll down
+					setentitiespaused(true);
+					ywin = (ywin/dest.height)*dest.height +4;
+					while(ywin % dest.height != 0) {
+						ywin+=4;
+						current_map.render(xwin, ywin, dest);
+						showpage();
+					}
+					setentitiespaused(false);
+				}				
+			} else {
+				xwin = 0;
+				ywin = 0;
+			}
+			
+			complyToLimits(dest, rmap, dmap);
+			break;
+			
 		}
 		
 		// Doesn't work if systemtime is not updated! // RBP Map rendering skip to accelerate drawing
@@ -642,9 +699,9 @@ public class VergeEngine extends Thread {
 		// even if
 		// .percent is 0
 		int rnd = (int) (255 * Math.random());
-		if (rnd < current_map.zones[cz].percent) {
+		if (rnd < current_map.getPercentZone(cz)) {
 			event_zone = cz;
-			Script.callfunction(current_map.zones[cz].script);
+			Script.callfunction(current_map.getScriptZone(cz));
 		}
 		timer = cur_timer;
 	}
@@ -716,7 +773,14 @@ public class VergeEngine extends Thread {
 				//TimedProcessEntities();
 				while (!die) {
 					updatecontrols();
-					screen.render();
+					
+					if(virtualScreen==null) {
+						screen.render();
+					}
+					else {
+						virtualScreen.render();
+					}
+					
 					if(!die) // redundant?
 						showpage();
 				}
@@ -735,7 +799,13 @@ public class VergeEngine extends Thread {
 		xwin = ywin = 0;
 		done = false;
 		die = false;
-		current_map = new Map(mapname);
+		if(mapname.endsWith(".map")) {
+			current_map = new MapVerge(mapname);
+		}
+		else {
+			current_map = new MapDynamic(mapname);
+		}
+
 		// CleanupCHRs();
 		timer = 0;
 
@@ -744,46 +814,18 @@ public class VergeEngine extends Thread {
 		
 	}
 
+	static int timeIncrement = 1;
 	protected static void DefaultTimer() {
 
-		systemtime ++;
+		systemtime +=timeIncrement;
 		// if (engine_paused) // Rafael: Used only in debug
-		// return;
-		timer ++;
-		hooktimer ++;
+			// return;
+		timer +=timeIncrement;
+		hooktimer +=timeIncrement;
 	}
-
-	// For controlling System functions (Toggling fullscreen, sound, changing frame delay, etc)	
-	public static void checkFunctionKeys() {
-		if(lastchangetime  < systemtime + 10) {
-			lastchangetime = systemtime;
-			if(getKey(KeyF5)) {
-				clearKey(KeyF5);
-				config.setNosound(!config.isNosound());
-				stopmusic();
-			}
-			if(getKey(KeyF6)) {
-				System.out.println("Changing screen window mode = " + !config.isWindowmode());
-				config.setWindowmode(!config.isWindowmode());
-				clearKey(KeyF6);
-				if(	config.isWindowmode()) {
-					getGUI().setDimensions(getGUI(), config.getV3_xres(), config.getV3_yres());
-				}
-				else {
-					getGUI().setDimensions(getGUI(), 0, 0);
-				}
-			}
-			if(getKey(KeyF7)) {
-				clearKey(KeyF7);
-				GUI.incFrameDelay(5);
-			}
-			if(getKey(KeyF8)) {
-				clearKey(KeyF8);
-				GUI.incFrameDelay(-5);
-			}
-		}
+	public static void setTimeIncrement(int i) { // Used to speed up some game
+		timeIncrement = i;
 	}
-	
 	
 	public static void initVergeEngine(String[] args) {
 

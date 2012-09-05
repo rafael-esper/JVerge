@@ -60,20 +60,20 @@ public class Entity {
 	int moveofs;	
 
 	public int getx() {
-		if(current_map!=null && current_map.horizontalWrapable && 
-				(this.x/65536 > current_map.getWidth()<<4 || this.x < 0)) {
-			this.x = (this.x + (current_map.getWidth()<<20)) % (current_map.getWidth()<<20);
+		if(current_map!=null && current_map.getHorizontalWrapable() && 
+				(this.x/16 > current_map.getWidth()<<4 || this.x < 0)) {
+			this.x = (this.x + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
 			this.waypointx = (this.waypointx + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
 		}
-		return this.x/65536;	}
+		return this.x/16;	}
 	
 	public int gety() { 
-		if(current_map!=null && current_map.verticalWrapable &&
-			(this.y/65536 > current_map.getHeight()<<4 || this.y < 0)) {
-				this.y = (this.y + (current_map.getHeight()<<20)) % (current_map.getHeight()<<20);
+		if(current_map!=null && current_map.getVerticalWrapable() &&
+			(this.y/16 > current_map.getHeight()<<4 || this.y < 0)) {
+				this.y = (this.y + (current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
 				this.waypointy = (this.waypointy + (current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
 			}		
-		return this.y/65536; 	}
+		return this.y/16; 	}
 	
 	private int getOriginalX() {
 		return this.x;
@@ -92,16 +92,12 @@ public class Entity {
 	
 	//[Rafael, the Esper]
 	public void setx(int x) {
-		//this.setxy(x* 65536, this.y);
-		this.x = x * 65536;
+		this.x = x * 16;
 		clear_waypoints();
-		//set_waypoint(getx(), gety());
 	}
 	public void sety(int y) {
-		//this.setxy(this.x, y* 65536);
-		this.y = y * 65536;
+		this.y = y * 16;
 		clear_waypoints();
-		//set_waypoint(getx(), gety());
 	}
 	public void incx() {
 		this.incx(1);
@@ -110,10 +106,10 @@ public class Entity {
 		this.incy(1);
 	}
 	public void incx(int i) {
-		this.x+= i * 65536;
+		this.x+= i * 16;
 	}
 	public void incy(int i) {
-		this.y+= i * 65536;
+		this.y+= i * 16;
 	}
 	public void clear_waypoints() {
 		set_waypoint(getx(), gety());
@@ -124,22 +120,16 @@ public class Entity {
 	// END [Rafael, the Esper]
 
 	public int getwaypointx() { 
-		//if(current_map.horizontalWrapable && this.waypointx > (current_map.getWidth()+32)<<4)
-//			this.waypointx = (this.waypointx + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
 		return this.waypointx; 
 	}
 	public int getwaypointy() { 
-		//if(current_map.verticalWrapable)
-//			this.waypointy = (this.waypointy + (current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
 		return this.waypointy; 
 	}
 	void setwaypointx(int waypointx) {
 		this.waypointx = waypointx;
-	//	getwaypointx();
 	}
 	void setwaypointy(int waypointy) {
 		this.waypointy = waypointy;
-		//getwaypointy();
 	}
 	
 	
@@ -201,8 +191,8 @@ public class Entity {
 	}	
 	
 	void setxy(int x1, int y1) {
-		setoriginalx(x1 * 65536);
-		setoriginaly(y1 * 65536);
+		setoriginalx(x1 * 16);
+		setoriginaly(y1 * 16);
 		if (follower != null) follower.setxy(x1, y1);
 		set_waypoint(x1, y1);
 		for (int i=0; i<FOLLOWDISTANCE; i++) {
@@ -278,7 +268,7 @@ public class Entity {
 	// called to sync up with leader's frame
 	// of course, if the two people have different-
 	// length walk cycles, they might have the same framect,
-	// but they won't sync visuall, which is OK
+	// but they won't sync visually, which is OK
 	int get_leader_framect()
 	{
 	    if(follow!=null) 
@@ -377,23 +367,11 @@ public class Entity {
 
 		// else move
 		if (dx != 0)
-			setoriginalx((int) (getOriginalX() + (Math.signum(dx) * 65536)));
+			setoriginalx((int) (getOriginalX() + (Math.signum(dx) * 16)));
 
 		if (dy != 0)
-			setoriginaly((int) (getOriginalY() + (Math.signum(dy) * 65536)));
+			setoriginaly((int) (getOriginalY() + (Math.signum(dy) * 16)));
 
-	/*
-		if (dx &&!dy)
-			x += sgn(dx) * 65536;
-		if (!dx && dy)
-			y += sgn(dy) * 65536;
-
-		if (dx && dy)
-		{
-			x += sgn(dx) * 46340;
-			y += sgn(dy) * 46340;
-		}
-	*/
 		if (follower != null)
 			follower.move_tick();
 	}
@@ -744,9 +722,9 @@ public class Entity {
 			zy = gety() - ywin;
 
 		// Adapted by [Rafael, the Esper]
-		if(current_map != null && current_map.horizontalWrapable)
+		if(current_map != null && current_map.getHorizontalWrapable())
 			zx = (zx + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
-		if(current_map != null && current_map.verticalWrapable)	
+		if(current_map != null && current_map.getVerticalWrapable())	
 			zy = (zy + (current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
 		
 		//System.out.println(this.chrname + " " + zx + "," + zy + " " + getx() + "," + gety() + " " + xwin + "," + ywin);
