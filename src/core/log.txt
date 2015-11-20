@@ -6,7 +6,7 @@ Início dec: Music (vgm, mod)
 12/dec: Sprite code, etc
 16/dec: Startup code
 22/dec: Zone, Layer, Map, etc
-===== 15 HOURS ====
+===== 15 HOURS ==== (before 2012)
 09/jan:(+1) Vsp data, Map load/render (in screen)
 10/jan:(+1) Map scaling (slow)
 11/jan:(+1) Entity, Chr load/render
@@ -14,7 +14,7 @@ Início dec: Music (vgm, mod)
 13/jan:(+3) Refactoring (reading pixels as byte), 
 	    Scale screen with better performance, script (math/string/entity functions)
 15/jan(.5): Blit with Black background, music playing
-16/jan(.5): Script (mais funções, hook/string)
+16/jan(.5): Script (more functions, hook/string)
 17/jan(+1): PS maps, VSP animation working (tileidx), CHR4 loading (partial)
 18/jan(+3): CHR4 almost ok, CHR2 working (DefaultPalette)
 19/jan(+3): Verge.cfg loading, created a isolated PS folder to run VergeEngine (as example) 
@@ -145,25 +145,348 @@ Início dec: Music (vgm, mod)
 28/ago(+2)	GoldenW project. Goldw full map.
 29/ago(+2)	Camera tracking mode 3 (screen transition) and screen adjustment (position).
 30/ago(+2)	Dynamic maps. Abstract Map refactoring.
+01/ago(+2)	Dynamic Shifted.png map and reading properties.map
+04/set(+2)	VirtualScreen to enable partial screen rendering. Change fading methods (no more setAlpha() directly) 
+			Reading tile mappings from map.properties
+06/set(+1)	FinalScreen at GUI. GUI small Refactoring.
+07/set(+2)	Filters experimentation. PS Remake (scene: blit entity, blit party), title screen
+09/set(+1)	Github update. Build.xml (from Joe).
+12/set(+1)	New Dynamic mappings implementation. Mapping with 2x scale factor (4 tiles per pixel).
+14/set(+2)	Autotiling processing (reading, showing, etc)
+
+===== 2013 ===============
+
+02/jul(+2)	Comeback to PS project, conversion back to 320x240 (original)
+03/jul(+2)	Create Party class (Spe, Job, Gender, etc)
+04/jul(+2)	Create Party class, Fixed Wrapable maps (again!)
+05/jul(+2)	Create Party class
+08/jul(+2)	Shop algorithm
+09/jul(+2)	Shop algorithm, add testing
+10/jul(+2)	Shop algorithm, add testing, refactoring
+11/jul(+1)	Menu drawDelay
+12/jul(+3)	Menu drawDelay animation, TextBox 'more', Stext extra functions, 3D sketch (walking/open doors algorithm) 
+13/jul(+2)	3D editing/processing/images
+14/jul(+3)	3D editing/processing/images, static-walking working (no animations) up to depth 2	
+15/jul(+4)	Shop algorithm (selling), 3D editing/processing/images refactoring, static-walking working (no animations)
+16/jul(+2)	Shop algorithm (domain classes, refactoring, unique party member). 3D curves animation, right/left refactoring
+17/jul(+3)	Shop algorithm (testing, sell routine, sell with empty bag, etc). 3D events (stairs, going out)	
+18/jul(+3)	Shop algorithm (testing, equip testing). 3D door animation, correcting images, refactoring, loading all images.
+19/jul(+2)	3D walking up/down animation. Door fadeout. Finished depth=3 intersects. Initializing Textures. 
+20/jul(+2)	3D coding refactoring. Merge files into one and separate them after GIMP editing. Various color schemes.  
+21/jul(+1)	SyncAfterLoading function (GUI). More 3D color schemes. Rescaling to 320x240.
+22/jul(+3)	3D color schemes (12 total). Entity Scene working (loading Entities.png), full and cropped. Menus repositioning. 
+23/jul(+4)	Equipment List, Stats. Heal functions. PS Domain classes refactoring. Shop integration with code (including TEST).
+25/jul(+2)	Main menu (Lang Options, Item). Item toString() list. Script adjustments.  		
+26/jul(+3)	Font/Boxes adjustments. Main menu (Item). Script adjustments (pt, en). ItemLIB refactoring. ShopMenu class.
+27/jul(+1)	End Shop routine (updated Script)
+30/jul(+2)	HP/MP routine within Job/Specie. PT Script.
+31/jul(+1)	Job/Tech definitions.
+02/ago(+1)	Job/Tech definitions. MenuLabelBox (Mst box).
+03/ago(+1)	Party menu box (generic MenuLabelBox). Char order[]. 
+05/ago(+2)	XP Computing (Job enum). Script adjustments (pt). Stat menu. 
+06/ago(+2)	Battle algorithm: start (AP DP functions). Advance Level and XP Computing adaptation to real code.
+07/ago(+2)	Battle algorithm: setPrecedence, setTargets.
+11/ago(+2)	Atk/Def extracting rule, guessing implementation rule.
+12/ago(+3)	Battle algorithm: extension to multiple enemies and multiple players. Atk and Def progression functions.
+13/ago(+4)	Battle algorithm: PSEnemyLib, Enemy Builder class, Battle simulation. Updatable Mstbox. GetAtk() and GetDef() functions.
+14/ago(+1)	Battle algorithm: Battle end (xp + mst).
+15/ago(+4)	Battle algorithm: Action, SpecialAttacks (enemy), Running code, Weakhit refactoring. Hospital routine. 
+16/ago(+3)	Battle testing and refactoring (change Job, fixed equip and advance level). Stat Screen and Stat Portraits.
+17/ago(+2)	Finish Stat Screen (equipments). EquipPlace refactoring. New obstructions + Palma obs processing.
+18/ago(+2)	Options menu (Immaterial, Kill, Ryuka algorithm: Planet/City). Order menu. Allocate refactoring.
+19/ago(+3)	Camineet diagonals, Order testing, VImage small refactoring. Battle Position code. Church routine.
+20/ago(+1)	Battle Position code (back positions and CLOSE scene). 
+21/ago(+1)	Battle Talk. Enum refactoring (== compare).
+22/ago(+1)	Fixed Idle-frame for walking entities. Entity refactoring of do_wanderzone and do_wanderbox.
+23/ago(+2)	Script (pt) in progress. Landrover entity and code. Hover and IceDigger.chr. 
+24/ago(+3)	Hovercraft code (isWater). Entities (man*/wmn*.chr).  Myau anim fix/new CHR. Fixed Party Spawning. ToSpaceport anim.
+25/ago(+2)	ToSpaceport transition (generic method). Parolit/Spaceport scripting. 
+26/ago(+3)	Script (pt) in progress. General CHR processing. Scion scripting and added missing text (Pre/Pos Myau). Eppi Scripting.
+27/ago(+1)	Script (pt) in progress. Monsters dialogues/chat (original english). AddQuestItem specific for the party. 
+28/ago(+1)	Spaceport (Palma) scripting. 
+02/set(+2)	Hook(b1) to transports. MenuType states. Text Scrolling on text boxes. Prompt waiting for textboxes.
+03/set(+3)	Script (pt) in progress. Paseo/Motavia/Spaceport2 map adjustments and script. Proper Goback routine in endScene.
+04/set(+2)	Script (pt) in progress. Palma map adjusts. Gothic map and script. Refactorings and map fadein adjust.
+05/set(+1)	EnumSet refactor to game flags. Fix Prompt with more than two rows. 
+07/set(+2)	Uzo (map creation, scripting). General script adjustements (shoppings, scenes, etc).
+10/set(+1)	Refactoring (oo, GameData). Small portraits (pictures). 
+11/set(+1)	Cinematics (MenuScrollerText). Features listing.
+12/set(+2)	Load/Save routine (serializable streaming).
+13/set(+2)	PS4 Parmanian chars processing (30 chars!)
+14/set(+2)	PS4 Parmanian chars (finished). Dezoris map (extracted from PNG - done).
+15/set(+1)	Map Scripting: Abion, Bortevo and Loar.
+16/set(+1)	Fixed Menu appearing on Dungeons. Edited PS Final Tileset (organized). 
+17/set(+3)	Added MenuCHR. Added Chest CHR. Implemented Chest routine. Implemented Dungeon front zone (chests, etc).
+18/set(+1)	Dezoris forest Scene editing. Scorpion CHR. Sworm CHR. 
+20/set(+4)	Portuguese Extended Script (up to Bortevo). Load/Save FileChooser GUI. Beach/Lava animations (.chr).
+			VSP Refactoring (new tileset, review animations, etc).
+21/set(+3)	Map processing (all) and manual adjustments. Fixed landrover/walking on water. Fixed language when loading.
+			Skure map and script. Drasgow map and script. VSP Borders transparent (and map adjusting)
+22/set(+2)	Casba map and script. Sopia map and script. Beggar .CHR (manual editing).
+23/set(+3)	Map/Vsp/Script refactoring (/maps folder). Warehouse map. GothicPassage map. PT Extended Script (continued). 
+24/set(+3)	PT Extended Script (finished). Dungeon refactoring and Dungeon Room. GothicPassageway script. JAR testing.
+26/set(+2)	Missing tiles (water shadow, grass with shadow, gates). Triada dungeon. Dungeon small event changes.
+27/set(+1)	Governor/Naharu/Drasgow dungeons. Dungeon refactoring to contain direction, DungeonType, and CORRIDOR.
+28/set(+1)	Odin ripping. Tarantul/Antlion/Robotcop .chr.
+29/set(+2)	Odin Cave. Naula Cave. Eppi compass and spiral algorithm (turn back) to Eppi_bushes (temporary).
+30/set(+3)	PS Talk (Chat - transcripts). Bortevo Cave. Abion Dungeon. Paseo Robot Governor. Fix Room.png.
+01/oct(+3)	Dezoris zones. Ice Digging. Large Entities. Hapsby routine. Skure entrance. Skure tunnel.
+02/oct(+2)	Governor routine. Dezo cave1. Dezo cave2. Bortevo scripting. Flute scripting. Spaceport2 entities.
+05/oct(+1)	Cave 3, Cave 4 and Cave Aukba.
+06/oct(+4)	Aukba city and scripting. Tunnel Aukba. Prism/Casba/Tajima/Iala caves.
+07/oct(+3)	Dezorians NPCs. Prison map. Corona tower. Baya cave. Script adjustments.
+08/oct(+1)	Sky Castle map. Lassic castle.
+09/oct(+1)	Last 4-day maps corrections and integration. Script adjustments. Testing. 
+10/oct(+1)	PS Talk (ongoing). Changed chests to adjacent activation. CHR on enemyLIB and getEnemy() function.
+11/oct(+1)	Dezorians (color swapping, CHR creation). VSP minor adjustments.
+12/oct(+3)	Dungeon Dark/Flash routine. Removed Background class. Added animCHR to MenuStack. Battle screen (ongoing).
+13/oct(+2)	Battle menu. Battle animations. Barbarian .chr. Sword .chr. Dodges/Talk/Run/Died texts.
+14/oct(+2)	Battle player boxes. Chars: scorpius/gscorpion, maneater/deadtree, titan/giant/golem. Rope battle text.
+15/oct(+2)	Entity Stances (Alis and Myau). Crawler/sandworm/leech. Battle box showing. Damage effect. Lava damaging.
+16/oct(+2)	Scene outcomes (FADE, NO_FADE, etc) and refactoring. Skeleton*.chr. House1 re-drawing (320x240). 
+17/oct(+2)	Fishman/Marshman.chr. Owlbear/Wingeye/Goldlens.chr. Werebat/Vampire +Werebat_green.chr. Box adjustments. 
+18/oct(+2)	EvilDead*.chr. PSLibSpell. Slimes*.chr. StextTimeout (for battle). Macro auto-battling.
+19/oct(+3)	Dungeon Battle. Serpent*.chr. Zombie*.chr. Battle box adjustments. Scenes screen adjustments.   
+20/oct(+1)	Dungeon footer adjustment to fit 320x240. Fixing again Transport On/Off after Menu.
+21/oct(+2)	Scene screen adjustments (finished 320x240 all shops,hospital,palace,forest,etc). Gas.chr. Sea.chr.
+22/oct(+1)	Refactored Battler to abstract class and Battle to use get() methods. BattleOutcome. Battle Leveling.
+
+26/oct(+1)	Centaur image. Fire/Wind/Thunder images. Darkfalz dungeon.
+27/oct(+1)	Lost Island minus the chests.
+28/oct(+1)	Reaper. Dezorian/Evilhead. Tentacle/Octopus. Medusa.
+29/oct(+1)	Medusa Tower minus the chests.
+30/oct(+1)	Enemy fire. Giant Fly. Horseman. Tarzimal.
+01/nov(+1)	BigClub/Executer. Mammoth/Elephant. Golden Dragon. Dungeon downloads.
+02/nov(+1)	Manticore/Sphinx. DrMad/Shadow. Sorcerer.
+03/nov(+1)	Amundsen/Frostman. Magician. Marauder. Blue Dragon (finished).
+04/nov(+1)	Red/Green/White Dragon. Enemy thunder.
+05/nov(+1)	Monster animationS (scripts).
+06/nov(+1)	Medusa animation/dungeon chests/entities texts. Lost Island chests.
+
+09/nov(+1)	Dungeons previously done integration with code and adjustments.
+10/nov(+2)	Monsters previously done conversion to CHR. Battle adjustments. GiantFly fire attack.
+11/nov(+2)	Thunder spell. SpecShift for fire/thunder monsters. New monsters: StormFly and (blue) Wizard.
+12/nov(+2)	Sound effects extracting (via memory hack).
+13/nov(+1)	PS1SoundLib. Playsound function. Battle sounds. 
+14/nov(+2)	Battle sounds (finishing). BattleScene. Enemy attack sounds.
+15/nov(+1)	Ammonite/Shelfish. Battle testing.
+16/nov(+3)	Battle natural order Comparator. Weapon animations ripping (all 10) plus DiffImages code.
+17/nov(+2)	Weapon Animation/Sound to Item. Integration weapon animation/sound with battle. Pistol multiple shots.
+18/nov(+2)	PSLibSpell prepareSpell/castSpell. Magic menu. Effects: Cure and Fly. Gamedata visitedCities.
+19/nov(+2)	PSMenuMain: item menu (Use/Equip/Drop). Item effect.  
+20/nov(+4)	Big Slime from Xeen. Battle fix (idle after anim). Fix Selling Quest items. Spell evolution for Chars.
+			Spell World/Battle distinct in menus. Battle main action (ongoing): Attack/Defend options.
+21/nov(+2)	Battle Magic menu. Spell battle effects (cure, force).
+22/nov(+3)	Spell battle effects (escape, chat, tele, rope, force, fear, fire). Implemented 'weak'. 
+			Chat/Tele menu interruption and Battle run/talk refactoring to effects. 
+23/nov(+3)	Spell battle effects (fire, wind, thunder). Endgame routine for Lava, Gas and Battle. Title refactoring.
+24/nov(+1)	Guaron Morgue. Intro refactoring (first init Menus, then init Game).
+25/nov(+3)	PSBattle, battle testing and general adjustments (new weapons/armors). Hapsby inclusion (just PSBattle).
+26/nov(+1)	Battle Item Menu. Weapons/Enemies position on screen (analyzing).
+27/nov(+2)	Dungeon Keys (Can open / can't open). Added missing text. PS Battle Script text. Triada scripting.
+28/nov(+1)	Wall/Prot spells and script text. 	
+29/nov(+1)	Vertical enemy adjustment. PSBattle test. 
+30/nov(+3)	Darkfalz (ripping, animation, double attack). Lassic (animation, thunder 2). Player Defense reduction.
+01/dez(+1)	Open Effect. Light effect (Search_light). FAIL effect refactoring.
+02/dez(+2)	PSBattle testing (changed level per exp points). Enemy CHR HH and HY prototype. Fix wall/prot effect.
+03/dez(+3)	Imported all VGMs. PSMusic and City/Planet/Dungeon parameter. Vehicle/Battle music (findAndPlayMusic).
+			Fixed: Defend option does not apply if tied. Fixed: If same music, keep playing instead of re-starting.
+			Exit effect. Fixed Battle tests (more TEST_SIMULATION options). PSBattle adjustments and testing.
+04/dez(+1)	Frost Cave. 
+06/dez(+2)	Battle Escape check (partial: not on corners). Fix: Search Light on dungeons (refactor to PSDungeon).
+			Fix: keeping same face when loading on dungeon (created dungeonFace gamedata parameter)
+07/dez(+3)	Spaceship animation / planets / space map (without arriving at planet only).
+08/dez(+2)	Baya malay tower map and script (without chests and stairs).
+09/dez(+1)	Baya malay tower map (chests, stairs, dead-end battles) - ALL DUNGEONS CONCLUDED! 	
+10/dez(+3)	New flags for monsters (Casba, Naharu, LostIsland, Robotcops, etc). New chests and routines for them.
+			Alternative script (sega/tectoy). Monsters giving items. Add Intro (Space, City, cinematics, etc).
+11/dez(+2)	PSLIbImage and Scene refactoring. Fix: Transports (require item). Fix: Landrover on water.
+			SECRET item type. Selling 'Secret' item, trying 3x to get Roadpass.
+12/dez(+1)	Item name refactoring (Monomate/Dimate/Trimate/Flash). Oliphant monster (new).
+13/dez(+1)	Suck MP effect (Blue wizard and gold club done). Fix max level up bug (99999). Myau cinematics.  
+14/dez(+1)	Odin cinematics. Item comparison fix (equals, not ==). Noah cinematics. Dr.Mad routine.
+15/dez(+2)	Removed Macro option (ESC to main menu). Adjusted HY of weapons. Vertical/Contact adjustments.
+16/dez(+2)	Petrify Effect. Baya Malay castle animation and Sky scene. Title refactoring (New game, etc). Gaia enemy.
+19/dez(+2)	Better algorithm for getting out of EppiForest/Ant Lion. Fix: Paralyzed members can't act on battle.
+			Agi, Str, Men computation. Chest Damage (Explosion and Arrow). Lassic battle. Shadow battle.
+20/dez(+3)	Credits (draft). Corona Torch Priest. Laerma Tree Images. StoryTest and code adaptation.
+21/dez(+1)	StoryTest coding. Minor adaptations: Scene and Battle fixes, loading blank screen at start. 
+22/dez(+2)	StoryTest coding. Saving bug (.CHR on Item). Saccubus scene. Laerma Tree scene.		
+23/dez(+2)	StoryTest coding (up to Tajima). Tajima scripting. Changed Entities.png to .chr and adapted Scene.	
+24/dez(+3)	StoryTest coding (finished). Fixed Corona bugs. Fixed Landrover digging ice. 
+			Myau Castle cinematics. GoldDragon / Shadow / Lassic / Governor-Darkfalz scene.   
+25/dez(+1)	Save/Load FileChooser on last folder. Fishman event. Checking for full (chests).
+26/dez(+1)	Fixed Battle reallocating on Dungeons. Initial Menu texts (pt/en). Play as Odin texts (pt/en).
+27/dez(+3)	Start as Odin (80% done). Check for full refactoring (Flute->Inventory). Added space to Quest menu.
+ 			Options Menu and Language refactoring. FM Chip music: Failed (currently not supported).
+28/dez(+2)	Dungeon: Trap routine and Trap effect (once activated, it gains trap info). Dungeon loading screen.
+			Fixed: Saving when 'pitch black' and then loading. Adapted game over routine.
+29/dez(+2)	Stat screen showing spells. Fixed Landrover on Gas. Ice Digger sound. Fixed saving/loading on Vehicle.
+30/dez(+2)	Palma main continent enemies zones. Start as Noah (text). Script adjustments.
+
+---- 296 hours
+
+===== 2014 =======
+02/jan(+2)	Fix: Changed Transport routine (embarking into cave, vehicle after battles, etc). 
+			New spells (Light/WRest/PCure). Monster zones on Motavia (initial area). Tajim char.
+03/jan(+1)	Dungeon optimization (6 x better flip algorithm: inverted width).
+06/jan(+1)	Chest untrap (even for more than one member with spell: chooses first with enough MP).
+07/jan(+2)	Lassic Crystal. Make mental diff between enemies/players do more spell damage. Fire resistance.
+08/jan(+1)	Translated Jobs, Species, Stats. Add text for missing Spells, Menus and Enemies. Check for full (Give).
+09/jan(+1)	Creating MUSIC effect and avoiding Flute disappearing after use. Dezoris enemies (75%).
+10/jan(+1)	Finished Dezoris enemies. Palma beach enemies. 
+11/jan(+3)	Snow lion. Motavians chars. Tonoe city (new!). Motavian enemies (zones, code).
+12/jan(+1)	Motavia enemies (100%). Palma enemies (75%).
+13/jan(+2)	When on transport, removed easy fights. Palma enemies (100%). New enemies: Poison Plant and Giant Spider.
+14/jan(+1)	PSArena Score.
+15/jan(+1)	Motavian Shooter new enemy. Added Planet of Origin for each enemy. 
+16/jan(+2)	New enemies: Dezorian Priest, Nano Cop. Credits Screenshots. Motavian entities. E-mail para Lista de Algol.
+17/jan(+2)	Escaping on Dungeon Corners and Dungeon T's. Dunzeon battle zones (100%).
+18/jan(+1)	Fix:Added Passport confiscation. Fix: Light Pendant. 
+20/jan(+2)	Updated texts (Aukba entities, Tonoe, PS Arena scores, new monsters). Created fixedBattle method. 
+21/jan(+1)	Started 'Ending' routine. ListaDeAlgol e-mails / PSCave texts. Enemy type and created UNDEAD type.
+22/jan(+1)	Dezoria fixedBattle enemies and Dezoris dungeon testing. Village 320x240 scene (100% scenes).
+23/jan(+2)	Motavia fixedBattle enemies and map adjustments. Fixed battle/Dungeon (<4, fixed, else <20 random).
+24/jan(+1)	Ending (Governor talk, Party together)
+25/jan(+2)	Added more custom entities (+Yoz). Scene entity refactoring.
+26/jan(+2)	Use colors to show dead chars on status screen and players/enemies with up/down effects. PSLibCHR (anim).
+27/jan(+3)	Myau flapping wings on BayaMalay. Yoz 3 new enemies (Cyclop, Revenant, Skeleton Guard) into story.
+			Return to Title Screen (with confirm). Prot defending magic (fire and thunder). 
+28/jan(+1)	Menu refactoring. Options menu. Cheat menu (binded to 'M' key).
+29/jan(+1)	Quest menu refactoring. Change delayTime on dungeons and Dodge/Escape information on battles On/Off.
+31/jan(+1)	Extracted hard-coded texts to Script. Added new texts (english/portuguese). 	
+
+---- 335 hours
+
+02/fev(+2)	Gi-Fire (new spell). Full Revive spell. Fear_all spell (except UNDEAD). Rope_all spell. Job adaptations.
+			JVerge and VImage renaming (functions). Battle enemyBox associated with Battler.	 
+03/fev(+1)	Frost Dungeon corrections. Scorpion PSIV. 
+04/fev(.5)	Death Knight. 
+06/fev(.5)	Changed String[] to List() with toArray(new String[0]) conversion. Fixed free falling on Dezo Dungeon.	
+07/fev(+1)	Refactored PSDungeon to PSGame field, and removed static variables. PSIV Scorpions (all three).	
+09/fev(+1)	Use STR to critical HIT on Battle. Fixed trapped chest sound/animation. 
+10/fev(+1)	Implemented sound/music volume.
+14/fev(+1)	Created 'Disabled' option for Prompts (like 'Talk', 'Start as Lutz', etc)
+22/fev(+2)	Playing PS Arena. Credits. Script translations. Removed Battle logs. Restored Alis' House.
+23/fev(+3)	Finish game start-to-finish (70% done). Found 36 problems, fixed 30 of them.
+24/fev(+1)	Fixes: exiting from both sides after 'pitch black' routine; aligned shop item menu; bind effect color.
+25/fev(+1)	Added Tonoe dialogs, finished Blueberry dungeon and added chest/flags. Created enableCheats flag.
+03/mar(+1)	Finished Credits (About, Game Credits and Contact). Testing.
+05/mar(+2)	Finishes Odin path.	Added release.txt with commands and feature list.
+
+Estimation to conclusion: 360 hours (with some optional things)
+
+MEDIUM	
+PRE-RELEASE		Disable Cheat Menu (on Title.java).
+				Remove CHR extra code (change to CHRUtil). Remove log.txt (no need to have it public)
+LONG	Finish game start-to-finish
+
+Optional
+MEDIUM	Odin talk menu
+MEDIUM Fazer 'Flash' em batalha ser uma fireball única (aumenta a utilidade do item)
+FIX Continuar música de um certo ponto
+MEDIUM	Add font without serifs and use FontMeasurements to get text width
+MEDIUM	Finish Lutz path
+LONG	Make all menu positions and sizes a Point parameter, and concentrate it
+EASY	Show global effects (ex: Wall, Prot)
+MEDIUM	Quest (Info) -> Quest Items, Monster Info, Dungeon Info (chests found)
+MEDIUM	% Conclusion of game, monsters and chests (good for sanitize testing)
 
 
-=====??? HOURS ===========  -> SECOND RELEASE
+IDEA	Buy Alsulin in Tonoe, so can turn back Medusa victims. And get rewards when they come back to their hometown.
+
+( ) Macro option
+( )	Add Equip Window and add it to Item Menu and Shop Menu
+
+
+Play As: "Alis (default)", "Odin", "Noah", "Create your party"
+
+Odin:
+- Start alone on Scion (edit special entities there)
+- Buy Compass: 200 mesetas on Scion (Roadpass is not sold).
+- Goto Eppi and Dungeon Master gives Myau
+- They talk about defeating Lassic, and get a powerful weapon from Medusa, who is hidden south of Camineet
+- Let's use the Compass. It's showing that there is something at the  other side of this corridor. Look! (Loses compass)
+- When get to Medusa, he's petrified. Myau escapes out.
+- Myau tries to ask for help, but he's imprisioned in Scion.
+- Alis finds Myau -> game goes on normally
+
+Noah:
+- Start alone with Dungeon Key
+- Mission from Tajima: defeat the Maharu's Wizard (blue)
+- Governor Robotcop denials passage
+- In Maharu, Motavian denials passage because of Wizard
+- Myau's seller sells Shortcake
+- If gets to Governor, is given a letter to convince Motavian
+- After convincing Motavian, he joins
+- Defeats Wizard
+- Tajim appears, and Noah settles there as a new place to study
+
+Alis all alone:
+- 4x EXP and MST
+- Buy compass on Scion
+- Hashim gives roadpass
+- Mota seller trades dungeon key per laco pot
+- Noah tells about Luveno and Spaceport
+- Tajim teachs Open
+- Level 45 is enough to defeat Lassic full-equipped
+
+
+(.) Talk Menu + Character portraits for talking
+- Colocar os Talks de acordo com as flags
+	- Fazer talks específicos para Palma, Motavia e Dezoris, pós-hapsby
+	- Fazer talks incrementais (ex: se INFO_FLUTE mas sem flute, coloca texto...)
+
+(X) Vampire Lord	-> Green Vampire. Cures himself.
+(X) Storm Fly	-> Blue Sworm. Casts Thunder.
+(X) Oliphant	-> Red/Orange Elephant. Casts Fire.
+(X) Blue Wizard	-> Blue wizard. Sucks MP. 
+(X) Gold Club	-> Gold Bigclub. Sucks MP.
+(X) Gaia		-> Green Amundsen. Cures himself.
+(X) Snow Lion	-> Purple Sphinx. Double attack.
+(X) PoisonPlant -> Brown Deadtree. Ropes.
+(X) GiantSpider -> Cyan Tarantul. Ropes.
+(X) Mota Shooter-> Yellow Barbarian. Double attack.
+(X)	Dezo Priest	-> Blue Dezorian. Cures himself.
+(X)	Nano Cop	-> Blue Androcop. Double attack. 
+(X) Death Knight-> Black Reaper.
+
+(X) Yoz 3 custom enemies: Cyclop, Revenant, Skeleton Guard
+(X)	PS4 3 scorpions: red, yellow, blue
+
+
+( ) Dungeon Minimap item (optional)
+( ) Add AGI spell
+( ) Add Difficulty
+( ) Sound for vehicles moving
+( ) Music restarting from the middle after battles
+
+=======
+20 Create your party 
+	2(X) Character Entity Stances (Alis, Myau and Odin)
+	5(.) Get CHARs for all species/classes/genders
+	3( ) Get Portraits for all species/classes/genders
+	5(.) Add custom text and events accordingly
+	5( ) Add Create your party screen
+	Opt( ) Add Recruit Member routine (up to 8 slots)
 
 
 IMMEDIATE TODO (SECOND RELEASE)
 (X) Add windows menus (like Fusion)
 (X) Try to optimize video drawing
+( ) Check VGM loops (right now they aren't looping)
+( ) VGMs don't play, just VGZ.
+- Implement key mapping (b1,b2,b3,b4)
 - Make it more OO (less static methods, no public properties, no static imports)
-- Implement music volume
 - Music/Map/CHR/Vsp caching
+- Implement music volume
 - Investigate why sometimes the transparency stops working (when swapping window/full screen)
-- Investigate following entity spawning far from the player (related to wrappable maps)
-- Investigate why wander entities change facing while walking (OK, it occurs also in V3/Sully)
-- Check VGM loops (right now they aren't looping)
-- VGMs doesn't play, just VGZ.
+(SOLVED!) Investigate following entity spawning far from the player (related to wrappable maps)
+(SOLVED!) Investigate why wander entities change facing while walking (OK, it occurs also in V3/Sully)
 
 TODO
-- Sully Load-Save in suplementar folder (see http://stackoverflow.com/questions/320542/how-to-get-the-path-of-a-running-jar-file)
+- Fix: Thread.stop does not work on n-Core CPU -> Refactor!
+- Sully Load-Save in suplementary folder (see http://stackoverflow.com/questions/320542/how-to-get-the-path-of-a-running-jar-file)
 - Sully: Try to save a file in the classpath './', in order to solve .sav problem (externally to the Jar)
 - Sully: FIX CustomColorFilter when running Sarah Flashback in Oldville
 - Sully: FIX Sparkles
@@ -175,20 +498,17 @@ TODO
 - Implement TODO functions in Script
 - Check if Script unused functions work properly
 - Document code with Javadoc (get from V3 Manual) 
+- See Generic way to implement graphics API (in order to extend it to Android, IPad, etc)
 
-CONSIDER TODOs
+WON'T DO TODOs
 - Socket implementation
 - Movie playback implementation
 - File functions implementation
 - Window functions implementation
 - Joysticks
-
-LONG-TERM TODOs
 - Create VC parser (parser or JIT Compiler?)
 - Create LUA parser (parser or JIT Compiler?)
 - See 3D API with fixed-z (~2D) to enable Video optimization
-- See Generic way to implement graphics API (in order to extend it to Android, IPad, etc)
-
 
 
 Test:

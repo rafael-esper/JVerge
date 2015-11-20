@@ -52,6 +52,78 @@ public class Vsp {
 	
 	// [Rafael, the Esper]
 	private BufferedImage [] tiles;
+
+	
+	public static void main(String args[]) throws Exception{
+
+			
+			/*// EXAMPLE OF ADDING ANIMATIONS PROGRAMATICALLY
+			Vsp v = new Vsp(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\wmap.vsp"));
+			
+			Animation[] anims = new Animation[42];
+			
+			int j=0;
+			for(int i=45; i<=250;i+=5) {
+				Animation a = v.new Animation();
+				a.delay = 30;
+				a.start = i;
+				a.finish = i+4;
+				a.mode = 3;
+				a.name = "Anim" + ((i-40)/5);
+				anims[j++] = a;
+				System.out.println(a);
+			}
+			
+			v.anims = anims;
+			v.save("C:\\JAVAREF3\\ECLIPSEWORKSPACE\\wmap2.vsp");
+			*/
+
+		Vsp v = new Vsp(new URL("file:///C:\\javaref\\workspace\\Phantasy\\src\\ps\\ps1.vsp"));
+		
+		int NEW_PIXELS = 4;
+		byte[] newPixels = new byte[256*(v.numobs+NEW_PIXELS)];
+		int pos=0;
+		for(int i=0;i<256*v.numobs; i++) {
+			newPixels[i] = v.obsPixels[i];
+			pos++;
+		}
+		for(int i=0; i<256; i++) { // Add vertical | left obs
+			if(i%16==0)
+				newPixels[pos++] = 1;
+			else
+				newPixels[pos++] = 0;
+		}
+		for(int i=0; i<256; i++) { // Add vertical | right obs
+			if(i%16==15)
+				newPixels[pos++] = 1;
+			else
+				newPixels[pos++] = 0;
+		}
+		for(int i=0; i<256; i++) { // Add horizontal _ bottom obs
+			if(i<16)
+				newPixels[pos++] = 1;
+			else
+				newPixels[pos++] = 0;
+		}
+		for(int i=0; i<256; i++) { // Add horizontal -- top obs
+			if(i>=240)
+				newPixels[pos++] = 1;
+			else
+				newPixels[pos++] = 0;
+		}		
+		
+		v.numobs = v.numobs + NEW_PIXELS;
+		v.obsPixels = newPixels;
+		
+		v.save("C:\\ps1.vsp");
+		System.out.println(v.obsPixels.length);
+			
+			
+			
+		
+	}
+
+	
 	
 	public Vsp() {
 		
@@ -132,7 +204,7 @@ public class Vsp {
 			mytimer = systemtime;
 			
 			
-			// Obtém tiles a partir dos vetores (vspdata)
+			// Get image tiles from pixel array 
 			System.out.println("Numtiles: " + getNumtiles() + "(" + vspdata.length + " bytes)");
 			this.tiles = f.getBufferedImageArrayFromPixels(vspdata, getNumtiles(), 16, 16);
 			//for(int x=0; x<tiles.length; x++)
@@ -208,95 +280,6 @@ public class Vsp {
 
 	}
 	
-	
-	public static void main(String args[]) throws MalformedURLException {
-
-		Vsp v = new Vsp(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\psg.vsp"));
-		v.exportToClipboard(32);
-		/*
-		int tiles_per_row = 32;
-		
-		boolean marcados[] = new boolean[v.getNumtiles()];
-		int newNumTiles = v.getNumtiles();
-		for(int t1=0; t1<v.getNumtiles()/tiles_per_row; t1++) {
-			
-			for(int t2=t1+1; t2<v.getNumtiles()/tiles_per_row; t2++) {
-
-				System.out.println("Comparando linha " + t1 + " com " + t2);
-				
-				int equal = 0;
-				for(int idx=0; idx<tiles_per_row; idx++) {
-					System.out.println("\tTile " + idx);
-
-					int tile1 = 534;//t1*tiles_per_row + idx;
-					int tile2 = 3606;//t2*tiles_per_row + idx;
-					if(v.getTiles()[tile1].getRGB(11, 12) != v.getTiles()[tile2].getRGB(11, 12)) {
-						System.out.println(v.getTiles()[tile1].getRGB(11, 12) +"\t"+ v.getTiles()[tile2].getRGB(11, 12));
-						break;
-					}
-					else
-					{
-						equal++;
-					}
-				}
-				if(equal == tiles_per_row) {
-					System.out.println("Row " + t1 + " EQUAL to row " + t2);
-					newNumTiles-=tiles_per_row;
-					for(int p=t2;p<t2+tiles_per_row;p++)
-						marcados[p] = true;
-				}
-				
-			}
-			
-		}
-		
-		BufferedImage[] newTiles = new BufferedImage[newNumTiles];
-		int pos = 0;
-		for(int x=0; x<v.getNumtiles(); x++) {
-			if(pos < newNumTiles && !marcados[x]) {
-				newTiles[pos] = v.getTiles()[x];
-				pos++;
-			}
-		}*/
-		//v.numtiles = newNumTiles;
-		//v.tiles = newTiles;
-		//v.save("C:\\PSG.VSP");
-		
-		//Vsp v = new Vsp(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\ps1.vsp"));
-		//v.save("c:\\temp.vsp");
-		//Vsp v1 = new Vsp(new URL("file:///C:\\TEMP.VSP"));
-		
-		/*createVspFromImages(new VImage[]{
-				new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_015.png")),
-				new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_016.png")),
-				new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_017.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_019.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_020.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_021.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_023.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_024.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_025.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_027.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_028.png")),
-				//new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_029.png"))
-				
-				
-				
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_171.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_172.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_173.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_175.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_176.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_177.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_178.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_180.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_181.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_182.png")),
-								new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_170.png")),
-		});*/
-		
-	}
-	
 	static void createVspFromImages(VImage[] images) {
 		
 		// First pixel is default transparent color
@@ -313,7 +296,7 @@ public class Vsp {
 			for(int j=0; j<sizey/16;j++) {
 				for(int i=0; i<sizex/16;i++) {
 					VImage newTile = new VImage(16, 16);
-					newTile.grabregion(posx, posy, posx+16, posy+16, 0, 0, images[img].image);					
+					newTile.grabRegion(posx, posy, posx+16, posy+16, 0, 0, images[img].image);					
 					posx+=16;
 
 					// Checks for repeated tile 
@@ -349,7 +332,7 @@ public class Vsp {
 		for(int i=0; i<allTiles.size(); i++) {
 			v.getTiles()[i] = allTiles.get(i).image;
 			clipboard.blit((i*16)%512, i/32*16, v.getTiles()[i]);
-			clipboard.printstring((i*16)%512, i/32*16+16, font, Integer.toString(i)); 
+			clipboard.printString((i*16)%512, i/32*16+16, font, Integer.toString(i)); 
 		}
 		clipboard.copyImageToClipboard();
 		
@@ -505,6 +488,7 @@ public class Vsp {
 		}
 
 	}
+	
 	
 }
 

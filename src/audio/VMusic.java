@@ -15,7 +15,8 @@ import audio.gme.gme;
 
 public class VMusic implements Runnable {
 
-	static URL play;
+	private static URL play;
+	private int volume;
 	Thread mTest = null;
 	
 	static MikModApp modPlayer;
@@ -23,9 +24,20 @@ public class VMusic implements Runnable {
 	static gme vgmPlayer;
 	static WavPlayer wavplayer;
 	
+	public VMusic() { 
+		this.volume = 100;
+	}
+	public VMusic(int volume) { 
+		this.volume = volume;
+	}
+	
+	public int getVolume() {
+		return this.volume;
+	}
+	
 	public synchronized void start(URL url)
 	{
-		this.play = url;
+		this.setPlay(url);
 		if (mTest == null)
 		{
 			mTest = new Thread(this);
@@ -48,23 +60,24 @@ public class VMusic implements Runnable {
 	}
 	
 	public synchronized void run() {
-		if(play == null || play.getFile() == null) {
+		if(getPlay() == null || getPlay().getFile() == null) {
 			System.err.println("No file to play.");
 			return;
 		}
-		String extension = play.getFile().substring(play.getFile().length()-3);
+		String extension = getPlay().getFile().substring(getPlay().getFile().length()-3);
 		
 		if(extension.equalsIgnoreCase("vgm") || extension.equalsIgnoreCase("vgz")) {
 			vgmPlayer = new gme();
 			System.out.println(vgmPlayer);
-			vgmPlayer.playSimple(play, 0.5); //"file:///" + play);
+			double dv = (double)volume / 100;
+			vgmPlayer.playSimple(getPlay(), dv); //"file:///" + play);
 		}
 		else if(extension.equalsIgnoreCase("mp3")){
-			mp3player = new Mp3Player(play, 100);
+			mp3player = new Mp3Player(getPlay(), volume);
 			mp3player.play();
 		}
 		else if(extension.equalsIgnoreCase("wav")){
-			wavplayer = new WavPlayer(play, 100);
+			wavplayer = new WavPlayer(getPlay(), volume);
 			wavplayer.play();
 		}
 		else if (extension.equalsIgnoreCase("mod") || 
@@ -75,6 +88,7 @@ public class VMusic implements Runnable {
 			modPlayer = new MikModApp();
 			try {
 				
+				// TODO: Still necessary?
 				// Rafael: JAR files can't be read with RandomAccessFile. So we
 				// need to copy the music file to a temporary file, in order to 
 				// MikMod app read it like a RandomAccessFile.
@@ -99,7 +113,8 @@ public class VMusic implements Runnable {
 				}
 				else {*/
 					modPlayer.my_argv = new String[]{" -r ", " auto"};//, play.getFile()};
-					modPlayer.url = play;
+					modPlayer.url = getPlay();
+					// TODO Volume?
 				//}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -108,6 +123,23 @@ public class VMusic implements Runnable {
 			modPlayer.start();
 		}
 		
+		
+	}
+
+	public static URL getPlay() {
+		return play;
+	}
+
+	public static void setPlay(URL play) {
+		VMusic.play = play;
+	}
+
+	public void setVolume(int v) {
+		if(vgmPlayer != null) {
+			double dv = (double)v / 100;
+			System.out.println("VGM volume changed to:" + dv);
+			vgmPlayer.setVolume(dv);
+		}
 		
 	}
 	

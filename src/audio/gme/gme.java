@@ -221,6 +221,13 @@ public final class gme extends Applet implements ActionListener
 		}
 		catch ( Exception e ) { e.printStackTrace(); }		
 	}
+
+	// [Rafael, the Esper]
+	public void setVolume(double volume) {
+		if(player != null) {
+			player.setVolume(volume); // 1.0 max
+		}
+	}
 	
 	// Called when applet is first loaded
 	public void init()

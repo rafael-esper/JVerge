@@ -5,6 +5,7 @@ import static core.Script.*;
 import static core.Sprite.RenderSpritesAboveEntity;
 import static core.Sprite.RenderSpritesBelowEntity;
 import static core.Sprite.sprites;
+import static core.VergeEngine.getGUI;
 import static domain.Entity.EAST;
 import static domain.Entity.NE;
 import static domain.Entity.NORTH;
@@ -14,22 +15,16 @@ import static domain.Entity.SOUTH;
 import static domain.Entity.SW;
 import static domain.Entity.WEST;
 
-import java.awt.Color;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
 import domain.Config;
 import domain.Entity;
-import domain.Map;
 import domain.MapDynamic;
 import domain.MapVerge;
 import domain.VImage;
-import domain.Vsp;
 
 public class VergeEngine extends Thread {
 
@@ -59,13 +54,13 @@ public class VergeEngine extends Thread {
 
 	// main engine code
 
-	public static int AllocateEntity(int x, int y, String chr) {
+	static int AllocateEntity(int x, int y, String chr) {
 		Entity e = new Entity(x, y, chr);
 		e.index = numentities;
 		entity.add(e);
 		return numentities++;
 	}
-
+	
 	protected static class EntityComparator implements Comparator<Entity> {
 		public int compare(Entity ent1, Entity ent2) {
 			return ent1.gety() - ent2.gety();
@@ -250,7 +245,7 @@ public class VergeEngine extends Thread {
 		}
 	}
 
-	void afterPlayerMove() {
+	static void afterPlayerMove() {
 		if (!_trigger_afterPlayerMove.isEmpty()) {
 			Script.callfunction(_trigger_afterPlayerMove);
 		}
@@ -589,7 +584,6 @@ public class VergeEngine extends Thread {
 		if (current_map == null) {
 			return;
 		}
-		
 		if (!inscroller && getLastKeyChar() == 41)
 			MapScroller(dest);
 
@@ -685,7 +679,9 @@ public class VergeEngine extends Thread {
 			//framecount=0;
 		//}
 		//framecount++;
+		
 	}
+
 	//static int framecount = 0;
 
 	static void CheckZone() {
@@ -721,6 +717,7 @@ public class VergeEngine extends Thread {
 			if (invc == 0)
 				ProcessControls();
 			if (myself != null && invc == 0) {
+				
 				if ((px != (myself.getx() + (myself.chr.hw / 2)) / 16)
 						|| (py != (myself.gety() + (myself.chr.hh / 2)) / 16)) {
 					px = (myself.getx() + (myself.chr.hw / 2)) / 16;
@@ -769,10 +766,10 @@ public class VergeEngine extends Thread {
 			
 			// Game Loop
 			while(!done) {
-				updatecontrols();
+				updateControls();
 				//TimedProcessEntities();
 				while (!die) {
-					updatecontrols();
+					updateControls();
 					
 					if(virtualScreen==null) {
 						screen.render();
@@ -799,7 +796,7 @@ public class VergeEngine extends Thread {
 		xwin = ywin = 0;
 		done = false;
 		die = false;
-		if(mapname.endsWith(".map")) {
+		if(mapname.toLowerCase().endsWith(".map")) {
 			current_map = new MapVerge(mapname);
 		}
 		else {
@@ -827,6 +824,11 @@ public class VergeEngine extends Thread {
 		timeIncrement = i;
 	}
 	
+	// RBP Avoid FPS getting higher than needed, after spending lot of time loading 
+	public static void syncAfterLoading() {
+		GUI.cycleTime = System.currentTimeMillis();
+	}
+	
 	public static void initVergeEngine(String[] args) {
 
 		if (args !=null && args.length != 0) {
@@ -848,6 +850,9 @@ public class VergeEngine extends Thread {
 		// config.v3_yres = config.v3_yres * 2;
 
 		screen = new VImage(config.getV3_xres(), config.getV3_yres());
+
+		// Unused: useful for frameskipping
+		//finalScreen = new VImage(config.getV3_xres(), config.getV3_yres());
 
 		if (config.isWindowmode()) {
 			gui = new GUI(config.getV3_xres(), config.getV3_yres());

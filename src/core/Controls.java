@@ -118,6 +118,13 @@ implements MouseListener, MouseMotionListener, FocusListener, KeyListener, Windo
 		if (b2 && !oldb2) callfunction(bindbutton[1]);
 		if (b3 && !oldb3) callfunction(bindbutton[2]);
 		if (b4 && !oldb4) callfunction(bindbutton[3]);
+		
+		// Rafael, the Esper (2014: new)
+		for(int i=0; i<bindarray.length; i++) {
+			if(getKey(i) && bindarray[i] != null && !bindarray[i].isEmpty()) {
+				callfunction(bindarray[i]);
+			}
+		}
 	}
 
 	// JGAME STUFF **** /////////////////////////////////////////////

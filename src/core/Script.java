@@ -38,11 +38,16 @@ import static core.SinCos.*;
 
 public class Script {
 
+	// For Testing purposes (simulations)
+	public static boolean TEST_SIMULATION = false;
+	public static int TEST_POS = 0;
+	public static int[] TEST_OPTIONS;
+
+	
 	//public static final int VCFILES		=		51;
 	public static final int  VC_READ	=			1;
 	public static final int  VC_WRITE		=	2;
 	public static final int  VC_WRITE_APPEND	=	3; // Overkill (2006-07-05): Append mode added.	
-	
 
 	public static final int CF_GRAY = 1;
 	public static final int CF_INV_GRAY = 2;
@@ -55,7 +60,7 @@ public class Script {
 	// VERGE ENGINE VARIABLES: Moved to Script for easy of use
 	/**
 	 * This is a hardcoded image handle for the screen. It is a pointer to a
-	 * bitmap of the screen's current dimensions (set in v3.cfg or by
+	 * bitmap of the screen's current dimensions (set in verge.cfg or by
 	 * SetResolution() function at runtime). Anything you want to appear in the
 	 * verge window should be blitted here with one of the graphics functions.
 	 * When ShowPage() is called the screen bitmap is transfered to the display.
@@ -125,50 +130,6 @@ public class Script {
 	public static String _trigger_onEntityCollide = "";
 	public static String _trigger_afterPlayerMove = "";
 
-	public static int vc_GetYear()
-	{
-		  Calendar cal=Calendar.getInstance();
-		  return cal.get(Calendar.YEAR);
-	}
-
-	public static int vc_GetMonth()
-	{
-		  Calendar cal=Calendar.getInstance();
-		  return cal.get(Calendar.MONTH);
-
-	}
-
-	public static int vc_GetDay()
-	{
-		  Calendar cal=Calendar.getInstance();
-		  return cal.get(Calendar.DAY_OF_MONTH);
-	}
-
-	public static int vc_GetDayOfWeek()
-	{
-		  Calendar cal=Calendar.getInstance();
-		  return cal.get(Calendar.DAY_OF_WEEK);
-	}
-
-	public static int vc_GetHour()
-	{
-		  Calendar cal=Calendar.getInstance();
-		  return cal.get(Calendar.HOUR);
-	}
-
-	public static int vc_GetMinute()
-	{
-		  Calendar cal=Calendar.getInstance();
-		  return cal.get(Calendar.MINUTE);
-	}
-
-	public static int vc_GetSecond()
-	{
-		  Calendar cal=Calendar.getInstance();
-		  return cal.get(Calendar.SECOND);
-	}
-
-
 	public static void error(String str) { 
 	  	System.err.println(str);
 	}
@@ -207,7 +168,7 @@ public class Script {
 	
 	public static void exit(String message) { 
 		System.err.println(message);
-		System.exit(-1); 
+		System.exit(0); 
 	}
 
 	/* Rafael: TODO Implement this.
@@ -241,12 +202,15 @@ public class Script {
 	static void MessageBox(String msg) { showMessageBox(msg); }*/
 
 	public static int random(int min, int max) { 
-		Random r = new Random();
+		if(min > max) {
+			return random(max, min);
+		}
+		Random r = new Random(); // TODO Use unique random instance
 		return r.nextInt(max+1-min) + min; 
 	}
 	
 	
-	public static void setappname(String s) { 
+	public static void setAppName(String s) { 
 		getGUI().setTitle(s);
 	}
 
@@ -280,7 +244,7 @@ public class Script {
 		}
 	}
 
-	public static void updatecontrols() { 
+	public static void updateControls() { 
 		Controls.UpdateControls(); 
 	}
 
@@ -380,23 +344,35 @@ public class Script {
 	}
 	public static void entitymove(int e, String s) {
 		if (e<0 || e >= numentities) return;
-		else entity.get(e).SetMoveScript(s);
+		else entity.get(e).setMoveScript(s);
 	}
 	public static void entitysetwanderdelay(int e, int d) {
 		if (e<0 || e >= numentities) return;
-		else entity.get(e).SetWanderDelay(d);
+		else entity.get(e).setWanderDelay(d);
 	}
 	public static void entitysetwanderrect(int e, int x1, int y1, int x2, int y2) {
 		if (e<0 || e >= numentities) return;
-		else entity.get(e).SetWanderBox(x1, y1, x2, y2);
+		else entity.get(e).setWanderBox(x1, y1, x2, y2);
 	}
 	public static void entitysetwanderzone(int e) {
 		if (e<0 || e >= numentities) return;
-		else entity.get(e).SetWanderZone();
+		else entity.get(e).setWanderZone();
 	}
 	public static int entityspawn(int x, int y, String s) { 
 		return AllocateEntity(x*16,y*16,s); 
 	}
+	public static int countParty(int first) {
+		if (first<0 || first >= numentities) return 0;
+		int num = 1;
+		Entity e = entity.get(first);
+		while(e.getFollower() != null) {
+			e = e.getFollower();
+			num++;
+		}
+			
+		return num;
+	}
+	
 	public static void entitystalk(int stalker, int stalkee) {
 		if (stalker<0 || stalker>=numentities)
 			return;
@@ -411,7 +387,7 @@ public class Script {
 	}
 	public static void entitystop(int e) {
 		if (e<0 || e >= numentities) return;
-		else entity.get(e).SetMotionless();
+		else entity.get(e).setMotionless();
 	}
 	public static void hookentityrender(int i, String s) {
 		if (i<0 || i>=numentities) 
@@ -422,13 +398,16 @@ public class Script {
 	public static void playermove(String s) {
 		if (myself==null) 
 			return;
-		myself.SetMoveScript( s );
+		myself.setMoveScript(s);
 
+		int current_invc = invc;
+		invc=1;//Rafael
 		while(myself.movecode != 0 )
 		{
 			screen.render();
 			showpage();
 		}
+		invc=current_invc;//Rafael
 
 		playerentitymovecleanup();
 	}
@@ -453,18 +432,19 @@ public class Script {
 			lastentitythink = systemtime;
 	}
 	
-	public static void setplayer(int e) {
+	public static Entity setplayer(int e) {
 		if (e<0 || e>=numentities)
 		{
 			player = -1;
 			myself = null;
 			System.err.println("invalid Player.");
-			return;
+			return null;
 		}
 		myself = entity.get(e);
 		player = e;
-		myself.SetMotionless();
+		myself.setMotionless();
 		myself.obstructable = true;
+		return myself;
 	}
 
 	public static int getplayer()
@@ -498,15 +478,31 @@ public class Script {
 		sound.start(volume);
 	}
 
-	public static void playmusic(URL fn) { 
+	public static URL getmusic() {
+		if(VergeEngine.config==null || VergeEngine.config.isNosound() || musicplayer==null)
+			return null;
+		
+		return VMusic.getPlay();
+		
+	}
+	
+	public static void playmusic(URL fn) {
+		playmusic(fn, 100);
+	}
+	
+	public static void playmusic(URL fn, int volume) { 
 		if(fn==null || VergeEngine.config==null || VergeEngine.config.isNosound())
 			return;
 		
 		if(musicplayer!=null) {
+			// If same music is playing, does nothing
+			if(musicplayer.getPlay().equals(fn)) {
+				return;
+			}
 			musicplayer.stop();
 		}
 		try {
-			musicplayer = new VMusic();
+			musicplayer = new VMusic(volume);
 			log("Playing..." + fn);
 			musicplayer.start(fn);
 		}
@@ -522,8 +518,16 @@ public class Script {
 		//return PlaySample((void*) slot, volume * 255 / 100); 
 	}*/
 	
-	public static void setmusicvolume(int v) { 
-		// TODO Implement
+	public static void setMusicVolume(int v) { 
+		if(VergeEngine.config==null || VergeEngine.config.isNosound())
+			return;
+		
+		if(musicplayer!=null) {
+			musicplayer.setVolume(v);
+		} else {
+			musicplayer = new VMusic(v);
+		}
+		
 	}
 
 	/*static void StopSong(int handle) { StopSong(handle); }
@@ -561,24 +565,29 @@ public class Script {
 	}
 
 	static int lastchangetime = 0;
-	
-	public static void showpage() {
 
-		if(virtualScreen!=null) {
-			screen.blit(0, 0, virtualScreen);
-		}
-		//flipblit(0,0,FlipType.FLIP_HORIZONTALLY,screen,screen);
-		//System.out.println("showpage");
+	public static void showpage() {
+		//if(lastchangetime++ > 1) {
+			lastchangetime = 0;
+			if(virtualScreen!=null) {
+				//finalScreen.blit(0, 0, screen);
+				screen.blit(0, 0, virtualScreen);
+			}
+			//else {
+				//finalScreen.blit(0, 0, screen);
+			//}
+		//}
 		Controls.UpdateControls();
-		// Check if the player pressed a special key
-		//VergeEngine.checkFunctionKeys();
 		
-		//VEngine.updateGUI();
 		DefaultTimer();//[Rafael, the Esper]
 		GUI.paintFrame();
-		//VEngine.synchFramerate();
-		//VergeEngine.PaintToScreen();
-		//getGUI().getCanvas().setCanvas_screen(screen.getImage()); //[Rafael, the Esper]
+
+		/*if(toClipboard) {
+			toClipboard = false;
+			screen.copyImageToClipboard();
+		}*/
+		
+		
 	}
 	
 
@@ -640,7 +649,7 @@ public class Script {
 					case 6: z = (rr+gg+bb)/3; c = new Color(0, 0, z); break; // BLUE
 					// [Rafael, the Esper] Custom color filter case 7: z = (rr+gg+bb)/3; c = new Color(cf_r1+((cf_rr*z)>>8), cf_g1+((cf_gr*z)>>8), cf_b1+((cf_br*z)>>8)).getRGB(); break;
 				}
-				img.setpixel(x, y, c);
+				img.setPixel(x, y, c);
 			}
 		}
 	}	
@@ -830,351 +839,11 @@ public class Script {
 		       str = str.concat(" " + words.get(i+1));
 		       i += 1;
 			}
-		    rows.add(str);
+	    	rows.add(str);
 		    str = "";i+=1;
 		}
 		return rows;
 	}	
-	
-/*	
-	// Overkill (2006-07-20):
-	// Saves a CHR file, using an open file handle, saving the specified entity.
-	static void FileWriteCHR(int handle, int ent) {
-		if (!handle || handle > VCFILES || !vcfiles[handle].active)
-			se.Error("FileWriteCHR() - file handle is either invalid or file is not open.");
-		if (vcfiles[handle].mode != VC_WRITE)
-			se.Error("FileWriteCHR() - given file handle is a read-mode file.");
-		if (ent < 0 || ent >= entities)
-			se.Error("Tried saving an invalid or inactive ent index (%d).", ent);
-
-		entity[ent].chr.save(vcfiles[handle].fptr);	
-	}
-
-	// Overkill (2006-07-20):
-	// Saves a MAP file, using an open file handle, saving the current map.
-	static void FileWriteMAP(int handle) {
-		if (!handle || handle > VCFILES || !vcfiles[handle].active)
-			se.Error("FileWriteMAP() - file handle is either invalid or file is not open.");
-		if (vcfiles[handle].mode != VC_WRITE)
-			se.Error("FileWriteMAP() - given file handle is a read-mode file.");
-		if (!current_map)
-			se.Error("FileWriteMAP() - There is no active map, therefore making it not possible to save this map.");
-
-		current_map.save(vcfiles[handle].fptr);	
-	}
-	// Overkill (2006-07-20):
-	// Saves a VSP file, using an open file handle, saving the current map's VSP.
-	static void FileWriteVSP(int handle) {
-		if (!handle || handle > VCFILES || !vcfiles[handle].active)
-			se.Error("FileWriteVSP() - file handle is either invalid or file is not open.");
-		if (vcfiles[handle].mode != VC_WRITE)
-			se.Error("FileWriteVSP() - given file handle is a read-mode file.");
-		if (!current_map)
-			se.Error("FileWriteVSP() - There is no active map, therefore making it not possible to save the map's vsp.");
-
-		current_map.tileset.save(vcfiles[handle].fptr);	
-	}
-
-	//VI.l. Window Managment Functions
-	//helper"
-	static void checkhandle(char *func, int handle, AuxWindow *auxwin) {
-		if(!handle)
-			se.Error("%s() - cannot access a null window handle!",func);
-		if(!auxwin)
-			se.Error("%s() - invalid window handle!",func);
-	}
-	static void WindowClose(int win) {
-		if(win == 1) se.Error("WindowClose() - cannot close gameWindow");
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowClose",win,auxwin);
-		auxwin.dispose();
-	}
-	static int WindowCreate(int x, int y, int w, int h, String s) {
-		AuxWindow *auxwin = vid_createAuxWindow();
-		auxwin.setTitle(s);
-		auxwin.setPosition(x,y);
-		auxwin.setResolution(w,h);
-		auxwin.setSize(w,h);
-		auxwin.setVisibility(true);
-		return auxwin.getHandle();
-	}
-	static int WindowGetHeight(int win) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowGetHeight",win,auxwin);
-		return auxwin.getHeight();
-	}
-	static int WindowGetImage(int win) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowGetImage",win,auxwin);
-		return auxwin.getImageHandle();
-	}
-	static int WindowGetWidth(int win) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowGetWidth",win,auxwin);
-		return auxwin.getWidth();
-	}
-	static int WindowGetXRes(int win) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowGetXRes",win,auxwin);
-		return auxwin.getXres();
-	}
-	static int WindowGetYRes(int win) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowGetYRes",win,auxwin);
-		return auxwin.getYres();
-	}
-	static void WindowHide(int win) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowHide",win,auxwin);
-		auxwin.setVisibility(false);
-	}
-	static void WindowPositionCommand(int win, int command, int arg1, int arg2) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowPositionCommand",win,auxwin);
-		auxwin.positionCommand(command,arg1,arg2);
-	}
-	static void WindowSetPosition(int win, int x, int y) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowSetPosition",win,auxwin);
-		auxwin.setPosition(x,y);
-	}
-	static void WindowSetResolution(int win, int w, int h) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowSetResolution",win,auxwin);
-		auxwin.setResolution(w,h);
-		auxwin.setSize(w,h);
-	}
-	static void WindowSetSize(int win, int w, int h) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowSetSize",win,auxwin);
-		auxwin.setSize(w,h);
-	}
-	static void WindowSetTitle(int win, String s) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowSetTitle",win,auxwin);
-		auxwin.setTitle(s);
-	}
-	static void WindowShow(int win) {
-		AuxWindow *auxwin = vid_findAuxWindow(win);
-		checkhandle("WindowShow",win,auxwin);
-		auxwin.setVisibility(true);
-	}
-	//VI.m. Movie Playback Functions
-	static void AbortMovie() { win_movie_abortSimple(); }
-	static void MovieClose(int m) { win_movie_close(m); }
-	static int MovieGetCurrFrame(int m) { return win_movie_getCurrFrame(m); }
-	static int MovieGetFramerate(int m) { return win_movie_getFramerate(m); }
-	static int MovieGetImage(int m) { return win_movie_getImage(m); }
-	static int MovieLoad(String s, bool mute) { return win_movie_load(s, mute); }
-	static void MovieNextFrame(int m) { win_movie_nextFrame(m); }
-	static void MoviePlay(int m, bool loop) { win_movie_play(m, loop?1:0); }
-	static void MovieRender(int m) { win_movie_render(m); }
-	static void MovieSetFrame(int m, int f) { win_movie_setFrame(m,f); }
-	static int PlayMovie(String s){ return win_movie_playSimple(s); }
-*/
-	//VI.n. Netcode Functions
-	static ServerSocket vcserver = null;
-
-	// Overkill (2008-04-17): Socket port can be switched to something besides 45150.
-	static int vcsockport = 45150;
-	static void SetConnectionPort(int port)
-	{
-		vcsockport = port;
-	}
-
-	// Overkill (2008-04-17): Socket port can be switched to something besides 45150.
-	static Socket Connect(String ip) {
-		Socket s;
-		try
-		{
-			s = new Socket(ip, vcsockport);
-		}
-		catch (Exception ne) {
-			return null;
-		}
-		return s;
-	}
-
-	// Overkill (2008-04-17): Socket port can be switched to something besides 45150.
-	// Caveat: The server currently may not switch listen ports once instantiated.
-	static Socket GetConnection() {
-		try {
-			if (vcserver != null)
-				vcserver = new ServerSocket(vcsockport);
-			Socket s = vcserver.accept();
-			return s;
-		}
-		catch(Exception e) {
-			return null;
-	    }
-	}
-
-	public static VImage geturlimage(String url) { 
-		// TODO Implement this mechanism!
-		error("Non implemented function: geturlimage");
-		return new VImage(10, 10);
-		//return getUrlImage(url); 
-	}
-	
-	public static String geturltext(String url) { 
-		error("Non implemented function: geturltext");
-		return "";
-		//return getUrlText(url); 
-	}
-/*	static void SocketClose(int sh) { delete ((Socket *)sh); }
-	static boolean SocketConnected(int sh) { return ((Socket*)sh).connected()!=0; }
-	static String SocketGetFile(int sh, String override) {
-		static char stbuf[4096];
-		Socket *s = (Socket *) sh;
-		String retstr;
-
-		EnforceNoDirectories(override);
-
-		int stlen = 0, ret;
-		ret = s.blockread(2, &stlen);
-		if (!ret)
-			return String();
-
-		ret = s.blockread(stlen, stbuf);
-		stbuf[stlen] = 0;
-
-		String fn = stbuf;
-		EnforceNoDirectories(fn);
-
-		int fl;
-		s.blockread(4, &fl);
-
-		char *buf = new char[fl];
-		s.blockread(fl, buf);
-
-		FILE *f;
-		if (override.length())
-		{
-			retstr = override;
-			f = fopen(override, "wb");
-		}
-		else
-		{
-			retstr = fn;
-			f = fopen(fn, "wb");
-		}
-		if (!f)
-			err("SocketGetFile: couldn't open file for writing!");
-		fwrite(buf, 1, fl, f);
-		fclose(f);
-		delete[] buf;
-
-		return retstr;
-	}
-	static int SocketGetInt(int sh) {
-		Socket *s = (Socket *) sh;
-		int ret;
-		char t;
-		ret = s.blockread(1, &t);
-		if (t != '1')
-			err("SocketGetInt() - packet being received is not an int");
-		int temp;
-		ret = s.blockread(4, &temp);
-		return temp;
-	}
-	static String SocketGetString(int sh) {
-		static char buf[4096];
-		Socket *s = (Socket *) sh;
-		int stlen = 0, ret;
-		char t;
-		ret = s.blockread(1, &t);
-		if (t != '3')
-			err("SocketGetString() - packet being received is not a string");
-		ret = s.blockread(2, &stlen);
-		if (!ret)
-			return String();
-
-	//[Rafael, the Esper] #ifdef __BIG_ENDIAN__
-	//	stlen >>= 16;
-	//#endif
-
-		if (stlen>4095) err("yeah uh dont send such big strings thru the network plz0r");
-		ret = s.blockread(stlen, buf);
-		buf[stlen] = 0;
-		return buf;
-	}
-	bool SocketHasData(int sh) { return ((Socket*)sh).dataready()!=0; }
-	static void SocketSendFile(int sh, String fn) {
-		Socket *s = (Socket *) sh;
-
-		EnforceNoDirectories(fn);
-
-		VFILE *f = vopen(fn);
-		if (!f)
-			err("ehhhhhh here's a tip. SocketSendFile can't send a file that doesnt exist (you tried to send %s)", fn);
-
-		int i = fn.length();
-		s.write(2, &i);
-		s.write(i, fn);
-
-		int l = filesize(f);
-		s.write(4, &l);
-		char *buf = new char[l];
-		vread(buf, l, f);
-		s.write(l, buf);
-		delete[] buf;
-		vclose(f);
-	}
-	static void SocketSendInt(int sh, int i) {
-		Socket *s = (Socket *) sh;
-		char t = '1';
-		s.write(1, &t);
-		s.write(4, &i);
-	}
-	static void SocketSendString(int sh, String str) {
-		Socket *s = (Socket *) sh;
-		int len = str.length();
-		if (len>4095) err("yeah uh dont send such big strings thru the network plz0r");
-		char t = '3';
-		s.write(1, &t);
-
-	//[Rafael, the Esper] #ifdef __BIG_ENDIAN__
-	//	len <<= 16;
-	//#endif
-
-		s.write(2, &len);
-
-	//[Rafael, the Esper] #ifdef __BIG_ENDIAN__
-	//	len >>= 16;
-	//#endif
-
-		s.write(len, str);
-	}
-
-	// Overkill (2008-04-17): Sockets can send and receive raw length-delimited strings
-	static String SocketGetRaw(int sh, int len)
-	{
-		static char buf[4096];
-		Socket *s = (Socket *) sh;
-		if (len > 4095)
-		{
-			err("SocketGetRaw() - can only receive a maximum of 4095 characters at a time. You've tried to get %d", len);
-		}
-		int ret = s.nonblockread(len, buf);
-		buf[ret] = 0;
-		return buf;
-	}
-
-	// Overkill (2008-04-17): Sockets can send and receive raw length-delimited strings
-	static void SocketSendRaw(int sh, String str)
-	{
-		Socket *s = (Socket *) sh;
-		int len = str.length();
-		s.write(len, str);
-	}
-
-	// Overkill (2008-04-20): Peek at how many bytes are in buffer. Requested by ustor.
-	static int SocketByteCount(int sh)
-	{
-		Socket *s = (Socket *) sh;
-		return s.byteCount();
-	}
-*/
 
 	public static boolean up, down, left, right;
 	public static boolean b1, b2, b3, b4;
@@ -1266,50 +935,6 @@ public class Script {
 	public static VImage getVirtualScreen() {
 		return virtualScreen;
 	}
-
-	
-	public static void fadeout(int delay, boolean rendermap) {
-		unpress(9);
-		timer = 0;	
-		while (timer<delay)
-		{
-			if(rendermap)
-				screen.render();
-			setlucent(100 - (timer*100/delay));
-			screen.rectfill(0, 0, screen.getWidth(), screen.getHeight(), Color.BLACK);
-			setlucent(0);	
-			showpage();
-		}
-	}
-	
-	public static void fadein(int delay, boolean rendermap) {
-		unpress(9);
-		timer = 0;
-		while (timer<delay)
-		{
-			if(rendermap)
-				screen.render();
-			setlucent(timer*100/delay);
-			screen.rectfill(0, 0, screen.getWidth(), screen.getHeight(), Color.BLACK);
-			setlucent(0);
-			showpage();
-		}
-	}
-	
-	// Handy code by [Rafael, the Esper]
-	public static void fade(int delay, boolean black) { // fade in and out
-		if(black) {
-			fadeout(delay, true);
-			screen.rectfill(0,0,screen.width, screen.height, Color.BLACK);
-			fadein(delay, false);
-		}
-		else {
-			fadeout(delay, false);
-			fadein(delay, true);
-		}
-		
-	}
-	
 	
 	// Function (method) calling
 	
@@ -1361,7 +986,6 @@ public class Script {
 				 	int pos = current_map.getFilename().lastIndexOf('\\');
 				 	if(pos==-1)
 				 		pos = 0;
-				 	
 			 		StringBuilder b = new StringBuilder(current_map.getFilename().toLowerCase());
 			 		b.replace(pos, pos+1, String.valueOf(Character.toUpperCase(b.charAt(pos))));
 			 		String s = b.toString().substring(0, b.indexOf(".map")).replace('\\', '.');
@@ -1371,8 +995,15 @@ public class Script {
 			 			path = systemclass.forName(cName.toString());
 			 		}
 					catch(ClassNotFoundException cnfe) {
-						error("Class " + path + " not found for map execution.");
-						notFoundInMap = true; //return;
+						// FIXME Solve this mess, also use toUppercase and Capitalize first letter to avoid error on .MAP
+		 				b = new StringBuilder(systemclass.getPackage().getName() + "." + mapname);
+				 		s = b.toString().substring(0, b.lastIndexOf(".map")).replace('\\', '.').replace('/', '.');
+				 		try {
+							path = systemclass.forName(s);
+						} catch (ClassNotFoundException e) {
+							error("Class " + path + " not found for map execution.");
+							notFoundInMap = true; //return;
+						}	
 					}
 					if(path!=null) {
 				 		if (!invokeMethod(path, function, justCheck))
@@ -1427,6 +1058,9 @@ public class Script {
 	 * Method for loading resources from the classpath, like images, fonts, sounds, etc 
 	 */
 	public static URL load(String url) {
+		if(TEST_SIMULATION) // [Rafael, the Esper]
+			return null;
+		
 		log("(" + systemclass + ")" + ", reading: " + url);
 		URL resource = systemclass.getResource(url);
 		
@@ -1466,7 +1100,7 @@ public class Script {
 			}
 			
 		}
-		
+		syncAfterLoading(); // Rafael, the Esper
 		return resource;
 	}
 	public static void setSystemPath(Class c) {

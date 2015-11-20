@@ -60,17 +60,17 @@ public class Entity {
 	int moveofs;	
 
 	public int getx() {
-		if(current_map!=null && current_map.getHorizontalWrapable() && 
+		if(current_map!=null && current_map.getHorizontalWrapable() &&
 				(this.x/16 > current_map.getWidth()<<4 || this.x < 0)) {
-			this.x = (this.x + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
-			this.waypointx = (this.waypointx + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
-		}
+					this.x = (this.x + (current_map.getWidth()<<8)) % (current_map.getWidth()<<8);
+					this.waypointx = (this.waypointx + (current_map.getWidth()<<4)) % (current_map.getWidth()<<4);
+				}		
 		return this.x/16;	}
 	
 	public int gety() { 
 		if(current_map!=null && current_map.getVerticalWrapable() &&
 			(this.y/16 > current_map.getHeight()<<4 || this.y < 0)) {
-				this.y = (this.y + (current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
+				this.y = (this.y + (current_map.getHeight()<<8)) % (current_map.getHeight()<<8);
 				this.waypointy = (this.waypointy + (current_map.getHeight()<<4)) % (current_map.getHeight()<<4);
 			}		
 		return this.y/16; 	}
@@ -140,7 +140,9 @@ public class Entity {
 	int pathy[] = new int[FOLLOWDISTANCE];
 	int pathf[] = new int[FOLLOWDISTANCE];	
 	
-	
+	public Entity getFollower() {
+		return this.follower;
+	}
 	public void setface(int face) {
 		this.face = face;
 	}
@@ -152,7 +154,6 @@ public class Entity {
 	}	
 	
 	// Used by the engine
-	
 	public Entity(int x, int y, String chrfn) {
 		follower = null;
 		follow = null;
@@ -176,21 +177,17 @@ public class Entity {
 		hookrender = "";
 		script = "";
 		description = "";
-		obstructable = false;
-		obstruction = false;
+		obstructable = true;
+		obstruction = true;
 		for (int i=0; i<FOLLOWDISTANCE; i++) {
-			pathx[i] = x;
-			pathy[i] = y;
+			pathx[i] = x*16;
+			pathy[i] = y*16;
 			pathf[i] = SOUTH;
 		}
 	
 	}
 	
-	public Entity() {
-
-	}	
-	
-	void setxy(int x1, int y1) {
+	public void setxy(int x1, int y1) {
 		setoriginalx(x1 * 16);
 		setoriginaly(y1 * 16);
 		if (follower != null) follower.setxy(x1, y1);
@@ -215,7 +212,7 @@ public class Entity {
 		if (follower != null) follower.setspeed(s);
 	}
 
-	void set_waypoint(int x1, int y1)
+	public void set_waypoint(int x1, int y1)
 	{
 		setwaypointx(x1);
 		setwaypointy(y1);
@@ -261,7 +258,9 @@ public class Entity {
 
 	boolean leaderidle(){
 
-		if (follow!=null) return follow.leaderidle();
+		if (follow!=null) {
+			return follow.leaderidle();
+		}
 		return (getx() == getwaypointx() && gety() == getwaypointy());
 	}
 
@@ -288,13 +287,15 @@ public class Entity {
 	{
 		follow = e;
 		e.follower = this;
-		for (int i=0; i<FOLLOWDISTANCE; i++) {
+		
+		/* Rafael,the Esper: obsolete code: this is resolved in new Entity()
+		 * for (int i=0; i<FOLLOWDISTANCE; i++) {
 			pathx[i] = follow.pathx[FOLLOWDISTANCE-1];
 			pathy[i] = follow.pathy[FOLLOWDISTANCE-1];
 			pathf[i] = SOUTH;
-		}
-		setoriginalx(follow.pathx[FOLLOWDISTANCE-1]);
-		setoriginaly(follow.pathy[FOLLOWDISTANCE-1]);
+		}*/
+		//setoriginalx(follow.pathx[FOLLOWDISTANCE-1]);
+		//setoriginaly(follow.pathy[FOLLOWDISTANCE-1]);
 
 		set_waypoint(getx(), gety());
 
@@ -366,8 +367,9 @@ public class Entity {
 		}
 
 		// else move
-		if (dx != 0)
+		if (dx != 0){
 			setoriginalx((int) (getOriginalX() + (Math.signum(dx) * 16)));
+		}
 
 		if (dy != 0)
 			setoriginaly((int) (getOriginalY() + (Math.signum(dy) * 16)));
@@ -379,10 +381,10 @@ public class Entity {
 	public void think()
 	{
 		int num_ticks;
-		if (!active) return;
+		if (!active) 
+			return;
 
-		if (delay>systemtime)
-		{
+		if (delay>systemtime) {
 			framect = 0;
 			return;
 		}
@@ -391,14 +393,11 @@ public class Entity {
 		num_ticks = speedct / 100;
 		speedct %= 100;
 
-		while (num_ticks > 0)
-		{
+		while (num_ticks > 0) {
 			num_ticks--;
 
-			if (ready())
-			{
-				switch (movecode)
-				{
+			if (ready()) {
+				switch (movecode) {
 					case 0: if (this == myself && invc==0) ProcessControls(); break;
 					case 1: do_wanderzone(); break;
 					case 2: do_wanderbox(); break;
@@ -450,7 +449,9 @@ public class Entity {
 		int ex = getx();
 		int ey = gety();
 
-		if (!obstructable) return false;
+		if (!obstructable) 
+			return false;
+		
 		switch (d)
 		{
 			case NORTH:
@@ -491,30 +492,7 @@ public class Entity {
 
 		if (rb && lb && db && ub) return; // Can't move in any direction
 
-		delay = systemtime + wdelay;
-		while (true)
-		{
-			int i = Script.random(0, 3);
-			switch (i)
-			{
-				case 0:
-					if (rb) break;
-					set_waypoint_relative(16, 0, true);
-					return;
-				case 1:
-					if (lb) break;
-					set_waypoint_relative(-16, 0, true);
-					return;
-				case 2:
-					if (db) break;
-					set_waypoint_relative(0, 16, true);
-					return;
-				case 3:
-					if (ub) break;
-					set_waypoint_relative(0, -16, true);
-					return;
-			}
-		}
+		move_wander(rb, lb, db, ub); // Rafael, the Esper (refactoring to avoid duplicate code)
 	}
 
 	void do_wanderbox()
@@ -530,31 +508,41 @@ public class Entity {
 
 		if (rb && lb && db && ub) return; // Can't move in any direction
 
-		delay = systemtime + wdelay;
+		move_wander(rb, lb, db, ub);
+	}
+	
+	// Method by Rafael, the Esper, to avoid duplicate code and add some specific behavior.
+	private void move_wander(boolean rb, boolean lb, boolean db, boolean ub) {
+		delay = systemtime + (Script.random(1, 3) == 1 ? 0 : wdelay); // Rafael, the Esper (Added random chance of stopping)
+		
 		while (true)
 		{
-			int i = Script.random(0, 3);
+			int i = Script.random(1, 4 + 4); // Rafael, the Esper: changed to 1-4 + (extra),
+			if(i>4) { // keep the same direction, with (extra)/(extra+4) % chance
+				i = face;
+			}
 			switch (i)
 			{
-				case 0:
+				case EAST:
 					if (rb) break;
 					set_waypoint_relative(16, 0, true);
 					return;
-				case 1:
+				case WEST:
 					if (lb) break;
 					set_waypoint_relative(-16, 0, true);
 					return;
-				case 2:
+				case SOUTH:
 					if (db) break;
 					set_waypoint_relative(0, 16, true);
 					return;
-				case 3:
+				case NORTH:
 					if (ub) break;
 					set_waypoint_relative(0, -16, true);
 					return;
 			}
 		}
 	}
+	
 
 	public void do_movescript()
 	{
@@ -616,7 +604,7 @@ public class Entity {
 					done = true;
 			}
 		}
-// [Rafael, the Esper] FIXME 
+
 		if(!(moveofs < movestr.length()))
 			return;
 		
@@ -696,11 +684,12 @@ public class Entity {
 
 	public void draw(VImage dest)
 	{
-		if (!visible) return;
+		if (!visible) 
+			return;
 
 	    // if we're idle, reset the framect
-		if ((follow==null && ready()) || (follow!=null && leaderidle()))
-			framect = 0;
+		//if ((follow==null && ready()) || (follow!=null && leaderidle()))
+			//framect = 0;	// Commented by Rafael, the Esper (Why is this useful?)
 
 		if (specframe > 0)
 			frame = specframe;
@@ -708,13 +697,21 @@ public class Entity {
 		{
 			if (follow==null)
 			{
-				if (ready()) frame = chr.idle[face];
-				else frame = chr.GetFrame(face, framect);
+				if (ready() || framect == 0) { // framect condition by Rafael, the Esper
+					frame = chr.idle[face];
+				}
+				else { 
+					frame = chr.getFrame(face, framect);
+				}
 			}
 			else
 			{
-				if (leaderidle()) frame = chr.idle[face];
-				else frame = chr.GetFrame(face, framect);
+				if (leaderidle()) {
+					frame = chr.idle[face];
+				}
+				else {
+					frame = chr.getFrame(face, framect);
+				}
 			}
 		}
 
@@ -738,16 +735,18 @@ public class Entity {
 
 		if (chr != null) 
 			chr.render(zx, zy, frame, dest);
+		//if(this.y < 1600 && (this.chrname.contains("ent") || this.chrname.contains("ENT")))
+			//System.out.println("RBP " + ready() + " " + frame + ", " + this.framect);		
 	}
 
-	public void SetWanderZone()
+	public void setWanderZone()
 	{
 	    clear_stalk();
 		set_waypoint(getx(), gety());
 		movecode = 1;
 	}
 
-	public void SetWanderBox(int x1, int y1, int x2, int y2)
+	public void setWanderBox(int x1, int y1, int x2, int y2)
 	{
 	    clear_stalk();
 		set_waypoint(getx(), gety());
@@ -758,7 +757,7 @@ public class Entity {
 		movecode = 2;
 	}
 
-	public void SetMoveScript(String s)
+	public void setMoveScript(String s)
 	{
 	    clear_stalk();
 		set_waypoint(getx(), gety());
@@ -767,12 +766,12 @@ public class Entity {
 		movecode = 3;
 	}
 
-	public void SetWanderDelay(int n)
+	public void setWanderDelay(int n)
 	{
 		wdelay = n;
 	}
 
-	public void SetMotionless()
+	public void setMotionless()
 	{
 	    clear_stalk();
 		set_waypoint(getx(), gety());

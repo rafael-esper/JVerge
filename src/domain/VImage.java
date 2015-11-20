@@ -52,7 +52,7 @@ public class VImage implements Transferable {
 		g = (Graphics2D)image.getGraphics();
 	}
 	
-	 public VImage(URL url) {
+	 public VImage(URL url, boolean transparent) {
 		  try {
 			  if(url==null) {
 				  System.err.println("Unable to find image from URL " + url);
@@ -64,8 +64,6 @@ public class VImage implements Transferable {
 			  {			  
 				  image = ImageIO.read(url);
 			  }
-			  //if(image==null)
-				//  image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_ARGB); // [Rafael, the Esper] Temp
 		  } catch (IOException e) {
 			  System.err.println("Unable to read image from URL " + url);
 		  }
@@ -73,23 +71,17 @@ public class VImage implements Transferable {
 		  this.height = image.getHeight();
 
 		  // Make death magenta = transparent
-		  Image img = makeColorTransparent(image, new Color(255, 0, 255));
-		  this.image = imageToBufferedImage(img);		  
+		  if(transparent) {
+			  Image img = makeColorTransparent(image, new Color(255, 0, 255));
+			  this.image = imageToBufferedImage(img);
+		  }
 		  
 		  g = (Graphics2D)image.getGraphics();
 	 }
 	 
-	 /*public VImage(URL url, boolean transparent) {
-		 this(url);
-
-		 // Post-processing for transparent pixels
-		 if(transparent) {
-			 int tcolor = new Color(255, 0, 255).getRGB();
-			 Image img = makeColorTransparent(image, new Color(tcolor));
-			 this.image = imageToBufferedImage(img);
-		 }
-		 // End-code
-	 }*/
+	 public VImage(URL url) { // Rafael: per default, all images are loaded as transparent
+		 this(url, true);
+	 }
 	
 	public BufferedImage getImage() {
 		return this.image;
@@ -184,7 +176,6 @@ public class VImage implements Transferable {
 			VergeEngine.TimedProcessEntities(); 
 			VergeEngine.RenderMap(this);
 		}
-    
 	    
 		//VI.f. Graphics Functions
 		/*static void AdditiveBlit(int x, int y, int src, int dst) {
@@ -203,6 +194,11 @@ public class VImage implements Transferable {
 			if (current_map==null || e<0 || e >= numentities) return;
 			entity.get(e).chr.render(x, y, f, this);
 		}
+		
+		public void blitentityframe(int x, int y, CHR chr, int f) {
+			if (current_map==null) return;
+			chr.render(x, y, f, this);
+		}
 
 		// Overkill (2007-08-25): src and dest were backwards. Whoops!
 		public void blitlucent(int x, int y, int lucent, VImage src) {
@@ -212,7 +208,7 @@ public class VImage implements Transferable {
 			setlucent(oldalpha);
 		}
 		
-		public void blittile(int x, int y, int t) {
+		public void blitTile(int x, int y, int t) {
 			if (current_map != null) {
 				current_map.getTileSet().UpdateAnimations();
 				current_map.getTileSet().Blit(x, y, t, this);
@@ -256,37 +252,37 @@ public class VImage implements Transferable {
 		}*/
 		
 
-		public VImage duplicateimage() { // TODO Test
+		public VImage duplicateImage() { // TODO Test
 			VImage img = new VImage(this.image.getWidth(), this.image.getHeight());
 			img.g.drawImage(this.getImage(), 0, 0, null);
 			return img;
 		}
 		
-		// FIXME
 		public enum FlipType{FLIP_HORIZONTALLY, FLIP_VERTICALLY, FLIP_BOTH};
-		//public static void flipblit(int x, int y, boolean fx, boolean fy, VImage src, VImage dest) {
-		public void flipblit(int x, int y, FlipType type, VImage src) {
+		
+		public void flipBlit(int x, int y, FlipType type, VImage src) {
+			/*
 			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 	        tx.translate(-src.width, 0);
 	        AffineTransformOp op = new AffineTransformOp(tx, 
 	                                AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 	        VImage flippedImage = this.duplicateimage();
-	        //BufferedImage flippedImage =  new BufferedImage(src.width, 
-	          //      src.height, BufferedImage.TYPE_INT_RGB);
+	        //BufferedImage flippedImage =  new BufferedImage(src.width,src.height, BufferedImage.TYPE_INT_RGB);
 	        //flippedImage = op.filter(src.image, null);		
 	        flippedImage.image = op.filter(flippedImage.image, null);
 	        //blit(x, y, flippedImage, dest.image);
-	       	this.blit(x,y,flippedImage);
+	       	this.blit(x,y,flippedImage);*/
+
+			if(type == FlipType.FLIP_HORIZONTALLY) {
+				this.g.drawImage(src.image, src.getWidth()+x, y, -src.getWidth(), src.getHeight(), null);
+				//this.blit(x, y, flipimage(0,0,src.image));
+			}
+			else {
+				System.err.println("Not supported yet!");
+			}
 		}
 		
-		public static BufferedImage flipimage(int x, int y, BufferedImage src) {
-		/*	BufferedImage flippedImage = duplicateimage(src);
-			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-	        tx.translate(-src.getWidth(), 0);
-	        AffineTransformOp op = new AffineTransformOp(tx, 
-	                                AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-			flippedImage = op.filter(flippedImage, null);
-			return flippedImage;*/
+		public static BufferedImage flipImage(int x, int y, BufferedImage src) {
 			BufferedImage flippedImage = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			for(int j=0;j<src.getHeight(); j++)
 				for(int i=0;i<src.getWidth(); i++)
@@ -337,7 +333,7 @@ public class VImage implements Transferable {
 		 * Rendering into one will render into the other.* If that is what you want to do, then this 
 		 * is the function you want to use. 
 		 */
-		public VImage imageshell(int x, int y, int w, int h) {
+		public VImage imageShell(int x, int y, int w, int h) {
 			if (w+x > this.width || y+h > this.height)
 				System.err.printf(
 					"ImageShell() - Bad arguments. x/y+w/h greater than original image dimensions\n\nx:%d,w:%d (%d),y:%d,h:%d (%d), orig_x:%d, orig_y:%d",
@@ -354,14 +350,6 @@ public class VImage implements Transferable {
 			// TODO Implement this mechanism!
 			error("Non implemented function: imageshell");
 			return dst;
-		}
-		
-		// TODO: Eliminate them (redundant methods)
-		public int imagewidth() { 
-			return this.width; 
-		}
-		public int imageheight() { 
-			return this.height; 
 		}
 		
 		public void line(int x1, int y1, int x2, int y2, Color c) { // [Rafael, the Esper]
@@ -381,7 +369,8 @@ public class VImage implements Transferable {
 		}
 		public void scaleblit(int x, int y, int dw, int dh, VImage src) {
 			//ScaleBlit(x, y, dw, dh, s, d);
-			this.blit(x, y, src); // TODO [Rafael, the Esper] Implement scaling		
+			//this.blit(x, y, src); // TODO [Rafael, the Esper] Implement scaling
+			this.g.drawImage(src.getImage(), x, y, x+dw, y+dh, 0, 0, src.getWidth(), src.getHeight(), null);
 		}
 		
 		/* Draws a scaled image. A bit more complex than the other blitters to use. 
@@ -396,7 +385,7 @@ public class VImage implements Transferable {
 		}
 		
 		
-		public void setclip(int x1, int y1, int x2, int y2) {
+		public void setClip(int x1, int y1, int x2, int y2) {
 			//img.SetClip(x1, y1, x2, y2);
 			// TODO [Rafael, the Esper] Implement this mechanism in VImage
 			//error("Non implemented function: setclip");
@@ -414,9 +403,9 @@ public class VImage implements Transferable {
 			{
 				for(int i=x1;i<x2;i++) {
 					if(src.getImage().getRGB(i, j)==transcolor || src.getImage().getRGB(i, j)==0) // black 
-						this.setpixel(x+i, y+j, new Color(0,0,0,0));
+						this.setPixel(x+i, y+j, new Color(0,0,0,0));
 					else
-						this.setpixel(x+i, y+j, c);
+						this.setPixel(x+i, y+j, c);
 				}
 			}		
 		}
@@ -432,11 +421,11 @@ public class VImage implements Transferable {
 			TAdditiveBlit(x, y, s, d);
 		}*/
 		
-		public void grabregion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, VImage src) {
-			this.grabregion(sx1, sy1, sx2, sy2, dx, dy, src.image);
+		public void grabRegion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, VImage src) {
+			this.grabRegion(sx1, sy1, sx2, sy2, dx, dy, src.image);
 		}
 		
-		public void grabregion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, BufferedImage src) {
+		public void grabRegion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, BufferedImage src) {
 			
 				// Getclip
 				//int dcx1 = dst.cx1;
@@ -464,7 +453,7 @@ public class VImage implements Transferable {
 					color = new Color(src.getRGB(sx1+i, sy1+j));
 					if(color.getRed() + color.getGreen() + color.getBlue() == 0) // TODO [Rafael, the Esper] Probably move it to tgrabregion?
 						color = new Color(0,0,0,0); //color.getRed(), color.getGreen(), color.getBlue(), 0);
-					this.setpixel(i+dx, j+dy, color);
+					this.setPixel(i+dx, j+dy, color);
 
 				}
 				/*int grabwidth = sx2 - sx1;
@@ -476,11 +465,11 @@ public class VImage implements Transferable {
 				dst.SetClip(dcx1, dcy1, dcx2, dcy2);*/
 		}
 
-		public void tgrabregion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, Color transC, VImage src) {
-			this.tgrabregion(sx1, sy1, sx2, sy2, dx, dy, transC, src.image);
+		public void tgrabRegion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, Color transC, VImage src) {
+			this.tgrabRegion(sx1, sy1, sx2, sy2, dx, dy, transC, src.image);
 		}	
 		
-		public void tgrabregion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, Color transC, BufferedImage src) {
+		public void tgrabRegion(int sx1, int sy1, int sx2, int sy2, int dx, int dy, Color transC, BufferedImage src) {
 			
 			if (sx1>sx2) { // swap sx1, sx2
 				int temp = sx1;
@@ -500,34 +489,44 @@ public class VImage implements Transferable {
 				   || dx+i >= this.getWidth() || dy+j >= this.getHeight())		
 					break;
 				color = new Color(src.getRGB(sx1+i, sy1+j));
-				if(color.equals(transC))
+				if(color.equals(transC)) 
 					color = new Color(255,0,255,0); //color.getRed(), color.getGreen(), color.getBlue(), 0);
-				this.setpixel(i+dx, j+dy, color);
+				this.setPixel(i+dx, j+dy, color);
 
 			}	
 		}
-		
 	
-		public void setpixel(int x, int y, Color color) {
+		public void setPixel(int x, int y, Color color) {
 			this.image.setRGB(x, y, color.getRGB());
 		}	
 		
-		public  int readpixel(int x, int y) {
-			//if(workingimage.image != null)
-			return this.image.getRGB(x, y);
-			//return 0;
+		public int readPixel(int x, int y) {
+			if(this.image != null) {
+				return this.image.getRGB(x, y);
+			}
+			return 0;
+		}
+		
+		public void changeColor(Color src, Color dest) {
+			for(int y=0;y<height;y++) {
+				for(int x=0;x<width;x++) {
+					if(readPixel(x, y) == src.getRGB()) {
+						setPixel(x, y, dest);
+					}
+				}
+			}
 		}
 		
 		
 		// Overkill (2007-08-25): src and dest were backwards. Whoops!
-		public void tblitlucent(int x, int y, int lucent, VImage src) {
+		public void tblitLucent(int x, int y, int lucent, VImage src) {
 			int oldalpha = currentLucent;
 			setlucent(lucent);
 			this.tblit(x, y, src);
 			setlucent(oldalpha);
 		}
 
-		public void tblittile(int x, int y, int t) {
+		public void tblitTile(int x, int y, int t) {
 			if (current_map!=null) 
 				current_map.getTileSet().TBlit(x, y, t, this);
 		}
@@ -630,22 +629,68 @@ public class VImage implements Transferable {
 			image *d = ImageForHandle(dst);
 			TSubtractiveBlit(x, y, s, d);
 		}*/
-		public void twrapblit(int x, int y, VImage src) {
+		public void twrapBlit(int x, int y, VImage src) {
 			// TODO [Rafael, the Esper] Implement
 			//TWrapBlit(x, y, s, d);
 			error("Non implemented function: twrapblit");
 		}
-		public void wrapblit(int x, int y, VImage src) {
+		public void wrapBlit(int x, int y, VImage src) {
 			// TODO [Rafael, the Esper] Implement
 			//WrapBlit(x, y, s, d);
 			error("Non implemented function: wrapblit");
 		}
 
-		public void printstring(int x, int y, Font font, String text) {
+		public void printString(int x, int y, Font font, String text) {
 			this.g.setFont(font);
 			this.g.setColor(Color.WHITE);
 			this.g.drawString(text, x, y);
 		}
+
+		// Fade functions
+		public void fadeOut(int delay, boolean rendermap) {
+			timer = 0;	
+			while (timer<delay)
+			{
+				if(rendermap)
+					this.render();
+				setlucent(100 - (timer*100/delay));
+				this.paintBlack();
+				setlucent(0);	
+				showpage();
+			}
+		}
+		
+		public void fadeIn(int delay, boolean rendermap) {
+			timer = 0;
+			while (timer<delay)
+			{
+				if(rendermap)
+					this.render();
+				setlucent(timer*100/delay);
+				this.paintBlack();
+				setlucent(0);
+				showpage();
+			}
+		}
+		
+		// Handy code by [Rafael, the Esper]
+		public void fade(int delay, boolean black) { // fade in and out
+			if(black) {
+				fadeOut(delay, true);
+				this.paintBlack();
+				fadeIn(delay, false);
+			}
+			else {
+				fadeOut(delay, false);
+				fadeIn(delay, true);
+			}
+			
+		}
+
+		public void paintBlack() {
+			this.rectfill(0, 0, this.width, this.height, Color.BLACK);
+		}
+		
 		
 		
 }

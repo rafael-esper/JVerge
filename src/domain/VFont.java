@@ -48,16 +48,16 @@ public class VFont {
 		VImage workingimage = new VImage(url);
 
 		// Analyze image and guess cell dimensions.
-		int bgcolor = workingimage.readpixel(0, 0);   // This is the image bg color;
+		int bgcolor = workingimage.readPixel(0, 0);   // This is the image bg color;
 		for (w=1; w<workingimage.width; w++)
 		{
-			int z = workingimage.readpixel(w, 1);
+			int z = workingimage.readPixel(w, 1);
 			if (z == bgcolor)
 				break;
 		}
 		for (h=1; h<workingimage.height; h++)
 		{
-			int z = workingimage.readpixel(1, h);
+			int z = workingimage.readPixel(1, h);
 			if (z == bgcolor)
 				break;
 		}
@@ -77,7 +77,7 @@ public class VFont {
 		for (int yl = 0; yl<5 * subsets; yl++)
 			for (int xl = 0; xl<20; xl++) {
 				rawdata[imageindex] = new VImage(xsize, ysize);
-				rawdata[imageindex++].grabregion(1+(xl*(xsize+1)), 1+(yl*(ysize+1)), width+1+(xl*(xsize+1)), height+1+(yl*(ysize+1)),
+				rawdata[imageindex++].grabRegion(1+(xl*(xsize+1)), 1+(yl*(ysize+1)), width+1+(xl*(xsize+1)), height+1+(yl*(ysize+1)),
 					0, 0, workingimage);
 			}
 
@@ -90,7 +90,7 @@ public class VFont {
 	{
 		//container.data = ((int) rawdata.data + ((cell)*width*height*vid_bytesperpixel));
 		for (int y=0; y<rawdata[cell].height; y++)
-			if (rawdata[cell].readpixel(column, y) != tcolor)
+			if (rawdata[cell].readPixel(column, y) != tcolor)
 				return false;
 		return true;
 	}
@@ -98,7 +98,7 @@ public class VFont {
 	public void EnableVariableWidth()
 	{
 		fwidth[0] = width * 60 / 100;
-		int tcolor = rawdata[0].readpixel(0, 0);
+		int tcolor = rawdata[0].readPixel(0, 0);
 		for (int i=1; i<100; i++)
 		{
 			fwidth[i] = -1;

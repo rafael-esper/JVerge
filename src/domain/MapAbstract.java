@@ -90,7 +90,7 @@ public abstract class MapAbstract implements Map {
 		//int oxw = this.layers[l].x_offset + (int) ((float) xwin * this.layers[l].parallax_x);
 		//int oyw = this.layers[l].y_offset + (int) ((float) ywin * this.layers[l].parallax_y);
 		int oxw = xwin; // TODO Change this simplification to the code above
-		int oyw = ywin; // TODO Change this simplification to the code above
+		int oyw = ywin; // Same to-do as above
 		int xofs = -(oxw & 15);
 		int yofs = -(oyw & 15);
 		int xtc = oxw >> 4;

@@ -3,6 +3,7 @@ package domain;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +11,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+import javax.imageio.ImageIO;
 
 import core.DefaultPalette;
 import static core.Script.*;
@@ -28,15 +29,15 @@ public class CHR {
 	
 	//private byte[] pixels = new byte[16*16*3]; // frames * width * height * 3 bytes!
 	
-	int fxsize, fysize;					// frame x/y dimensions
+	public int fxsize, fysize;					// frame x/y dimensions
 	public int hx, hy;						// x/y obstruction hotspot
 	public int hw;							// hotspot width/height
 	public int hh;
 	int totalframes;					// total # of frames.
-    int idle[] = new int[5];			// idle frames
+    public int idle[] = new int[5];			// idle frames
 
-	int animsize[] = new int[9];
-	int anims[][] = new int[9][];
+	private int animsize[] = new int[9];
+	private int anims[][] = new int[9][];
     //String movescript[] = new String[8];
 
 	String filename;                        // the filename this was loaded from
@@ -474,7 +475,12 @@ public class CHR {
 	}	
 	
 	/// Method to make easier to export CHRs from images
-	public void setAnimBufs(int[] lengths, String[] animbufs) {
+	public void setAnimBufs(String[] animbufs) {
+		int lengths[] = new int[animbufs.length];
+		for(int i=0; i<lengths.length; i++) {
+			lengths[i] = animbufs[i].length();
+		}
+		
 		this.animbuf = animbufs;
 		this.length = lengths;
 	}
@@ -490,9 +496,18 @@ public class CHR {
 		dest.tblit(x, y, this.frames[frame]);
 	}
 	
-	int GetFrame(int d, int framect)
+	
+	public int getAnimSize(int animIndex) { //[Rafael, the Esper]
+		if (animIndex<0 || animIndex >= anims.length) {
+			System.err.printf("CHR::getAnimSize() - invalid direction %d", animIndex);
+			return 0;
+		}
+		return animsize[animIndex];
+	}
+	
+	public int getFrame(int d, int framect)
 	{
-		if (d<1 || d>4) {
+		if (d<0 || d >= anims.length) {
 			System.err.printf("CHR::GetFrame() - invalid direction %d", d);
 			return 0;
 		}
@@ -502,8 +517,10 @@ public class CHR {
 	
 	int GetFrameConst(int d, int framect)
 	{
-		if (d<1 || d>4)
+		if (d<0 || d >= anims.length) {
 			System.err.printf("CHR::GetFrame() - invalid direction %d", d);
+			return 0;
+		}
 		return anims[d][framect % animsize[d]];
 	}
 	
@@ -591,8 +608,8 @@ public class CHR {
 	/**Rafael:
 	 * New method implemented to allow bypassing .chr files and use an image file instead
 	 */
-	public static CHR createCHRFromImage(int startx, int starty, int sizex, int sizey, int columns, int totalframes, boolean padding, VImage image) {
-		log("createCHRFromImage (" + sizex + "x" + sizey + ": " + totalframes + " frames.");
+	public static CHR createCHRFromImage(int startx, int starty, int sizex, int sizey, int skipx, int skipy, int columns, int totalframes, boolean padding, VImage image) {
+		log("createCHRFromImage (" + sizex + "x" + sizey + ": " + totalframes + " frames)");
 		VImage[] images = new VImage[totalframes];
 		
 		int frames = 0, posx = 0, posy = 0, column = 0;
@@ -609,13 +626,14 @@ public class CHR {
 				posx++;
 				 
 			images[frames] = new VImage(sizex, sizey);
-			images[frames].tgrabregion(startx+posx, starty+posy, startx+posx+sizex, starty+posy+sizey, 0, 0, transC, image); 
+			images[frames].grabRegion(startx+posx, starty+posy, startx+posx+sizex, starty+posy+sizey, 0, 0, image); 
+			//images[frames].tgrabregion(startx+posx, starty+posy, startx+posx+sizex, starty+posy+sizey, 0, 0, transC, image);
 			column++;
-			posx+=sizex;
+			posx+=sizex+skipx;
 			if(column >= columns) {
 				column = 0;
 				posx = 0;
-				posy+=sizey;
+				posy+=sizey+skipy;
 				if(padding)
 					posy++;
 			}
@@ -643,34 +661,886 @@ public class CHR {
 	}
 
 	
-	public static void main (String args[]) throws MalformedURLException {
-		//CHR c = new CHR(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\alis.chr"));
-		//c.saveChrVersion5("c:\\temp.chr");
-		CHR c = new CHR(new URL("file:///C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\chars\\vehicle.chr"));
-		c.hx = 0;
-		c.hy = 0;
-		c.hw = 64;
-		c.hh = 64;
-		c.saveChrVersion5("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\chars\\vehicle.chr");
+	public static void main (String args[]) throws IOException {
+		//processCharFromImage();
+		processCharFromSpecificImage();
+		//processWeaponAnimationFromImage();
+		//findImageLimits();
+		//processMonsterAnimationFromImages();
+		
+	}
+	
+	private static void findImageLimits() throws IOException {
+
+		String path = "c:\\jogos\\xeen\\xe\\";
+		String file = "018.MON.";
+		int numImages = 12;
+		
+		//This code finds minx, miny, maxx and maxy
+		int minx = Integer.MAX_VALUE, miny = Integer.MAX_VALUE;
+		int maxx = Integer.MIN_VALUE, maxy = Integer.MIN_VALUE;
+		for(int k=0; k<numImages; k++) {
+			VImage image = new VImage(new URL("file:///" + path + file + (k) + ".png"), false);
+			for(int j=0; j<image.height; j++) {
+				for(int i=0; i<image.width; i++) {
+					if(image.readPixel(i, j) != Color.MAGENTA.getRGB()) {
+						if(i <= minx) minx = i; 
+						if(j <= miny) miny = j; 
+						if(i >= maxx) maxx = i;
+						if(j >= maxy) maxy = j;
+					}
+				}
+			}
+		}
+		System.out.println("R_" + file + "\t" + "(" + minx + "," + miny + ") (" + maxx + "," + maxy + ")");
+		
+		for(int k=0; k<numImages; k++) {
+			VImage image = new VImage(new URL("file:///" + path + file + (k) + ".png"), false);
+			VImage saidaImage = new VImage(maxx-minx, maxy-miny);
+			saidaImage.rectfill(0, 0, saidaImage.width, saidaImage.height, Color.MAGENTA);
+			saidaImage.grabRegion(minx, miny, maxx, maxy, 0, 0, image);
+			ImageIO.write(saidaImage.image, "png", new File(path + "R_" + file + (k) + ".png"));
+		}
+	}
+
+	public static void processMonsterAnimationFromImages() throws IOException {
+		String path = "c:\\jogos\\xeen\\xe\\";
+		String file = "048.MON.";
+		int numImages = 12;
+		
+		VImage[] images = new VImage[numImages];
+		for(int k=0; k<numImages; k++) {
+			images[k] = new VImage(new URL("file:///" + path + "R_" + file + (k) + ".png"), false);
+		}
+		CHR c = createCHRFromImage(images[0].width, images[0].height, images);
+
+		c.setAnimBufs(new String[]{"", 	"F11W12",  // ANIM1 (DAMAGED)
+				"F0W4F1W4F2W4F3W4F4W4F5W4F6W4F7W4", // IDLE
+				"F8W8F9W8F10W16F9W4", // ANIM2 (ATTACK1) 
+				"", // ATTACK2
+				"",	"", "","", ""});
+
+		c.saveChrVersion5("C:\\" + file + ".chr");			
+	}
+	
+	public static void processWeaponAnimationFromImage() throws IOException {
+		
+		String path = "C:\\Verge\\PS\\ps1_extra_stuff\\Weapons\\";
+		String file = "Fang";
+		int numImages = 7;
+		
+		VImage[] images = new VImage[numImages];
+		String strAnim = "";
+		for(int k=0; k<numImages; k++) {
+			images[k] = new VImage(new URL("file:///" + path + "Wp_" + file + (k+1) + ".png"), false);
+			strAnim = strAnim + "F" + k + "W4";
+		}
+		CHR c = createCHRFromImage(images[0].width, images[0].height, images);
+
+		c.setAnimBufs(new String[]{"", 	"",  // ANIM1
+				"", // IDLE
+				strAnim, // ANIM2 
+				"", // ANIM3
+				"",	"", "","", ""});
+
+		//c.hy = 0; // for pistols
+		c.hy = 20; // for all other weapons
+		
+		c.saveChrVersion5("C:\\" + file + ".chr");		
 		
 	}
 
-	public static void processMultipleCharsFromImage() throws MalformedURLException {
+	public static void processCharFromSpecificImage() throws MalformedURLException {
+		
+		VImage image;
+		CHR c;
+		
+
+		/*// MYAU FLAPPING
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Flapping.png"), false);
+		c = createCHRFromImage(0, 0, 24, 16, 0, 0, 6, 6, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W4F1W4F2W4F1W4F0W4F1W4F2W4F1W4F0W4F1W4F2W4F1W4F0W4F1W4F2W4F1W4",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F3W4F4W4F5W4F4W4F3W4F4W4F5W4F4W4F3W4F4W4F5W4F4W4F3W4F4W4F5W4F4W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\myau_flapping.chr");*/
+		
+		// ENTITIES
+		/*image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Entities.png"), false);
+		c = createCHRFromImage(0, 0, 35, 90, 0, 0, 8, 88, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\entities.chr");*/
+		
+		/*// LARGE ENTITIES
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Entities_Large.png"), false);
+		c = createCHRFromImage(0, 0, 56, 112, 0, 0, 8, 8, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\lentities.chr");*/
+		
+		
+		//SKY Castle
+		/*image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Sky_castle.png"), false);
+		c = createCHRFromImage(0, 0, 60, 100, 0, 0, 13, 13, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W4F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4F9W4F10W4F11W4F12W4",  // ANIM1
+										"F12W1", // IDLE
+										"", // ANIM2 
+										"", // ANIM3
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 12, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\sky_castle.chr");*/
+
+		
+		//CHEST
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Chest.png"), false);
+		c = createCHRFromImage(0, 0, 64, 72, 0, 0, 13, 13, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W10F1W8F2W8F3W16",  // ANIM1
+										"F0W1", // IDLE
+										"F3W16F4W4F5W4F6W4F7W8F8W4F3W8", // ANIM2 
+										"F9W4F10W4F11W4F12W8F3W8", // ANIM3
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 3, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\chest.chr");
+		
+		/*// SCORPION
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\GoldScorpion.png"), false);
+		c = createCHRFromImage(0, 0, 48, 48, 0, 0, 4, 4, true, image);
+		c.setAnimBufs(new String[]{"", 	"F3W2F0W2F3W2F0W2F3W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W2F2W2F1W2F0W4F1W2F2W2F1W2", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\gscorpion.chr");*/		
+		/*// PSIV SCORPION/YELLOW_SCORPION/BLUE_SCORPION
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\PS4_Blue_Scorpion.png"), false);
+		c = createCHRFromImage(0, 0, 78, 102, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F8W2F0W2F8W2F0W2F8W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W6F1W6F2W12F1W6", // IDLE
+										"F3W4F4W4F5W4F6W4F7W12F6W4F5W4F4W4F3W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\ps4_blue_scorpion.chr");*/		
+
+		/*// SWORM/GIANTFLY
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\sworm.png"), false);
+		c = createCHRFromImage(0, 0, 48, 48, 0, 0, 4, 4, true, image);
+		c.setAnimBufs(new String[]{"", 	"F3W2F0W2F3W2F0W2F3W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W2F1W2F0W2F2W2F0W2F1W2F0W2F2W2", // ANIM2 (ATTACK1) 
+										"F0W2F1W2F0W2F2W2F0W2F1W2F0W2F2W2F0W32", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\sworm.chr");*/
+
+		/*// BEACH
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Beaches.png"), false);
+		c = createCHRFromImage(0, 0, 320, 240, 0, 0, 3, 12, true, image);
+		c.setAnimBufs(new String[]{"", 	"",  // ANIM1 (DAMAGED)
+										"F0W16F1W8F2W8F3W8F4W16F5W8F6W8F7W16F8W8F9W8F10W16F11W16F10W16F9W8F8W8F7W16F6W8F5W8F4W16F3W8F2W8F1W16", // IDLE
+										"", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.saveChrVersion5("C:\\beaches.chr");*/
+		/*// LAVA
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Lava.png"), false);
+		c = createCHRFromImage(0, 0, 320, 240, 0, 0, 3, 12, true, image);
+		c.setAnimBufs(new String[]{"", 	"",  // ANIM1 (DAMAGED)
+										"F0W16F1W16F2W16F3W16F4W16F5W16", // IDLE
+										"", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\lava.chr");		*/
+		// GAS
+		/*image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Gas.png"), false);
+		c = createCHRFromImage(0, 0, 320, 240, 0, 0, 5, 15, true, image);
+		c.setAnimBufs(new String[]{"", 	"",  // ANIM1 (DAMAGED)
+			 							"F0W8F1W8F2W8F3W8F4W8F5W8F6W8F7W8F0W8F8W8F9W8F10W8F11W8F12W8F13W8F14W8", // IDLE
+										"", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.saveChrVersion5("C:\\gas.chr");*/
+		/*// SEA
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Sea.png"), false);
+		c = createCHRFromImage(0, 0, 320, 240, 0, 0, 3, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"",  // ANIM1 (DAMAGED)
+			 							"F0W8F1W8F2W8F3W8F4W8F5W8F6W8F7W8F8W8", // IDLE
+										"", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.saveChrVersion5("C:\\Sea.chr");*/
+		/*// TARANTUL/ANT_LION/GIANT_SPIDER
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Giant_spider.png"), false);
+		c = createCHRFromImage(0, 0, 64, 72, 0, 0, 10, 10, true, image);
+		c.setAnimBufs(new String[]{"", 	"F9W2F0W2F9W2F0W2F9W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W8F5W8F6W8F7W8F8W16", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\giantspider.chr");*/		
+		/*// ROBOTCOP/ANDROCOP/NANOCOP
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\nano_guard.png"), false);
+		c = createCHRFromImage(0, 0, 42, 80, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F8W2F0W2F8W2F0W2F8W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										//"F0W4F1W4F2W4F3W4F4W4F5W4F6W4F7W8F2W4F1W4", // ANIM2 (ATTACK1) 
+										"F0W3F1W3F2W3F3W3F4W3F5W3F6W3F7W6F2W3F1W3", // ANIM2 (ATTACK1) NANOCOP
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\nanocop.chr");		*/		
+		/*//ODIN
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Odin.png"), false);
+		c = createCHRFromImage(0, 0, 40, 88, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W16F1W16F2W16F3W16F4W16F5W16F6W16",  // ANIM1 (DAMAGED)
+										"F0W1", // STONED ODIN
+										"F6W1", // NORMAL ODIN 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 6, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\odin_stone.chr");*/
+		/*// BARBARIAN/MOTA_SHOOTER
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\mota_shooter.png"), false);
+		c = createCHRFromImage(0, 0, 40, 64, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F6W2F0W2F6W2F0W2F6W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W3F1W3F2W6F3W4F4W6F5W3F2W3", // ANIM2 (ATTACK) SHOOTER
+										//"F0W4F1W4F2W8F3W4F4W8F5W4F2W4F0W4", // ANIM2 (ATTACK) BARBRIAN 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\mota_shooter.chr");*/
+		/*image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Sword.png"), false);
+		c = createCHRFromImage(0, 0, 40, 82, 0, 0, 4, 4, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W4F3W4", // ANIM2 (ATTACK) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\sword.chr");*/
+		/*// MANEATER/DEADTREE/POISONPLANT		
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Poison_plant.png"), false);
+		//image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Dead_Tree.png"), false);
+		c = createCHRFromImage(0, 0, 48, 48, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F6W2F0W2F6W2F0W2F6W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W4F3W4F4W4F5W4F4W4F3W4F2W4F1W4F0W4", // ANIM2 (ATTACK) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\poisonplant.chr");*/
+
+		/*//YOZ SKELETON GUARD
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Yoz_Skeleton.png"), false);
+		c = createCHRFromImage(0, 0, 94, 108, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F6W2F0W2F6W2F0W2F6W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W16F5W4F0W6", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\skeleton_guard.chr");
+
+		//YOZ REVENANT
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Yoz_Revenant.png"), false);
+		c = createCHRFromImage(0, 0, 52, 94, 0, 0, 6, 6, true, image);
+		c.setAnimBufs(new String[]{"", 	"F5W2F0W2F5W2F0W2F5W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W16F0W8", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\revenant.chr");
+		 */
+		
+		/*//CYCLOP
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Yoz_Cyclop.png"), false);
+		c = createCHRFromImage(0, 0, 64, 120, 0, 0, 5, 5, true, image);
+		c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W6F1W6F2W6F3W12F0W6", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\cyclop.chr");*/
+		
+		
+		/*// TITAN/GOLEM/GIANT
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Titan.png"), false);
+		c = createCHRFromImage(0, 0, 60, 112, 0, 0, 5, 5, true, image);
+		c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W6F1W6F2W6F3W12F0W6", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\titan.chr");*/
+		/*// CRAWLER/SANDWORM/LEECH
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\crawler.png"), false);
+		c = createCHRFromImage(0, 0, 38, 82, 0, 0, 6, 6, true, image);
+		c.setAnimBufs(new String[]{"", 	"F5W2F0W2F5W2F0W2F5W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W6F1W6F2W6F3W6F4W12F3W6F2W6F1W6F0W6", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = 0; c.hh = 35; 		
+		c.saveChrVersion5("C:\\crawler.chr");			*/
+		/*// SKELETON/SKULL-EN/STALKER
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\skullen.png"), false);
+		c = createCHRFromImage(0, 0, 48, 96, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F6W2F0W2F6W2F0W2F6W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W16F5W8F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\skullen.chr");*/
+		/*// FISHMAN/MARSHMAN
+				image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\fishman.png"), false);
+				c = createCHRFromImage(0, 0, 56, 64, 0, 0, 5, 5, true, image);
+				c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+												"F0W1", // IDLE
+												"F0W8F1W8F2W8F3W16F2W8F1W8F0W4", // ANIM2 (ATTACK1) 
+												"", // ATTACK2
+												"",	"", "","", ""});
+				c.idle = new int[]{0, 0, 0, 0, 0};
+				c.hx = c.hy = c.hw = c.hh = 0;		
+				c.saveChrVersion5("C:\\fishman.chr");	*/	
+		/*// WINGEYE/OWLBEAR/GOLDLENS
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\goldlens.png"), false);
+		c = createCHRFromImage(0, 0, 56, 64, 0, 0, 5, 5, true, image);
+		c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W6F1W6F2W6F3W6F1W6F0W6F1W6F2W6F3W6F1W6F0W6", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\goldlens.chr");*/
+		/*// WEREBAT/VAMPIRE
+				image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\werebat_green.png"), false);
+				c = createCHRFromImage(0, 0, 64, 112, 0, 0, 8, 8, true, image);
+				c.setAnimBufs(new String[]{"", 	"F7W2F0W2F7W2F0W2F7W2F0W2",  // ANIM1 (DAMAGED)
+												"F0W1", // IDLE
+												"F0W8F1W8F2W8F3W4F4W4F5W4F6W4F4W4F5W4F6W4F3W4F2W8F0W4", // ANIM2 (ATTACK1) 
+												"", // ATTACK2
+												"",	"", "","", ""});
+				c.idle = new int[]{0, 0, 0, 0, 0};
+				c.hx = c.hy = c.hw = c.hh = 0;		
+				c.saveChrVersion5("C:\\werebat_green.chr");*/
+		/*// EVILDEAD/WIGHT/LICH
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\lich.png"), false);
+		c = createCHRFromImage(0, 0, 48, 92, 0, 0, 6, 6, true, image);
+		c.setAnimBufs(new String[]{"", 	"F5W2F0W2F5W2F0W2F5W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W8F1W8F2W8F3W8F4W8F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\lich.chr");*/
+		/*// SLIMES
+				image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\redslime.png"), false);
+				c = createCHRFromImage(0, 0, 48, 56, 0, 0, 8, 8, true, image);
+				c.setAnimBufs(new String[]{"", 	"F7W2F0W2F7W2F0W2F7W2F0W2",  // ANIM1 (DAMAGED)
+												"F0W1", // IDLE
+												"F0W8F1W8F2W8F3W8F4W16F5W8F6W8F4W8F6W8F5W8F3W8F2W8F0W4", // ANIM2 (ATTACK1) 
+												"", // ATTACK2
+												"",	"", "","", ""});
+				c.idle = new int[]{0, 0, 0, 0, 0};
+				c.hx = c.hy = c.hw = c.hh = 0;		
+				c.saveChrVersion5("C:\\redslime.chr");*/		
+		/*// SERPENT/NESSIE/WYVERN
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\serpent.png"), false);
+		c = createCHRFromImage(0, 0, 64, 104, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F8W2F0W2F8W2F0W2F8W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W4F3W4F4W4F5W4F6W4F5W4F6W4F7W4F2W4F1W2F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\serpent.chr");*/
+		/*// ZOMBIE/GHOUL/BATTALION
+				image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\batalion.png"), false);
+				c = createCHRFromImage(0, 0, 34, 88, 0, 0, 8, 8, true, image);
+				c.setAnimBufs(new String[]{"", 	"F7W2F0W2F7W2F0W2F7W2F0W2",  // ANIM1 (DAMAGED)
+												"F0W1", // IDLE
+												"F0W4F1W8F0W8F1W8F2W8F3W8F4W8F5W8F6W12F5W8F4W8F3W8F2W8F0W4", // ANIM2 (ATTACK1) 
+												"", // ATTACK2
+												"",	"", "","", ""});
+				c.idle = new int[]{0, 0, 0, 0, 0};
+				c.hx = c.hy = c.hw = c.hh = 0;		
+				c.saveChrVersion5("C:\\batalion.chr");*/
+			/*//LANDROVER
+			image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Landrover.png"), false);
+			c = createCHRFromImage(0, 0, 32, 32, 0, 0, 12, 12, true, image);
+			c.setAnimBufs(new String[]{"", "F0W5F1W5F2W8F1W5F0W5", "F3W5F4W5F5W8F4W5F3W5", "F6W5F7W5F8W8F7W5F6W5", "F9W5F10W5F11W8F10W5F9W5",
+					"", "","", ""});
+	
+			c.idle = new int[]{0, 3, 0, 6, 9}; // Up down left right
+		
+			c.hx = 4;
+			c.hy = 4;
+			c.hw = 24;
+			c.hh = 24;
+			c.saveChrVersion5("C:\\Landrover.chr");*/
+		/*// AMUNDSEN/FROSTMAN/GAIA
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\gaia.png"), false);
+		c = createCHRFromImage(0, 0, 64, 112, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F8W2F0W2F8W2F0W2F8W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W16F1W8F0W8F3W16F4W8F5W8F6W8F7W16F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\gaia.chr");*/
+		/*// BIGCLUB/EXECUTER
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\gold_club.png"), false);
+		c = createCHRFromImage(0, 0, 40, 104, 0, 0, 8, 8, true, image);
+		c.setAnimBufs(new String[]{"", 	"F7W2F0W2F7W2F0W2F7W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W8F5W8F6W16F5W8F0W4", // ANIM2 (ATTACK1) 
+										"F0W8F1W8F2W8F3W8F4W8F5W8F6W16F5W8F0W4", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\gold_club.chr");*/
+		/*// DRAGONS	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\white_dragon.png"), false);
+		c = createCHRFromImage(0, 0, 102, 136, 0, 0, 8, 8, true, image);
+		c.setAnimBufs(new String[]{"", 	"F7W2F0W2F7W2F0W2F7W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W4F3W4F4W4F5W4F6W8", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\white_dragon.chr");*/
+		/*// CENTAUR/HORSEMAN	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\horseman.png"), false);
+		c = createCHRFromImage(0, 0, 50, 104, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F6W2F0W2F6W2F0W2F6W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W16F3W8F0W4", // ANIM2 (ATTACK1) 
+										"F0W8F4W8F5W32F4W8F0W4", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\horseman.chr");*/
+		/*// DEZORIAN/EVILHEAD/DEZO_PRIEST	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\dezorian_alt.png"), false);
+		c = createCHRFromImage(0, 0, 24, 88, 0, 0, 6, 6, true, image);
+		c.setAnimBufs(new String[]{"", 	"F5W2F0W2F5W2F0W2F5W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W16F3W8F2W8F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\dezo_alt.chr");*/
+		/*// DR_MAD/SHADOW	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\shadow.png"), false);
+		c = createCHRFromImage(0, 0, 48, 80, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F8W2F0W2F8W2F0W2F8W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W8F3W8F4W6F5W4F6W4F7W12F1W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\shadow.chr");*/
+		/*// EFARMER/NFARMER	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\nfarmer.png"), false);
+		c = createCHRFromImage(0, 0, 40, 64, 0, 0, 5, 5, true, image);
+		c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W6F2W8F3W8F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\nfarmer.chr");*/
+		// ELEPHANT/MAMMOTH/OLIPHANT	
+		/*image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\mammoth.png"), false);
+		c = createCHRFromImage(0, 0, 80, 96, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F6W2F0W2F6W2F0W2F6W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F4W8F5W16", // ANIM2 (ATTACK1) 
+										"F0W4F1W4F2W4F3W36F2W8F1W8", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\mammoth.chr");	*/
+		/*// OCTOPUS/TENTACLE
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\octopus.png"), false);
+		c = createCHRFromImage(0, 0, 64, 80, 0, 0, 5, 5, true, image);
+		c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W6F1W6F2W6F3W12F2W6F1W6F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\octopus.chr");	*/		
+		/*// SACCUBUS
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\saccubus.png"), false);
+		c = createCHRFromImage(0, 0, 28, 45, 0, 0, 6, 6, true, image);
+		c.setAnimBufs(new String[]{"", 	"F5W2F0W2F5W2F0W2F5W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W8F3W8F4W8F3W8F4W8", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\saccubus.chr");*/
+		/*// MEDUSA
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\medusa.png"), false);
+		c = createCHRFromImage(0, 0, 64, 108, 0, 0, 8, 8, true, image);
+		c.setAnimBufs(new String[]{"", 	"F7W2F0W2F7W2F0W2F7W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W4F3W4F4W4F5W4F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\medusa.chr");*/			
+		/*// GOLDEN DRAGON
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\golden_dragon.png"), false);
+		c = createCHRFromImage(0, 0, 208, 104, 0, 0, 10, 10, true, image);
+		c.setAnimBufs(new String[]{"", 	"F9W2F0W2F9W2F0W2F9W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4F7W4F8W4F6W4F5W4F3W4F2W4F1W4F0W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\golden_dragon.chr");*/			
+		/*// PLAYER FIRE / FIRE_GI
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\fire_gi.png"), false);
+		c = createCHRFromImage(0, 0, 60, 112, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4", // ANIM2 (ATTACK1)
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\pl_gifire.chr");*/		
+		/*// PLAYER WIND
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\wind.png"), false);
+		c = createCHRFromImage(0, 0, 64, 112, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\pl_wind.chr");*/						
+		/*// PLAYER THUNDER
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\thunder.png"), false);
+		c = createCHRFromImage(0, 0, 64, 112, 0, 0, 10, 10, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4F9W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\pl_thunder.chr");*/
+		/*// ENEMY FIRE
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\enemy_fire.png"), false);
+		c = createCHRFromImage(0, 0, 40, 84, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W16F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\enemy_fire.chr");*/						
+		/*// ENEMY THUNDER
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\enemy_thunder.png"), false);
+		c = createCHRFromImage(0, 0, 40, 84, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W16F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\enemy_thunder.chr");		*/		
+		/*// SORCERER/MAGICIAN/WIZARD	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\magician.png"), false);
+		c = createCHRFromImage(0, 0, 52, 88, 0, 0, 5, 5, true, image);
+		c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W12F2W12F1W12F0W4", // ANIM2 (ATTACK1) 
+										"F0W4F3W50F0W4", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\magician.chr");*/
+		/*// REAPER/MARAUDER/DEATH_KNIGHT	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\death_knight.png"), false);
+		c = createCHRFromImage(0, 0, 64, 104, 0, 0, 6, 6, true, image);
+		c.setAnimBufs(new String[]{"", 	"F5W2F0W2F5W2F0W2F5W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W12F1W12F2W6F3W6F4W6", // ANIM2 (ATTACK1) 
+										"F0W52", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\death_knight.chr");*/				
+		/*// SPHINX/MANTICORE/SNOWLION	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\snow_lion.png"), false);
+		c = createCHRFromImage(0, 0, 56, 88, 0, 0, 7, 7, true, image);
+		c.setAnimBufs(new String[]{"", 	"F6W2F0W2F6W2F0W2F6W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W6F1W6F2W12F3W6F4W6F5W12F4W6F3W6F0W4", // ANIM2 (ATTACK1) 
+										"F1W4F2W4F3W4F4W4F5W32F4W6F3W6F0W4", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\snow_lion.chr");*/				
+		/*// TARZIMAL	
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\tarzimal.png"), false);
+		c = createCHRFromImage(0, 0, 48, 60, 0, 0, 5, 5, true, image);
+		c.setAnimBufs(new String[]{"", 	"F4W2F0W2F4W2F0W2F4W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W8F1W8F2W8F3W8F2W8F3W16F2W8F1W8F0W4", // ANIM2 (ATTACK1) 
+										"F1W4F2W4F3W4F2W4F3W36F2W8F1W8F0W4", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\tarzimal.chr");*/
+		/*// SHELFISH/AMMONITE
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\ammonite.png"), false);
+		c = createCHRFromImage(0, 0, 40, 120, 0, 0, 9, 9, true, image);
+		c.setAnimBufs(new String[]{"", 	"F8W2F0W2F8W2F0W2F8W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W6F2W6F3W6F4W6F5W6F6W6F7W12F1W6", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\ammonite.chr");*/			
+		/*// DARKFALZ
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\darkfalz.png"), false);
+		c = createCHRFromImage(0, 0, 220, 173, 0, 0, 14, 14, true, image);
+		c.setAnimBufs(new String[]{"", 	"F13W2F0W2F13W2F0W2F13W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W4F1W6F2W6F3W4F4W4F5W4F6W4F4W4F5W4F6W4F4W4F5W4F6W4F7W4F8W4F9W4F10W4F11W4F12W6F1W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\darkfalz.chr");*/
+		// LASSIC
+		/*image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\lassic.png"), false);
+		c = createCHRFromImage(0, 0, 182, 168, 0, 0, 14, 14, true, image);
+		c.setAnimBufs(new String[]{"", 	"F13W2F0W2F13W2F0W2F13W2F0W2",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W6F1W4F2W4F3W4F4W4F5W4F6W4F7W4F8W4F9W4F10W4F11W4F12W4", // ANIM2 (ATTACK1) 
+										"", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0;		
+		c.saveChrVersion5("C:\\lassic.chr");*/
+		/*// SPACESHIP1/SPACESHIP2
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\spaceship2.png"), false);
+		c = createCHRFromImage(0, 0, 32, 32, 0, 0, 1, 1, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W1", // ANIM2 (ATTACK1) 
+										"F0W1", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 0, 0, 0};
+		c.hx = c.hy = c.hw = c.hh = 0; 		
+		c.saveChrVersion5("C:\\spaceship2.chr");*/		
+		/*// SPACESHIP1/SPACESHIP2
+		image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\planet_palma.png"), false);
+		c = createCHRFromImage(0, 0, 148, 64, 0, 0, 2, 2, true, image);
+		c.setAnimBufs(new String[]{"", 	"F0W1",  // ANIM1 (DAMAGED)
+										"F0W1", // IDLE
+										"F0W1", // ANIM2 (ATTACK1) 
+										"F0W1", // ATTACK2
+										"",	"", "","", ""});
+		c.idle = new int[]{0, 0, 1, 1, 1};
+		c.hx = c.hy = c.hw = c.hh = 0; 		
+		c.saveChrVersion5("C:\\palma.chr");		*/
+
+		
+		
+		
+		
+		
+		
+	}
+	
+	public static void extractCharFromIrregularImage() throws MalformedURLException {
+		//CHR c = createCHRFromImage(0, 28, 16, 32, 14, 14, 12, 12, true, image);
+
+		int totalframes = 12;
+		int sizex = 16, sizey = 32;
+
+		VImage image = new VImage(new URL("file:///C:\\Verge\\PS\\PS\\new2\\ParmanianNPCs.png"), false);
+
+		int[] startx = new int[]{	0, 30, 63,  // down
+									340, 381, 422, // left
+									218, 259, 303, // up
+									97, 135, 174,  // right
+									};
+		
+		int[] starty = new int[]{60, 106, 153, 196, 248, 299, 350, 402, 456, 504, 547, 594, 649, 693, 739, 792, 849, 910, 969, 1033, 1093, 1146, 1205, 1251, 1303, 1348, 1397, 1448, 1497, 1543 };
+		
+		for(int entityn=0; entityn <= 29; entityn++) {
+		
+			VImage[] images = new VImage[totalframes];
+			for(int frames=0; frames<totalframes; frames++) {
+				
+				images[frames] = new VImage(sizex, sizey);
+				images[frames].grabRegion(startx[frames], starty[entityn]-sizey, startx[frames]+sizex, starty[entityn], 0, 0, image); 
+			}
+				
+			CHR c = createCHRFromImage(sizex, sizey, images);		
+			
+			c.setAnimBufs(new String[]{"", "F1W30F0W10F2W30F0W10", "F7W30F6W10F8W30F6W10", "F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10",
+					"F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10","F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10"});
+	
+			c.idle = new int[]{0, 6, 0, 3, 9};
+	
+			c.hx = 0;
+			c.hy = 16;
+			c.hw = 16;
+			c.hh = 16;		
+			//if(entityn>28)
+			c.saveChrVersion5("C:\\ent" + entityn + ".chr");
+		}
+	}
+	
+	public static void processCharFromImage() throws MalformedURLException {
+/*
+		//for(int count=190; count<211; count++) {
+			VImage image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Dezorians.png"), false);
+			//CHR c = createCHRFromImage(360, 216, 40, 72, 9, 9, false, image);
+			
+			for(int i=0;i<=10;i++) {
+				CHR c = createCHRFromImage(0, 0+(i*33), 16, 32, 0, 0, 12, 12, true, image);
+				
+				c.setAnimBufs(new String[]{"", "F1W30F0W10F2W30F0W10", "F7W30F6W10F8W30F6W10", "F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10",
+						"F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10","F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10"});
+	
+				c.idle = new int[]{0, 6, 0, 3, 9};
+		
+				c.hx = 0;
+				c.hy = 16;
+				c.hw = 16;
+				c.hh = 16;
+				
+				c.saveChrVersion5("C:\\Dezo" + i + ".chr");
+			}
+			*/
+		// MOTAVIANS
+		VImage image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Motavians.png"), false);
+		for(int i=0;i<=8;i++) {
+			CHR c = createCHRFromImage(0, 0+(i*33), 16, 32, 0, 0, 12, 12, true, image);
+			
+			c.setAnimBufs(new String[]{"", "F1W30F0W10F2W30F0W10", "F7W30F6W10F8W30F6W10", "F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10",
+					"F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10","F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10"});
+
+			c.idle = new int[]{0, 6, 0, 3, 9};
+	
+			c.hx = 0;
+			c.hy = 16;
+			c.hw = 16;
+			c.hh = 16;
+			
+			c.saveChrVersion5("C:\\Mota" + i + ".chr");
+		}
+		
+		
+		
+			/* MYAU
+			VImage image = new VImage(new URL("file:///C:\\Myau.png"), false);
+			CHR c = createCHRFromImage(0, 0, 16, 32, 4, 16+1, true, image);
+			c.setAnimBufs(new String[]{"", "F0W16F1W16F2W16F3W16", "F8W16F9W16F10W16F11W16", "F4W16F5W32F6W16", "F12W16F13W32F14W16",
+					"F4W16F5W32F6W16", "F12W16F13W32F14W16","F4W16F5W32F6W16", "F12W16F13W32F14W16"});
+			c.idle = new int[]{0, 11, 3, 7, 15}; 
+			c.hx = 0;			c.hy = 16;			c.hw = 16;			c.hh = 16;
+			c.saveChrVersion5("C:\\myau.chr");
+			*/
+
+			/*// TARZIMAL
+			VImage image = new VImage(new URL("file:///C:\\Verge\\PS\\ps1_extra_stuff\\Chr_tarzimal.png"), false);
+			CHR c = createCHRFromImage(0, 0, 16, 32, 0, 0, 3, 12, true, image);
+			c.setAnimBufs(new String[]{"", "F1W30F0W10F2W30F0W10", "F7W30F6W10F8W30F6W10", "F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10",
+					"F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10","F4W30F3W10F5W30F3W10", "F10W30F9W10F11W30F9W10"});
+			c.idle = new int[]{0, 6, 0, 3, 9}; 
+			c.hx = 0;			c.hy = 16;			c.hw = 16;			c.hh = 16;
+			c.saveChrVersion5("C:\\tarzimal.chr");
+			*/
+			
+			
+		//}
+
+	}
+	
+	
+	public static void processMultipleCharsFromImageGenerations() throws MalformedURLException {
 		//for(int count=190; count<211; count++) {
 			VImage image = new VImage(new URL("file:///C:\\Rbp\\Rpg\\PS\\Generation\\mapdat\\psg1_sprite_mapdat_006" + ".png"));
-			CHR c = createCHRFromImage(360, 216, 40, 72, 9, 9, false, image);
+			//CHR c = createCHRFromImage(360, 216, 40, 72, 9, 9, false, image);
+			CHR c = createCHRFromImage(0, 0, 40, 72, 0, 0, 3, 9, false, image);
 			BufferedImage[] newBuffer = new BufferedImage[12];
 			for(int i=0;i<9;i++) {
 				newBuffer[i] = c.frames[i];
 			}
-			newBuffer[9] = VImage.flipimage(40, 72, c.frames[3]); 
-			newBuffer[10] = VImage.flipimage(40, 72, c.frames[4]);
-			newBuffer[11] =	VImage.flipimage(40, 72, c.frames[5]);	
+			newBuffer[9] = VImage.flipImage(40, 72, c.frames[3]); 
+			newBuffer[10] = VImage.flipImage(40, 72, c.frames[4]);
+			newBuffer[11] =	VImage.flipImage(40, 72, c.frames[5]);	
 			c.frames = newBuffer;
 			c.totalframes = 12;
 			
-			c.setAnimBufs(new int[]{0,20,20,20,23,20,23,20,23},
-					new String[]{"", "F0W30F1W10F2W30F1W10", "F6W30F7W10F8W30F7W10", "F3W30F4W10F5W30F4W10", "F9W30F10W10F11W30F10W10",
+			c.setAnimBufs(new String[]{"", "F0W30F1W10F2W30F1W10", "F6W30F7W10F8W30F7W10", "F3W30F4W10F5W30F4W10", "F9W30F10W10F11W30F10W10",
 					"F3W30F4W10F5W30F4W10", "F9W30F10W10F11W30F10W10", "F3W30F4W10F5W30F4W10", "F9W30F10W10F11W30F10W10"});
 			c.idle = new int[]{0, 7, 1, 4, 10}; 
 	
@@ -679,9 +1549,9 @@ public class CHR {
 			c.hw = 24;
 			c.hh = 24;
 			
-			c.saveChrVersion5("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\chars\\esper.chr");
+			c.saveChrVersion5("C:\\JavaRef3\\EclipseWorkspace\\PS\\src\\ps\\chars\\entity.chr");
 		//}
 
 	}
-	
+
 }

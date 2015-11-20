@@ -27,16 +27,16 @@ public class MapVerge extends MapAbstract implements Map {
 
 	private String filename = "";
 	private String mapname = "dummy";
-	private String vspname = "";
+	String vspname = "";
 	private String musicname= "";
 	private String startupscript = "";
 
-	private Layer[] layers;
-	private byte[] obsLayer; 
-	private int[] zoneLayer; 									// width * height, Unsigned shorts!
+	Layer[] layers;
+	byte[] obsLayer; 
+	int[] zoneLayer; 									// width * height, Unsigned shorts!
 
-	private Zone[] zones;
-	private Entity[] entities;
+	Zone[] zones;
+	Entity[] entities;
 
 	
 	public String toString() {
@@ -46,23 +46,26 @@ public class MapVerge extends MapAbstract implements Map {
 	}
 
 	public MapVerge(String strFilename) {
-		this(Script.load(strFilename));
+		this(Script.load(strFilename), strFilename);
+		
 	}
 	
-	public MapVerge(URL url) {
+	public MapVerge(URL url, String strFilename) {
 		try {
 			if(url==null)
 				throw new IOException();
 			
-			this.filename =  url.getFile().substring( url.getFile().lastIndexOf('/')+1);
-				
+			this.filename = strFilename; // url.getFile().substring( url.getFile().lastIndexOf('/')+1);
+
 			this.load(url.openStream());
 			//FileInputStream fis = new FileInputStream(path + "\\" + filename);
 			//this.load(fis);
 			
 			// Load the vsp (map URL minus the map file plus the vsp file)
-			//this.tileset = new Vsp(url.getFile().substring(0, url.getFile().lastIndexOf('/')+1) + this.vspname);
-			this.tileset = new Vsp(Script.load(this.vspname));
+			URL vspUrl = new URL(url.toString().substring(0, url.toString().lastIndexOf('/')+1) + this.vspname);
+			System.out.println(vspUrl);
+			this.tileset = new Vsp(vspUrl);
+			//this.tileset = new Vsp(Script.load(this.vspname));
 			
 			// Diassociated with loading the map
 			startMap();
@@ -173,10 +176,10 @@ public class MapVerge extends MapAbstract implements Map {
 				e.movescript = f.readFixedString(256);
 
 				switch(e.movecode) {
-					case 0: e.SetMotionless(); break;
-					case 1: e.SetWanderZone(); break;
-					case 2: e.SetWanderBox(e.wx1, e.wy1, e.wx2, e.wy2); break; //FIXME
-					case 3: e.SetMoveScript(e.movescript); break;				
+					case 0: e.setMotionless(); break;
+					case 1: e.setWanderZone(); break;
+					case 2: e.setWanderBox(e.wx1, e.wy1, e.wx2, e.wy2); break;
+					case 3: e.setMoveScript(e.movescript); break;				
 				}
 				
 				e.chrname = f.readFixedString(256);
@@ -255,7 +258,7 @@ public class MapVerge extends MapAbstract implements Map {
 				f.writeDoubleLittleEndian(l.parallax_y);
 				f.writeUnsignedShortLittleEndian(l.width);
 				f.writeUnsignedShortLittleEndian(l.height);
-				f.writeUnsignedByte(100 - (int) (l.lucent * 100.0 + 0.5));
+				f.writeUnsignedByte((int) (l.lucent * 100.0));    // Was 100 - (int) (l.lucent * 100.0 + 0.5));
 				//l.tiledata[0] = 1;
 				//l.tiledata[1] = 15;
 				//l.tiledata[2] = 800;
@@ -277,8 +280,8 @@ public class MapVerge extends MapAbstract implements Map {
 
 			f.writeSignedIntegerLittleEndian(m.entities.length);
 			for (Entity e : m.entities) {
-				f.writeUnsignedShortLittleEndian(e.getx()/256);
-				f.writeUnsignedShortLittleEndian(e.gety()/256);
+				f.writeUnsignedShortLittleEndian(e.getx()/16);
+				f.writeUnsignedShortLittleEndian(e.gety()/16);
 				f.writeByte(e.face); // 0 or 1
 				f.writeByte(e.obstructable == false ? 0 : 1);
 				f.writeByte(e.obstruction == false ? 0 : 1);
@@ -364,13 +367,13 @@ public class MapVerge extends MapAbstract implements Map {
 		if (!verticalWrapable && (y < 0 || (y >> 4) >= getHeight()))
 				return true;
 		if(horizontalWrapable && x < 0)
-			x+= (getWidth() << 4); 
+			x+= (getWidth() *16); 
 		if(horizontalWrapable && (x >> 4) >= getWidth())
-			x-= (getWidth() << 4);
+			x-= (getWidth() *16);
 		if(verticalWrapable && y < 0)
-			y+= (getHeight() << 4); 
+			y+= (getHeight() *16); 
 		if(verticalWrapable && (y >> 4) >= getHeight())
-			y-= (getHeight() << 4);
+			y-= (getHeight() *16);
 
 		int t = obsLayer[((y >> 4) * getWidth()) + (x >> 4)];
 		return tileset.GetObs(t, x&15, y&15);
@@ -398,12 +401,12 @@ public class MapVerge extends MapAbstract implements Map {
 		obsLayer[(y * getWidth()) + x] = (byte) t;
 	}
 	
-	public void settile(int x, int y, int i, int z) { 
-		if(i>=this.layers.length) {
+	public void settile(int x, int y, int layer, int index) { 
+		if(layer>=this.layers.length) {
 			return;
 		}
 		else {
-			this.layers[i].setTile(x,y,z); 
+			this.layers[layer].setTile(x,y,index); 
 		}
 		resetCacheArray();
 	}
@@ -430,59 +433,6 @@ public class MapVerge extends MapAbstract implements Map {
 		return this.mapname;
 	}
 	
-	public static void main(String args[]) throws MalformedURLException {
-		/* Save map to clipboard*/ 
-		MapVerge m = new MapVerge(new URL("file:///C:\\Temp\\teste.map"),
-				new URL("file:///C:\\Temp\\ps1.vsp"));
-		  current_map = m;
-		  VImage img = new VImage(m.getWidth()*16, m.getHeight()*16);
-		  m.render(0, 0, img);
-		  img.copyImageToClipboard();
-	}
-
-	private Layer createLayerFromImage(URL url, Vsp vsp) {
-
-		Layer l = this.new Layer();
-		VImage source = new VImage(url);
-		l.width = source.width / 16;
-		l.height = source.height / 16;
-		
-		l.tiledata = new int[l.width * l.height];
-		
-		for(int posy=0;posy < l.height; posy++) {
-			for(int posx=0;posx < l.width; posx++) {	
-				System.out.println("Testing (" + posy + ", " + posx + ")");
-				for(int i=0; i<vsp.getNumtiles(); i++) {
-				//	if(i==0) {System.err.println(vsp.tiles[i].getRGB(0, 0));System.exit(0);}
-					int repeated = 0;
-					for(int py=0;py<16;py++) {
-						for(int px=0;px<16;px++) {
-							if(vsp.getTiles()[i].getRGB(px,  py) == source.image.getRGB(posx*16+px, posy*16+py)
-							|| vsp.getTiles()[i].getRGB(px,  py) == source.image.getRGB(posx*16+px, posy*16+py) + 16711935	
-									) {
-								repeated++;
-							}
-							else
-							{
-								px=20;py=20;
-							}
-						}
-					}
-				
-					if(repeated >= 200) {
-						System.out.println("Found tile " + i);
-						l.tiledata[(posy*l.width)+posx] = i;
-						break;
-					}
-					else
-						l.tiledata[(posy*l.width)+posx] = 0;
-				}
-			}
-		}
-
-		return l;
-	}
-
 	public Zone[] getZones() {
 		return this.zones;
 	}
@@ -525,24 +475,23 @@ public class MapVerge extends MapAbstract implements Map {
 		return layers[layer].lucent;
 	}
 	
-	
-	
 	/*
 	 * 
 	 */
-	class Layer {
+	static class Layer {
 			
 			public static final int DEFAULT_X = 30;
 			public static final int DEFAULT_Y = 20;
 			
 			private String name = "";
 			private double parallax_x = 1.0, parallax_y = 1.0;
-			private int width = DEFAULT_X, height = DEFAULT_Y; // Unsigned short
+			int width = DEFAULT_X; // Unsigned short
+			int height = DEFAULT_Y;
 			private int lucent = 0; // Unsigned Byte
 
 			private int x_offset, y_offset; // used to account for changing parallax
 			
-			private int[] tiledata = new int[DEFAULT_X*DEFAULT_Y]; // width * height Unsigned shorts!
+			int[] tiledata = new int[DEFAULT_X*DEFAULT_Y]; // width * height Unsigned shorts!
 
 
 			public int getTile(int x, int y) {

@@ -36,6 +36,7 @@ public class Config {
 	//[Rafael, the Esper] ScaleFormat v3_scale_win = SCALE_FORMAT_ASPECT, v3_scale_full = SCALE_FORMAT_STRETCH;
 
 	private boolean windowmode=true;
+	private boolean doublewindowmode=false; // [Rafael, the Esper]
 	private boolean nosound=false;
 	private int soundengine = 0;
 	private boolean cheats=false;
@@ -97,6 +98,10 @@ public class Config {
 					int i = Integer.parseInt(strD.substring("windowmode".length()).trim());
 					this.setWindowmode(i == 1 ? true : false);
 				}
+				if(strD.toLowerCase().startsWith("doublewindowmode")) {
+					int i = Integer.parseInt(strD.substring("doublewindowmode".length()).trim());
+					this.setDoubleWindowmode(i == 1 ? true : false);
+				}
 				if(strD.toLowerCase().startsWith("startmap")) {
 					this.mapname = strD.substring("startmap".length()).trim();
 				}
@@ -150,7 +155,7 @@ public class Config {
 			automax = cfg_GetIntKeyValue("automax") ? true : false;
 		if (cfg_KeyPresent("vcverbose"))
 			verbose = cfg_GetIntKeyValue("vcverbose");
-//		if (cfg_KeyPresent("paranoid"))                FIXME
+//		if (cfg_KeyPresent("paranoid"))               
 //			vc_paranoid = cfg_GetIntKeyValue("paranoid");
 		if (cfg_KeyPresent("arraycheck"))
 			vc_arraycheck = cfg_GetIntKeyValue("arraycheck");
@@ -221,5 +226,15 @@ public class Config {
 	public void setWindowmode(boolean windowmode) {
 		this.windowmode = windowmode;
 	}
+
+	public boolean isDoubleWindowmode() {
+		return this.doublewindowmode;
+	}
+
+	public void setDoubleWindowmode(boolean b) {
+		this.doublewindowmode = b;
+		
+	}
+
 	
 }

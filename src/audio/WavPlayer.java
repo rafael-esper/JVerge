@@ -1,13 +1,17 @@
 package audio;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
 
 /*
  * http://forum.codecall.net/java-tutorials/31299-playing-simple-sampled-audio-java.html
@@ -45,8 +49,18 @@ public class WavPlayer {
     // play the WAV/MIDI file to the sound card
     public void play() {
         try {
-        	audio = AudioSystem.getAudioInputStream(url.openStream());
+        	// Fixed mark/test problem. See: http://stackoverflow.com/questions/5529754/java-io-ioexception-mark-reset-not-supported
+        	InputStream audioSrc = url.openStream();
+        	InputStream bufferedIn = new BufferedInputStream(audioSrc);
+        	audio = AudioSystem.getAudioInputStream(bufferedIn);
         	clip = AudioSystem.getClip();
+          	clip.addLineListener(new LineListener() {
+                @Override
+                public void update(LineEvent event) {
+                    if (event.getType() == LineEvent.Type.STOP)
+                        clip.close();
+                }
+            });         	
         }
         catch (Exception e) {
             System.out.println("Problem playing file " + url);
@@ -58,9 +72,9 @@ public class WavPlayer {
             public void run() {
                 try { 
                     clip.open(audio);
-                    
+                    double dv = (double)volume / 50;
                     //See http://docs.oracle.com/javase/1.5.0/docs/api/javax/sound/sampled/FloatControl.Type.html#MASTER_GAIN
-                    float db = (float)(Math.log(volume/100)/Math.log(10.0)*20.0);
+                    float db = (float)(Math.log(dv)/Math.log(10.0)*20.0);
                     FloatControl gainControl = 
                     	    (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
                     	gainControl.setValue(db); // range -80.0 to 6.0206                    
